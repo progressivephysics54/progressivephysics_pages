@@ -204,6 +204,95 @@
     filter: sepia(1) saturate(3) hue-rotate(315deg) opacity(.6);
   }
 
+  .msel{ position:relative; }
+  .msel-btn{
+    all:unset;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    font-family:'Fraunces', serif;
+    font-size:17px;
+    font-weight:500;
+    color:var(--ink);
+    padding:8px 2px 10px;
+    border-bottom:2px solid var(--paper-line);
+    cursor:pointer;
+    box-sizing:border-box;
+  }
+  .msel-btn:focus{ border-bottom-color:var(--maroon); }
+  .msel-btn:hover, .msel-btn:active, .msel-btn:focus{
+    background:transparent;
+    color:var(--ink);
+    font-weight:500;
+    box-shadow:none;
+    transform:none;
+  }
+  #subjectBtnText.placeholder{ color:#b9ac92; font-family:'Space Mono',monospace; font-size:13px; }
+  .msel-arrow{
+    width:7px; height:7px;
+    border-right:2px solid var(--ink-soft);
+    border-bottom:2px solid var(--ink-soft);
+    transform:rotate(45deg);
+    margin-bottom:3px;
+    flex:0 0 auto;
+  }
+  .msel-panel{
+    display:none;
+    position:absolute;
+    z-index:5;
+    top:calc(100% + 6px);
+    left:0; right:0;
+    background:var(--card);
+    border:1px solid var(--paper-line);
+    box-shadow:var(--shadow);
+    padding:8px;
+  }
+  .msel-panel.open{ display:block; }
+  .msel-opt{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+    color:var(--ink);
+    padding:9px 8px;
+    cursor:pointer;
+    text-transform:none;
+    letter-spacing:0;
+    margin-bottom:0;
+    font-weight:400;
+  }
+  .msel-opt:hover{ background:rgba(122,46,46,0.06); }
+  .msel-opt input{ all:revert; accent-color:var(--maroon); width:15px; height:15px; }
+
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    letter-spacing:.04em;
+    color:var(--maroon);
+    background:rgba(122,46,46,0.08);
+    border:1px solid rgba(122,46,46,0.25);
+    border-radius:4px;
+    padding:4px 8px;
+  }
+  .chip button{
+    all:unset;
+    cursor:pointer;
+    font-weight:700;
+    line-height:1;
+    color:var(--maroon);
+  }
+
   .actions{
     margin-top:12px;
     display:flex;
@@ -229,6 +318,35 @@
   button:hover{ background:#8a3535; }
   button:active{ transform:translateY(6px); box-shadow:0 2px 0 var(--maroon-deep); }
   button:disabled{ opacity:.6; cursor:progress; }
+
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .spinner{
+    display:inline-block;
+    width:13px; height:13px;
+    border:2px solid rgba(253,246,232,0.35);
+    border-top-color:#fdf6e8;
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    vertical-align:-2px;
+    margin-right:8px;
+  }
+  .spinner.dark{
+    border-color:rgba(122,46,46,0.25);
+    border-top-color:var(--maroon);
+  }
+  button .btn-label{ display:inline-flex; align-items:center; }
+
+  form.is-saving{ position:relative; }
+  form.is-saving::after{
+    content:"";
+    position:absolute;
+    inset:-6px;
+    background:rgba(244,236,220,0.45);
+    cursor:progress;
+    z-index:4;
+  }
+  form.is-saving .field,
+  form.is-saving .msel-btn{ pointer-events:none; opacity:.7; }
 
   .status{
     font-size:12px;
@@ -286,19 +404,18 @@
   <p class="sub">Fill every field carefully. Entry syncs directly to the register sheet on submit.</p>
 
   <form id="studentForm">
-    <div class="row2">
-      <div>
-        <label>Student ID <span class="req">*</span></label>
-        <div class="field has-prefix">
-          <span class="prefix">#</span>
-          <input type="text" name="ID" placeholder="0001" required>
-        </div>
+    <div>
+      <label>Student ID <span class="req">*</span></label>
+      <div class="field has-prefix">
+        <span class="prefix" id="studentIdPrefix">ID</span>
+        <input type="text" name="Student ID" id="studentIdInput" placeholder="PP 26 0001" pattern="PP\s?\d{2}\s?\d{4}" required>
       </div>
-      <div>
-        <label>Admission Date <span class="req">*</span></label>
-        <div class="field">
-          <input type="date" name="Admission" required>
-        </div>
+    </div>
+
+    <div>
+      <label>Admission Date <span class="req">*</span></label>
+      <div class="field">
+        <input type="date" name="Admission" required>
       </div>
     </div>
 
@@ -306,6 +423,14 @@
       <label>Student Name <span class="req">*</span></label>
       <div class="field">
         <input type="text" name="Name" placeholder="Full name" required>
+      </div>
+    </div>
+
+    <div>
+      <label>Student Phone</label>
+      <div class="field has-prefix">
+        <span class="prefix">+91</span>
+        <input type="tel" name="Student Phone" placeholder="98765 43210 (optional)" pattern="[0-9\s]{10,15}">
       </div>
     </div>
 
@@ -317,10 +442,10 @@
         </div>
       </div>
       <div>
-        <label>Phone <span class="req">*</span></label>
+        <label>Guardian Phone <span class="req">*</span></label>
         <div class="field has-prefix">
           <span class="prefix">+91</span>
-          <input type="tel" name="Phone" placeholder="98765 43210" pattern="[0-9\s]{10,15}" required>
+          <input type="tel" name="Guardian Phone" placeholder="98765 43210" pattern="[0-9\s]{10,15}" required>
         </div>
       </div>
     </div>
@@ -350,6 +475,26 @@
     </div>
 
     <div>
+      <label>Subjects <span class="req">*</span></label>
+      <div class="msel" id="subjectMsel">
+        <button type="button" class="msel-btn" id="subjectBtn">
+          <span id="subjectBtnText">Select subjects</span>
+          <span class="msel-arrow"></span>
+        </button>
+        <div class="msel-panel" id="subjectPanel">
+          <label class="msel-opt"><input type="checkbox" value="Physics"><span>Physics</span></label>
+          <label class="msel-opt"><input type="checkbox" value="Chemistry"><span>Chemistry</span></label>
+          <label class="msel-opt"><input type="checkbox" value="Biology - Botany"><span>Biology - Botany</span></label>
+          <label class="msel-opt"><input type="checkbox" value="Biology - Zoology"><span>Biology - Zoology</span></label>
+          <label class="msel-opt"><input type="checkbox" value="Mathematics"><span>Mathematics</span></label>
+          <label class="msel-opt"><input type="checkbox" value="English"><span>English</span></label>
+        </div>
+      </div>
+      <div class="chips" id="subjectChips"></div>
+      <input type="hidden" name="Subjects" id="subjectsHidden">
+    </div>
+
+    <div>
       <label>Monthly Fee (₹) <span class="req">*</span></label>
       <div class="field has-prefix">
         <span class="prefix rupee">₹</span>
@@ -358,7 +503,7 @@
     </div>
 
     <div class="actions">
-      <button type="submit" id="submitBtn">Enroll Student</button>
+      <button type="submit" id="submitBtn"><span class="btn-label" id="submitBtnLabel">Enroll Student</span></button>
       <span class="status" id="status"></span>
     </div>
   </form>
@@ -373,32 +518,136 @@
   document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
 
   //Google Apps Script Web App URL 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx1RlSyUGINlduzPJek520T3taAfplFh6opvA23SHOlHVpmgu80B0aZsWZEvEfPsC59/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzE2iFl0bscsdJmJOdY2kQOHlpWgYLSBLg2DjGnDjkMjVTXsRDZfvqjkWa181mvqDXd/exec";
 
   const form = document.getElementById('studentForm');
   const status = document.getElementById('status');
   const btn = document.getElementById('submitBtn');
+  const btnLabel = document.getElementById('submitBtnLabel');
+
+  
+  async function fetchWithTimeout(url, options = {}, ms = 8000){
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // --- subjects multi-select dropdown ---
+  const subjectBtn = document.getElementById('subjectBtn');
+  const subjectBtnText = document.getElementById('subjectBtnText');
+  const subjectPanel = document.getElementById('subjectPanel');
+  const subjectChips = document.getElementById('subjectChips');
+  const subjectsHidden = document.getElementById('subjectsHidden');
+  const subjectChecks = subjectPanel.querySelectorAll('input[type="checkbox"]');
+  let subjects = [];
+
+  function syncSubjects(){
+    subjects = Array.from(subjectChecks).filter(c => c.checked).map(c => c.value);
+    subjectsHidden.value = subjects.join(', ');
+    subjectBtnText.textContent = subjects.length ? subjects.join(', ') : 'Select subjects';
+    subjectBtnText.classList.toggle('placeholder', subjects.length === 0);
+    subjectChips.innerHTML = '';
+    subjects.forEach(s => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML = `${s} <button type="button" aria-label="remove">×</button>`;
+      chip.querySelector('button').addEventListener('click', () => {
+        subjectChecks.forEach(c => { if (c.value === s) c.checked = false; });
+        syncSubjects();
+      });
+      subjectChips.appendChild(chip);
+    });
+  }
+
+  subjectChecks.forEach(c => c.addEventListener('change', syncSubjects));
+
+  subjectBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    subjectPanel.classList.toggle('open');
+  });
+  document.addEventListener('click', (e) => {
+    if (!document.getElementById('subjectMsel').contains(e.target)) {
+      subjectPanel.classList.remove('open');
+    }
+  });
+
+  syncSubjects();
+
+
+  const studentIdInput = document.getElementById('studentIdInput');
+  const studentIdPrefix = document.getElementById('studentIdPrefix');
+  let lastSuggestedId = '';
+  let studentIdFocused = false;
+
+  studentIdInput.addEventListener('focus', () => { studentIdFocused = true; });
+  studentIdInput.addEventListener('blur', () => { studentIdFocused = false; });
+
+  let idFetchInFlight = false;
+
+  async function fetchNextId(force){
+    
+    if (!force && (studentIdFocused || form.classList.contains('is-saving') || idFetchInFlight)) return;
+
+    idFetchInFlight = true;
+    studentIdPrefix.innerHTML = '<span class="spinner dark"></span>';
+    studentIdInput.placeholder = 'Fetching…';
+    try {
+      const res = await fetchWithTimeout(`${SCRIPT_URL}?action=nextId`, {}, 8000);
+      const result = await res.json();
+      if (result.result === 'success' && result.id) {
+        
+        const untouched = force || studentIdInput.value === '' || studentIdInput.value === lastSuggestedId;
+        if (untouched) studentIdInput.value = result.id;
+        lastSuggestedId = result.id;
+      }
+    } catch (err) {
+      console.error('Could not fetch next Student ID', err);
+    } finally {
+      studentIdPrefix.textContent = 'ID';
+      studentIdInput.placeholder = 'PP 26 0001';
+      idFetchInFlight = false;
+    }
+  }
+  fetchNextId(true);
+  setInterval(() => fetchNextId(false), 10000); 
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    if (!subjects.length) {
+      status.textContent = '✗ Pick at least one subject';
+      status.className = 'status err';
+      return;
+    }
+
     btn.disabled = true;
+    btnLabel.innerHTML = '<span class="spinner"></span>Saving';
+    form.classList.add('is-saving');
     status.textContent = 'Saving…';
     status.className = 'status';
 
     const data = Object.fromEntries(new FormData(form).entries());
+    const studentId = data['Student ID'];
 
     try {
-      const res = await fetch(SCRIPT_URL, {
+      const res = await fetchWithTimeout(SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(data)
-      });
+      }, 15000);
       const result = await res.json();
 
       if (result.result === 'success') {
-        status.textContent = '✓ Saved to register';
+        status.textContent = `✓ Saved as ${result.id || studentId}`;
         status.className = 'status ok';
         form.reset();
+        subjectChecks.forEach(c => c.checked = false);
+        syncSubjects();
+        fetchNextId(true);
       } else {
         throw new Error(result.error || 'Unknown error');
       }
@@ -408,6 +657,8 @@
       console.error(err);
     } finally {
       btn.disabled = false;
+      btnLabel.textContent = 'Enroll Student';
+      form.classList.remove('is-saving');
     }
   });
 </script>
