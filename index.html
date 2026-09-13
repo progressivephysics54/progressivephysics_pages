@@ -426,9 +426,17 @@
       </div>
     </div>
 
+    <div>
+      <label>Student Contact No</label>
+      <div class="field has-prefix">
+        <span class="prefix">+91</span>
+        <input type="tel" name="Student Contact No" placeholder="98765 43210" pattern="[0-9\s]{10,15}">
+      </div>
+    </div>
+
     <div class="row2">
       <div>
-        <label>Parent / Guardian <span class="req">*</span></label>
+        <label>Guardian Name <span class="req">*</span></label>
         <div class="field">
           <input type="text" name="Parent" placeholder="Guardian's name" required>
         </div>
@@ -519,7 +527,7 @@
   document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
 
   //Google Apps Script Web App URL 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzE2iFl0bscsdJmJOdY2kQOHlpWgYLSBLg2DjGnDjkMjVTXsRDZfvqjkWa181mvqDXd/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6UDlXdJlGcwl_hH9v-4WW7VgxHSWA8INyb8XxEdHx6lgEAH4GXawupHNyok4GTOnm/exec";
 
   const form = document.getElementById('studentForm');
   const status = document.getElementById('status');
