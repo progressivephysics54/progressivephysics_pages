@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Admission Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4ecdc;
+    --paper-line:#d9c9a3;
+    --ink:#2b241a;
+    --ink-soft:#6b5f4a;
+    --maroon:#7a2e2e;
+    --maroon-deep:#5a1f1f;
+    --gold:#b3862c;
+    --ok:#2f6b4f;
+    --card:#fffaf0;
+    --shadow: 0 20px 50px -20px rgba(43,36,26,0.35);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Space Mono', monospace;
+    color:var(--ink);
+    background:
+      repeating-linear-gradient(180deg, transparent, transparent 27px, var(--paper-line) 28px),
+      var(--paper);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:56px 20px 90px;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(43,36,26,0.06) 1px, transparent 0);
+    background-size: 22px 22px;
+    pointer-events:none;
+  }
+
+  .sheet{
+    width:100%;
+    max-width:640px;
+    background:var(--card);
+    border:1px solid var(--paper-line);
+    box-shadow:var(--shadow);
+    position:relative;
+    padding:50px 40px 40px;
+    animation: rise .7s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .sheet::before{
+    content:"";
+    position:absolute;
+    top:14px;left:14px;right:14px;bottom:14px;
+    border:1px solid var(--gold);
+    opacity:.35;
+    pointer-events:none;
+  }
+  @keyframes rise{
+    from{opacity:0; transform:translateY(24px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  .stamp-wrap{
+    position:absolute;
+    top:26px; right:26px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:6px;
+  }
+  .stamp{
+    border:2px solid var(--maroon);
+    color:var(--maroon);
+    font-family:'Space Mono',monospace;
+    font-size:9px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    padding:5px 9px;
+    transform:rotate(6deg);
+    opacity:.75;
+    white-space:nowrap;
+  }
+  .stamp-date{
+    font-family:'Space Mono',monospace;
+    font-size:9.5px;
+    letter-spacing:.08em;
+    color:var(--ink-soft);
+    opacity:.7;
+    white-space:nowrap;
+  }
+
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:700;
+    margin:0 84px 6px 0;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-optical-sizing:auto;
+    font-size:clamp(26px, 6vw, 38px);
+    margin:0 84px 4px 0;
+    color:var(--maroon-deep);
+    line-height:1.15;
+    word-break:break-word;
+  }
+  .sub{
+    color:var(--ink-soft);
+    font-size:12.5px;
+    line-height:1.6;
+    margin:0 0 30px;
+    border-bottom:1px dashed var(--paper-line);
+    padding-bottom:22px;
+  }
+
+  form{ display:grid; gap:20px; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:520px){ .row2{ grid-template-columns:1fr; } }
+
+  label{
+    display:block;
+    font-size:10.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:7px;
+    font-weight:700;
+  }
+  .req{ color:var(--maroon); }
+
+  .field{
+    position:relative;
+    display:flex;
+    align-items:flex-end;
+    gap:6px;
+    border-bottom:2px solid var(--paper-line);
+    transition:border-color .25s ease;
+  }
+  .field:focus-within{ border-bottom-color:var(--maroon); }
+  input, select{
+    width:100%;
+    font-family:'Fraunces', serif;
+    font-size:17px;
+    font-weight:500;
+    color:var(--ink);
+    background:transparent;
+    border:none;
+    padding:8px 2px 10px;
+    outline:none;
+    appearance:none;
+    -webkit-appearance:none;
+    min-width:0;
+  }
+  select{ cursor:pointer; }
+  input::placeholder{ color:#b9ac92; font-family:'Space Mono',monospace; font-size:13px;}
+  .field::after{
+    content:"";
+    position:absolute; left:0; bottom:-2px;
+    width:0; height:2px;
+    background:var(--gold);
+    transition:width .3s ease;
+  }
+  .field:focus-within::after{ width:100%; }
+
+  .prefix{
+    flex:0 0 auto;
+    margin-bottom:9px;
+    font-family:'Space Mono',monospace;
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:.02em;
+    color:var(--maroon);
+    background:rgba(122,46,46,0.08);
+    border:1px solid rgba(122,46,46,0.25);
+    border-radius:4px;
+    padding:3px 7px;
+    line-height:1.4;
+    pointer-events:none;
+    white-space:nowrap;
+  }
+  .prefix.rupee{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:15px;
+    padding:1px 8px 3px;
+  }
+
+  select{
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
+    background-position: calc(100% - 14px) 50%, calc(100% - 8px) 50%;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat:no-repeat;
+    padding-right:26px;
+  }
+  input[type="date"]{ cursor:pointer; }
+  input[type="date"]::-webkit-calendar-picker-indicator{
+    filter: sepia(1) saturate(3) hue-rotate(315deg) opacity(.6);
+  }
+
+  .actions{
+    margin-top:12px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  button{
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    font-size:12.5px;
+    color:#fdf6e8;
+    background:var(--maroon);
+    border:none;
+    padding:15px 28px;
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    transition:transform .15s ease, box-shadow .15s ease, background .2s ease;
+    box-shadow:0 8px 0 var(--maroon-deep);
+  }
+  button:hover{ background:#8a3535; }
+  button:active{ transform:translateY(6px); box-shadow:0 2px 0 var(--maroon-deep); }
+  button:disabled{ opacity:.6; cursor:progress; }
+
+  .status{
+    font-size:12px;
+    color:var(--ink-soft);
+    min-height:16px;
+  }
+  .status.ok{ color:var(--ok); font-weight:700; }
+  .status.err{ color:var(--maroon); font-weight:700; }
+
+  .foot{
+    margin-top:28px;
+    padding-top:18px;
+    border-top:1px dashed var(--paper-line);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:6px;
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:#b9ac92;
+  }
+  .foot .partner{
+    color:var(--gold);
+    font-weight:700;
+  }
+
+  @media (max-width:520px){
+    body{ padding:28px 0 60px; }
+    .sheet{ padding:36px 22px 30px; max-width:100%; }
+    .sheet::before{ top:10px; left:10px; right:10px; bottom:10px; }
+    .stamp-wrap{ top:18px; right:18px; }
+    .stamp{ font-size:8px; padding:4px 7px; }
+    .stamp-date{ font-size:8px; }
+    .foot{ flex-direction:column; align-items:flex-start; gap:4px; }
+    .eyebrow, h1{ margin-right:70px; }
+    h1{ font-size:26px; }
+    .sub{ font-size:12px; margin-bottom:24px; }
+    form{ gap:18px; }
+    input, select{ font-size:16px; }
+    .actions{ flex-direction:column; align-items:stretch; gap:10px; }
+    button{ width:100%; padding:16px; }
+    .status{ text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="stamp-wrap">
+    <div class="stamp">Original</div>
+  </div>
+  <p class="eyebrow">Admission Register</p>
+  <h1>Student Enrollment Form</h1>
+  <p class="sub">Fill every field carefully. Entry syncs directly to the register sheet on submit.</p>
+
+  <form id="studentForm">
+    <div class="row2">
+      <div>
+        <label>Student ID <span class="req">*</span></label>
+        <div class="field has-prefix">
+          <span class="prefix">#</span>
+          <input type="text" name="ID" placeholder="0001" required>
+        </div>
+      </div>
+      <div>
+        <label>Admission Date <span class="req">*</span></label>
+        <div class="field">
+          <input type="date" name="Admission" required>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label>Student Name <span class="req">*</span></label>
+      <div class="field">
+        <input type="text" name="Name" placeholder="Full name" required>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>Parent / Guardian <span class="req">*</span></label>
+        <div class="field">
+          <input type="text" name="Parent" placeholder="Guardian's name" required>
+        </div>
+      </div>
+      <div>
+        <label>Phone <span class="req">*</span></label>
+        <div class="field has-prefix">
+          <span class="prefix">+91</span>
+          <input type="tel" name="Phone" placeholder="98765 43210" pattern="[0-9\s]{10,15}" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>Class <span class="req">*</span></label>
+        <div class="field">
+          <select name="Class" required>
+            <option value="" disabled selected>Select class</option>
+            <option>Class 6</option><option>Class 7</option><option>Class 8</option>
+            <option>Class 9</option><option>Class 10</option>
+            <option>Class 11 - Science</option><option>Class 12 - Science</option>
+            <option>NEET Dropper</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>Batch <span class="req">*</span></label>
+        <div class="field">
+          <select name="Batch" required>
+            <option value="" disabled selected>Select batch</option>
+            <option>Morning</option><option>Afternoon</option><option>Evening</option><option>Weekend</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label>Monthly Fee (₹) <span class="req">*</span></label>
+      <div class="field has-prefix">
+        <span class="prefix rupee">₹</span>
+        <input type="number" name="Monthly Fee" placeholder="0" min="0" required>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" id="submitBtn">Enroll Student</button>
+      <span class="status" id="status"></span>
+    </div>
+  </form>
+
+  <div class="foot">
+    <span class="partner">Progressive Physics</span>
+    <span id="today"></span>
+  </div>
+</div>
+
+<script>
+  document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+
+  //Google Apps Script Web App URL 
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx1RlSyUGINlduzPJek520T3taAfplFh6opvA23SHOlHVpmgu80B0aZsWZEvEfPsC59/exec";
+
+  const form = document.getElementById('studentForm');
+  const status = document.getElementById('status');
+  const btn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    status.textContent = 'Saving…';
+    status.className = 'status';
+
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+
+      if (result.result === 'success') {
+        status.textContent = '✓ Saved to register';
+        status.className = 'status ok';
+        form.reset();
+      } else {
+        throw new Error(result.error || 'Unknown error');
+      }
+    } catch (err) {
+      status.textContent = '✗ Failed — check connection';
+      status.className = 'status err';
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
