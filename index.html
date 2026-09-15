@@ -484,6 +484,17 @@
     </div>
 
     <div>
+      <label>Board <span class="req">*</span></label>
+      <div class="field">
+        <select name="Board" required>
+          <option value="" disabled selected>Select board</option>
+          <option>CBSE</option><option>ICSE/ISC</option>
+          <option>WBBSE/WBCHSE</option><option>Other State Board</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
       <label>Subjects <span class="req">*</span></label>
       <div class="msel" id="subjectMsel">
         <button type="button" class="msel-btn" id="subjectBtn">
@@ -527,7 +538,7 @@
   document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
 
   //Google Apps Script Web App URL 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6UDlXdJlGcwl_hH9v-4WW7VgxHSWA8INyb8XxEdHx6lgEAH4GXawupHNyok4GTOnm/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbywxVKAy2-B2g3QXTH35PxSn3EA-Tmvi-0N4bzZZkYRazrcaQR7PHS3N_GAQPSX5wWJ/exec";
 
   const form = document.getElementById('studentForm');
   const status = document.getElementById('status');
