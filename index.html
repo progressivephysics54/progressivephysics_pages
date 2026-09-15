@@ -229,6 +229,8 @@
     transform:none;
   }
   #subjectBtnText.placeholder{ color:#b9ac92; font-family:'Space Mono',monospace; font-size:13px; }
+  .msel-skel{ height:16px; border-radius:4px; margin:8px 10px; background:linear-gradient(90deg,#eee2cf 25%,#f5ecdc 37%,#eee2cf 63%); background-size:400% 100%; animation:msel-shimmer 1.4s ease infinite; }
+  @keyframes msel-shimmer{ 0%{background-position:100% 50%;} 100%{background-position:0 50%;} }
   .msel-arrow{
     width:7px; height:7px;
     border-right:2px solid var(--ink-soft);
@@ -502,12 +504,6 @@
           <span class="msel-arrow"></span>
         </button>
         <div class="msel-panel" id="subjectPanel">
-          <label class="msel-opt"><input type="checkbox" value="Physics"><span>Physics</span></label>
-          <label class="msel-opt"><input type="checkbox" value="Chemistry"><span>Chemistry</span></label>
-          <label class="msel-opt"><input type="checkbox" value="Biology - Botany"><span>Biology - Botany</span></label>
-          <label class="msel-opt"><input type="checkbox" value="Biology - Zoology"><span>Biology - Zoology</span></label>
-          <label class="msel-opt"><input type="checkbox" value="Mathematics"><span>Mathematics</span></label>
-          <label class="msel-opt"><input type="checkbox" value="English"><span>English</span></label>
         </div>
       </div>
       <div class="chips" id="subjectChips"></div>
@@ -537,8 +533,8 @@
 <script>
   document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
 
-  //Google Apps Script Web App URL 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbywxVKAy2-B2g3QXTH35PxSn3EA-Tmvi-0N4bzZZkYRazrcaQR7PHS3N_GAQPSX5wWJ/exec";
+  const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbz3I5gahSPqV5HBysXYSH3VD4nfZbXiKYBHAoVj3VzzvALTJ7CjDjIsjRPnvtxU2W8U3A/exec";
+  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbywxVKAy2-B2g3QXTH35PxSn3EA-Tmvi-0N4bzZZkYRazrcaQR7PHS3N_GAQPSX5wWJ/exec";
 
   const form = document.getElementById('studentForm');
   const status = document.getElementById('status');
@@ -556,17 +552,36 @@
     }
   }
 
-  // --- subjects multi-select dropdown ---
   const subjectBtn = document.getElementById('subjectBtn');
   const subjectBtnText = document.getElementById('subjectBtnText');
   const subjectPanel = document.getElementById('subjectPanel');
   const subjectChips = document.getElementById('subjectChips');
   const subjectsHidden = document.getElementById('subjectsHidden');
-  const subjectChecks = subjectPanel.querySelectorAll('input[type="checkbox"]');
+  const classSelect = form.querySelector('select[name="Class"]');
+  const boardSelect = form.querySelector('select[name="Board"]');
   let subjects = [];
+  let subjectChecks = [];
+
+  const DEFAULT_SUBJECTS = ['Physics','Chemistry','Biology - Botany','Biology - Zoology','Mathematics','English'];
+
+  function buildSubjectPanel(list){
+    const prevChecked = new Set(subjects);
+    subjectPanel.innerHTML = '';
+    list.forEach(s => {
+      const label = document.createElement('label');
+      label.className = 'msel-opt';
+      label.innerHTML = `<input type="checkbox" value="${s}"><span>${s}</span>`;
+      const cb = label.querySelector('input');
+      if (prevChecked.has(s)) cb.checked = true;
+      cb.addEventListener('change', syncSubjects);
+      subjectPanel.appendChild(label);
+    });
+    subjectChecks = Array.from(subjectPanel.querySelectorAll('input[type="checkbox"]'));
+    syncSubjects();
+  }
 
   function syncSubjects(){
-    subjects = Array.from(subjectChecks).filter(c => c.checked).map(c => c.value);
+    subjects = subjectChecks.filter(c => c.checked).map(c => c.value);
     subjectsHidden.value = subjects.join(', ');
     subjectBtnText.textContent = subjects.length ? subjects.join(', ') : 'Select subjects';
     subjectBtnText.classList.toggle('placeholder', subjects.length === 0);
@@ -583,7 +598,49 @@
     });
   }
 
-  subjectChecks.forEach(c => c.addEventListener('change', syncSubjects));
+  function showSubjectSkeleton(){
+    subjectPanel.innerHTML = '';
+    for (let i = 0; i < 5; i++){
+      const row = document.createElement('div');
+      row.className = 'msel-skel';
+      subjectPanel.appendChild(row);
+    }
+  }
+
+  let subjectFetchToken = 0;
+  async function loadSubjectsForSelection(){
+    const cls = classSelect.value;
+    const board = boardSelect.value;
+    if (!cls) { buildSubjectPanel(DEFAULT_SUBJECTS); return; }
+
+    const myToken = ++subjectFetchToken;
+    subjectBtnText.textContent = 'Loading subjects…';
+    subjectBtnText.classList.add('placeholder');
+    showSubjectSkeleton();
+    try {
+      const url = `${SUBJECT_URL}?action=getSubjects&class=${encodeURIComponent(cls)}&board=${encodeURIComponent(board || '')}`;
+      const res = await fetchWithTimeout(url, {}, 8000);
+      const result = await res.json();
+      if (myToken !== subjectFetchToken) return;
+      if (result.result === 'success' && result.subjects && result.subjects.length){
+        buildSubjectPanel(result.subjects);
+      } else {
+        subjectPanel.innerHTML = '';
+        subjectBtnText.textContent = 'No subjects found';
+        subjectBtnText.classList.add('placeholder');
+      }
+    } catch (err) {
+      console.error('Could not fetch subjects', err);
+      if (myToken === subjectFetchToken) {
+        subjectPanel.innerHTML = '';
+        subjectBtnText.textContent = 'Couldn\'t load subjects';
+        subjectBtnText.classList.add('placeholder');
+      }
+    }
+  }
+
+  classSelect.addEventListener('change', loadSubjectsForSelection);
+  boardSelect.addEventListener('change', loadSubjectsForSelection);
 
   subjectBtn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -595,7 +652,7 @@
     }
   });
 
-  syncSubjects();
+  buildSubjectPanel(DEFAULT_SUBJECTS);
 
 
   const studentIdInput = document.getElementById('studentIdInput');
@@ -616,7 +673,7 @@
     studentIdPrefix.innerHTML = '<span class="spinner dark"></span>';
     studentIdInput.placeholder = 'Fetching…';
     try {
-      const res = await fetchWithTimeout(`${SCRIPT_URL}?action=nextId`, {}, 8000);
+      const res = await fetchWithTimeout(`${STUDENT_DETAILS_URL}?action=nextId`, {}, 8000);
       const result = await res.json();
       if (result.result === 'success' && result.id) {
         
@@ -654,7 +711,7 @@
     const studentId = data['Student ID'];
 
     try {
-      const res = await fetchWithTimeout(SCRIPT_URL, {
+      const res = await fetchWithTimeout(STUDENT_DETAILS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(data)
