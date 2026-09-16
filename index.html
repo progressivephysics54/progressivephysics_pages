@@ -485,7 +485,7 @@
       </div>
     </div>
 
-    <div>
+    <div id="boardField">
       <label>Board <span class="req">*</span></label>
       <div class="field">
         <select name="Board" required>
@@ -533,7 +533,7 @@
 <script>
   document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
 
-  const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbz3I5gahSPqV5HBysXYSH3VD4nfZbXiKYBHAoVj3VzzvALTJ7CjDjIsjRPnvtxU2W8U3A/exec";
+  const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbzKe6GKfeQoQyf003NeEj-JC-tvaRb4x_La03LvLlYBcW6gABQz9DZV9wwjaY4C0qRx9g/exec";
   const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbywxVKAy2-B2g3QXTH35PxSn3EA-Tmvi-0N4bzZZkYRazrcaQR7PHS3N_GAQPSX5wWJ/exec";
 
   const form = document.getElementById('studentForm');
@@ -559,8 +559,18 @@
   const subjectsHidden = document.getElementById('subjectsHidden');
   const classSelect = form.querySelector('select[name="Class"]');
   const boardSelect = form.querySelector('select[name="Board"]');
+  const boardField = document.getElementById('boardField');
   let subjects = [];
   let subjectChecks = [];
+
+  const NO_BOARD_CLASSES = ['JEE', 'NEET'];
+
+  function updateBoardVisibility(){
+    const isNoBoard = NO_BOARD_CLASSES.includes(classSelect.value.trim());
+    boardField.style.display = isNoBoard ? 'none' : '';
+    boardSelect.required = !isNoBoard;
+    if (isNoBoard) boardSelect.value = '';
+  }
 
   const DEFAULT_SUBJECTS = ['Physics','Chemistry','Biology - Botany','Biology - Zoology','Mathematics','English'];
 
@@ -611,7 +621,9 @@
   async function loadSubjectsForSelection(){
     const cls = classSelect.value;
     const board = boardSelect.value;
+    const noBoard = NO_BOARD_CLASSES.includes(cls.trim());
     if (!cls) { buildSubjectPanel(DEFAULT_SUBJECTS); return; }
+    if (!noBoard && !board) { buildSubjectPanel([]); subjectBtnText.textContent = 'Select board first'; subjectBtnText.classList.add('placeholder'); subjectPanel.innerHTML=''; return; }
 
     const myToken = ++subjectFetchToken;
     subjectBtnText.textContent = 'Loading subjects…';
@@ -639,8 +651,9 @@
     }
   }
 
-  classSelect.addEventListener('change', loadSubjectsForSelection);
+  classSelect.addEventListener('change', () => { updateBoardVisibility(); loadSubjectsForSelection(); });
   boardSelect.addEventListener('change', loadSubjectsForSelection);
+  updateBoardVisibility();
 
   subjectBtn.addEventListener('click', (e) => {
     e.stopPropagation();
