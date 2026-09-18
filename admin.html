@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registrar Admin Panel</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Space+Mono:wght@400;700&display=swap');
+  :root{
+    --ink:#1c1a17; --parchment:#f0ede1; --parchment-dk:#e2ddc9;
+    --rule:#c3bb9f; --brick:#9b3b2e; --forest:#2f4a34; --gold:#b8863a;
+    --accent:var(--brick);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--parchment);color:var(--ink);font-family:'Space Mono',monospace;
+    background-image:radial-gradient(circle at 1px 1px, rgba(0,0,0,.05) 1px, transparent 0);
+    background-size:22px 22px;}
+
+  /* --- top masthead --- */
+  header{padding:30px 40px 0;border-bottom:3px double var(--ink)}
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;padding-bottom:16px}
+  h1{font-family:'Fraunces',serif;font-weight:700;font-size:2.2rem;margin:0;letter-spacing:-.5px}
+  h1 span{color:var(--accent);transition:color .2s}
+  .sub{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:#6b6350}
+
+  /* --- nav bar --- */
+  nav{display:flex;gap:0;margin-top:6px}
+  nav button{flex:0 0 auto;background:none;border:none;border-bottom:3px solid transparent;
+    font-family:'Space Mono',monospace;font-weight:700;font-size:.8rem;text-transform:uppercase;
+    letter-spacing:.1em;padding:12px 22px;cursor:pointer;color:#8a806a}
+  nav button.active{color:var(--ink);border-bottom-color:var(--accent)}
+  nav button:hover{color:var(--ink)}
+
+  main{max-width:1180px;margin:0 auto;padding:28px 40px 60px}
+  .section{display:none}
+  .section.active{display:block}
+
+  .bar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+  input,select,button{font-family:'Space Mono',monospace;font-size:.85rem}
+  .url-box{flex:1;min-width:260px;display:flex;gap:8px;align-items:center;background:var(--parchment-dk);
+    border:1px solid var(--rule);padding:8px 12px}
+  .url-box label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#6b6350;white-space:nowrap}
+  .url-box input{flex:1;border:none;background:transparent;outline:none;color:var(--ink)}
+  .btn{background:var(--accent);color:#fdf6e8;border:none;padding:10px 20px;cursor:pointer;
+    font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;
+    box-shadow:3px 3px 0 var(--ink);transition:transform .12s}
+  .btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
+  .btn:active{transform:translate(0,0);box-shadow:1px 1px 0 var(--ink)}
+  .btn.ghost{background:transparent;color:var(--accent);box-shadow:none;border:1.5px solid var(--accent)}
+  .btn.small{padding:6px 12px;font-size:.65rem;box-shadow:2px 2px 0 var(--ink)}
+
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{width:100%;min-width:640px;border-collapse:collapse;background:#fffdf6;box-shadow:0 4px 0 var(--rule)}
+  thead th{background:var(--ink);color:var(--parchment);text-align:left;padding:10px 12px;
+    font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;font-weight:400}
+  tbody td{padding:8px 10px;border-bottom:1px solid var(--rule);font-size:.82rem}
+  tbody tr:hover{background:#f7f1de}
+  tbody td[contenteditable="true"]{cursor:text}
+  tbody td[contenteditable="true"]:focus{outline:2px solid var(--gold);outline-offset:-2px;background:#fffbe8}
+  select.role{border:1px solid var(--rule);background:#fff;padding:4px 6px}
+  .pill{display:inline-block;padding:2px 8px;border:1px solid var(--gold);color:var(--gold);font-size:.68rem;text-transform:uppercase}
+  .empty{padding:40px;text-align:center;color:#8a806a}
+  .empty.error-msg{color:var(--brick);font-weight:700;letter-spacing:.04em}
+  .spinner{display:inline-block;width:18px;height:18px;border:3px solid var(--rule);
+    border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .status{font-size:.72rem;margin-left:auto;color:#6b6350}
+
+  /* --- row edit / delete icons --- */
+  tbody td[data-field]{cursor:default}
+  tbody td[data-field][contenteditable="true"]{cursor:text;background:#fffbe8}
+  tbody td[data-field][contenteditable="true"]:focus{outline:2px solid var(--gold);outline-offset:-2px}
+  select.role:disabled,input.status-tick:disabled{opacity:.55;cursor:default}
+  .actions-cell{white-space:nowrap;text-align:center}
+  .icon-btn{background:transparent;border:none;cursor:pointer;padding:6px 8px;font-size:.85rem;
+    color:#6b6350;transition:color .12s,transform .12s}
+  .icon-btn:hover{color:var(--ink);transform:translateY(-1px)}
+  .icon-btn.edit-btn:hover{color:var(--gold)}
+  .icon-btn.delete-btn:hover{color:var(--brick)}
+  tr.editing{background:#fffbe8}
+  tr.row-loading .actions-cell .icon-btn{visibility:hidden}
+  .fade-loader{display:inline-flex;gap:4px;align-items:center;justify-content:center}
+  .fade-loader span{width:6px;height:6px;border-radius:50%;background:var(--accent);
+    animation:fadeDot 1s ease-in-out infinite}
+  .fade-loader span:nth-child(2){animation-delay:.15s}
+  .fade-loader span:nth-child(3){animation-delay:.3s}
+  @keyframes fadeDot{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+  dialog{border:none;padding:0;background:transparent}
+  dialog::backdrop{background:rgba(28,26,23,.55)}
+  .modal{background:var(--parchment);border:3px double var(--ink);padding:30px;width:min(560px,92vw)}
+  .modal h2{font-family:'Fraunces',serif;margin:0 0 18px;font-size:1.4rem}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#6b6350}
+  .field input,.field select{padding:8px 10px;border:1px solid var(--rule);background:#fffdf6;color:var(--ink)}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+
+
+  @media (max-width: 640px){
+    header{padding:20px 16px 0}
+    .masthead{align-items:flex-start;gap:10px}
+    h1{font-size:1.5rem}
+    .sub{font-size:.62rem}
+    #primaryAction{width:100%;text-align:center;padding:12px 16px}
+    nav{overflow-x:auto;-webkit-overflow-scrolling:touch;gap:0;margin-top:2px}
+    nav button{padding:10px 14px;font-size:.7rem;white-space:nowrap;flex:none}
+    main{padding:16px 16px 40px}
+    .bar{gap:8px;margin-bottom:14px}
+    .bar .btn{padding:8px 14px;font-size:.68rem}
+    .status{width:100%;order:1;font-size:.68rem}
+    table{min-width:560px}
+    thead th{padding:8px 8px;font-size:.6rem}
+    tbody td{padding:7px 8px;font-size:.72rem}
+    .modal{padding:20px;width:94vw;max-height:88vh;overflow-y:auto}
+    .modal h2{font-size:1.15rem}
+    .grid{grid-template-columns:1fr;gap:8px}
+    .field{margin-bottom:6px}
+    .modal-actions{flex-direction:column-reverse}
+    .modal-actions .btn{width:100%;text-align:center}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="masthead">
+    <div><h1 id="pageTitle">The <span id="pageAccent">Student</span> Register</h1>
+      <div class="sub" id="pageSub">Admission &amp; batch ledger</div></div>
+    <button class="btn" id="primaryAction" onclick="openRegisterStudentPage()">+ Register Student</button>
+  </div>
+  <nav>
+    <button class="active" data-tab="student" onclick="switchTab('student')">Students</button>
+    <button data-tab="teacher" onclick="switchTab('teacher')">Teachers</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ================= STUDENT SECTION ================= -->
+  <section class="section active" id="section-student">
+    <div class="bar">
+      <button class="btn ghost" onclick="loadStudents()">Refresh</button>
+      <span class="status" id="studentStatus"></span>
+    </div>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>ID</th><th>Admission</th><th>Name</th><th>Phone</th><th>Guardian</th>
+        <th>Class</th><th>Batch</th><th>Board</th><th>Subjects</th><th>Fee</th>
+      </tr></thead>
+      <tbody id="studentRows"><tr><td colspan="10" class="empty">Enter your Student Web App URL above and hit Refresh.</td></tr></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ================= TEACHER SECTION ================= -->
+  <section class="section" id="section-teacher">
+    <div class="bar">
+      <button class="btn ghost" onclick="loadTeachers()">Refresh</button>
+      <span class="status" id="teacherStatus"></span>
+    </div>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th>
+        <th>Subject</th><th>Active</th><th></th>
+      </tr></thead>
+      <tbody id="teacherRows"><tr><td colspan="8" class="empty">Enter your Teacher Web App URL above and hit Refresh.</td></tr></tbody>
+    </table>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- Add Teacher modal -->
+<dialog id="teacherModal">
+  <form class="modal" method="dialog" onsubmit="return false">
+    <h2>Add a Teacher</h2>
+    <div class="grid">
+      <div class="field full"><label>Name</label><input id="t-Name" required></div>
+      <div class="field"><label>Email</label><input id="t-Email" type="email"></div>
+      <div class="field"><label>Phone</label><input id="t-Phone"></div>
+      <div class="field"><label>Role</label>
+        <select id="t-Role"><option>Teacher</option><option>Admin</option></select></div>
+      <div class="field"><label>Subject</label><input id="t-Subject1"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" type="button" onclick="document.getElementById('teacherModal').close()">Cancel</button>
+      <button class="btn" type="button" onclick="submitAddTeacher()">Save Teacher</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+
+  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbxdjvD-gUWtyHtOv5xG4D6P2oOE_hmZFucFe9oYxEBf_a_R5rISx06p-orhx1c4WaqF/exec';
+  const TEACHER_API_URL = 'https://script.google.com/macros/s/AKfycbw2Bdm_gFlI6efD75j0YrTTzFwJ1zwKHAJeyZsxnVUz5dbGLef0-6--lQaum2untAlI/exec';
+ 
+
+  function isValidUrl_(u){ return typeof u === 'string' && /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(u); }
+
+  function showLoading_(tbodyId, colspan){
+    document.getElementById(tbodyId).innerHTML =
+      `<tr><td colspan="${colspan}" class="empty"><span class="spinner"></span></td></tr>`;
+  }
+  function showTableError_(tbodyId, colspan, msg){
+    document.getElementById(tbodyId).innerHTML =
+      `<tr><td colspan="${colspan}" class="empty error-msg">${msg}</td></tr>`;
+  }
+  function classifyError_(err, res){
+    if (res && !res.ok) return `Server error (${res.status})`;
+    if (err instanceof TypeError) return 'Network error';
+    return 'Server error';
+  }
+
+  /* ---------- shared nav ---------- */
+  function switchTab(tab){
+    document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('section-'+tab).classList.add('active');
+    const root = document.documentElement.style;
+    if(tab==='student'){
+      root.setProperty('--accent','var(--brick)');
+      document.getElementById('pageAccent').textContent='Student';
+      document.getElementById('pageSub').textContent='Admission & batch ledger';
+      document.getElementById('primaryAction').textContent='+ Register Student';
+      document.getElementById('primaryAction').onclick=openRegisterStudentPage;
+      // No re-fetch here: data is cached in memory/localStorage and kept
+      // fresh by the background poller, so switching tabs is instant.
+    } else {
+      root.setProperty('--accent','var(--forest)');
+      document.getElementById('pageAccent').textContent='Teacher';
+      document.getElementById('pageSub').textContent='Staff, roles & subject charge';
+      document.getElementById('primaryAction').textContent='+ Add Teacher';
+      document.getElementById('primaryAction').onclick=openTeacherModal;
+    }
+  }
+
+  /* Student registration lives in its own file — put register-student.html
+     next to this file (or change the path below) and this opens it in a
+     new tab. */
+  function openRegisterStudentPage(){
+    window.open('register-student.html', '_blank');
+  }
+  function openTeacherModal(){ document.getElementById('teacherModal').showModal(); }
+
+  /* ---------- local cache helpers ---------- */
+  function cacheSave_(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){ /* storage full/unavailable, ignore */ }
+  }
+  function cacheLoad_(key){
+    try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }catch(e){ return null; }
+  }
+
+  /* ---------- STUDENT ---------- */
+  let STUDENTS = cacheLoad_('cache_students') || [];
+  function setStudentStatus(msg){ document.getElementById('studentStatus').textContent = msg; }
+
+  async function loadStudents(silent){
+    if(!isValidUrl_(STUDENT_API_URL)){
+      if(!silent){ showTableError_('studentRows', 10, 'Invalid URL'); }
+      setStudentStatus('');
+      return;
+    }
+    if(!silent && !STUDENTS.length){ setStudentStatus(''); showLoading_('studentRows', 10); }
+    let res;
+    try{
+      res = await fetch(STUDENT_API_URL + '?action=listStudents');
+      if(!res.ok) throw new Error('server');
+      const data = await res.json();
+      STUDENTS = data.students || [];
+      cacheSave_('cache_students', STUDENTS);
+      renderStudentRows(STUDENTS);
+      setStudentStatus(`${STUDENTS.length} students`);
+    }catch(err){
+      // silent (auto-poll) failures keep the last good table on screen —
+      // only a manual refresh with no cached data shows an error row.
+      if(!silent && !STUDENTS.length){ showTableError_('studentRows', 10, classifyError_(err, res)); }
+      setStudentStatus(silent ? 'Refresh failed' : '');
+    }
+  }
+
+  function renderStudentRows(list){
+    const body = document.getElementById('studentRows');
+    if(!list.length){ body.innerHTML = '<tr><td colspan="10" class="empty">No students yet.</td></tr>'; return; }
+    body.innerHTML = [...list].reverse().map(s => `
+      <tr>
+        <td>${s['Student ID']||''}</td>
+        <td>${fmtDate(s['Admission Date'])}</td>
+        <td>${s['Student Name']||''}</td>
+        <td>${s['Student Contact No']||''}</td>
+        <td>${s['Guardian Name']||''}</td>
+        <td><span class="pill">${s['Class']||''}</span></td>
+        <td>${s['Batch']||''}</td>
+        <td>${s['Board']||''}</td>
+        <td>${s['Subjects']||''}</td>
+        <td>${s['Monthly Fee']||''}</td>
+      </tr>`).join('');
+  }
+  function fmtDate(v){
+    if(!v) return '';
+    const d = new Date(v);
+    return isNaN(d) ? v : d.toISOString().slice(0,10);
+  }
+
+  /* ---------- TEACHER ---------- */
+  let TEACHERS = cacheLoad_('cache_teachers') || [];
+
+  function setTeacherStatus(msg){ document.getElementById('teacherStatus').textContent = msg; }
+
+  async function loadTeachers(silent){
+    if(!isValidUrl_(TEACHER_API_URL)){
+      if(!silent){ showTableError_('teacherRows', 8, 'Invalid URL'); }
+      setTeacherStatus('');
+      return;
+    }
+    if(!silent && !TEACHERS.length){ setTeacherStatus(''); showLoading_('teacherRows', 8); }
+    let res;
+    try{
+      res = await fetch(TEACHER_API_URL + '?action=listTeachers');
+      if(!res.ok) throw new Error('server');
+      const data = await res.json();
+      TEACHERS = data.teachers || [];
+      cacheSave_('cache_teachers', TEACHERS);
+      renderTeacherRows();
+      setTeacherStatus(`${TEACHERS.length} teachers`);
+    }catch(err){
+      if(!silent && !TEACHERS.length){ showTableError_('teacherRows', 8, classifyError_(err, res)); }
+      setTeacherStatus(silent ? 'Refresh failed' : '');
+    }
+  }
+
+  function renderTeacherRows(){
+    const body = document.getElementById('teacherRows');
+    if(!TEACHERS.length){ body.innerHTML = '<tr><td colspan="8" class="empty">No teachers yet.</td></tr>'; return; }
+    body.innerHTML = TEACHERS.map((t,i) => ({t,i})).reverse().map(({t,i}) => `
+      <tr data-idx="${i}">
+        <td>${t.Teacher_ID||''}</td>
+        <td data-field="Name" contenteditable="false">${t.Name||''}</td>
+        <td data-field="Email" contenteditable="false">${t.Email||''}</td>
+        <td data-field="Phone" contenteditable="false">${t.Phone||''}</td>
+        <td>
+          <select class="role" data-field="Role" disabled>
+            <option ${t.Role==='Teacher'?'selected':''}>Teacher</option>
+            <option ${t.Role==='Admin'?'selected':''}>Admin</option>
+          </select>
+        </td>
+        <td data-field="Subject1" contenteditable="false">${t.Subject1||''}</td>
+        <td style="text-align:center">
+          <input type="checkbox" class="status-tick" data-field="Status" disabled ${t.Status?'checked':''}>
+        </td>
+        <td class="actions-cell">
+          <button class="icon-btn edit-btn" title="Edit" onclick="toggleEditTeacherRow(${i})"><i class="fa-solid fa-pen"></i></button>
+          <button class="icon-btn delete-btn" title="Delete" onclick="deleteTeacherRow(${i})"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`).join('');
+  }
+
+  /* Flip a row between locked (display) and editable, or commit the edit. */
+  function toggleEditTeacherRow(i){
+    const tr = document.querySelector(`#teacherRows tr[data-idx="${i}"]`);
+    if(!tr || tr.classList.contains('row-loading')) return;
+    if(tr.classList.contains('editing')){
+      commitEditTeacherRow(i, tr);
+    } else {
+      enterEditMode_(tr);
+    }
+  }
+
+  function enterEditMode_(tr){
+    tr.classList.add('editing');
+    tr.querySelectorAll('[data-field]').forEach(el=>{
+      if(el.tagName==='SELECT' || el.tagName==='INPUT'){ el.disabled=false; }
+      else { el.contentEditable='true'; }
+    });
+    const btn = tr.querySelector('.edit-btn');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+    btn.title = 'Save';
+    tr.querySelector('[data-field=Name]').focus();
+  }
+
+  function exitEditMode_(tr){
+    tr.classList.remove('editing');
+    tr.querySelectorAll('[data-field]').forEach(el=>{
+      if(el.tagName==='SELECT' || el.tagName==='INPUT'){ el.disabled=true; }
+      else { el.contentEditable='false'; }
+    });
+    const btn = tr.querySelector('.edit-btn');
+    btn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+    btn.title = 'Edit';
+  }
+
+  /* Locks every field + hides the icons behind a fade loader while a
+     request for this row is in flight — re-editing/re-deleting mid-save
+     is blocked either way since the buttons are hidden. */
+  function setRowLoading_(tr, loading){
+    tr.classList.toggle('row-loading', loading);
+    tr.querySelectorAll('[data-field]').forEach(el=>{
+      if(el.tagName==='SELECT' || el.tagName==='INPUT'){ el.disabled = loading ? true : el.disabled; }
+      else if(loading){ el.contentEditable='false'; }
+    });
+    let loader = tr.querySelector('.row-loader');
+    if(loading && !loader){
+      loader = document.createElement('span');
+      loader.className = 'row-loader fade-loader';
+      loader.innerHTML = '<span></span><span></span><span></span>';
+      tr.querySelector('.actions-cell').appendChild(loader);
+    } else if(!loading && loader){
+      loader.remove();
+    }
+  }
+
+  async function commitEditTeacherRow(i, tr){
+    setRowLoading_(tr, true);
+    const ok = await saveTeacherRow(i, tr);
+    setRowLoading_(tr, false);
+    if(ok) exitEditMode_(tr);
+    else enterEditMode_(tr); // save failed — keep it open + editable for retry
+  }
+
+  async function saveTeacherRow(i, tr){
+    tr = tr || document.querySelector(`#teacherRows tr[data-idx="${i}"]`);
+    const t = TEACHERS[i];
+    const payload = {
+      action:'updateTeacher',
+      data:{
+        Teacher_ID: t.Teacher_ID,
+        Name: tr.querySelector('[data-field=Name]').innerText.trim(),
+        Email: tr.querySelector('[data-field=Email]').innerText.trim(),
+        Phone: tr.querySelector('[data-field=Phone]').innerText.trim(),
+        Role: tr.querySelector('[data-field=Role]').value,
+        Subject1: tr.querySelector('[data-field=Subject1]').innerText.trim(),
+        Status: tr.querySelector('[data-field=Status]').checked
+      }
+    };
+    setTeacherStatus('Saving…');
+    try{
+      await fetch(TEACHER_API_URL, {method:'POST', body: JSON.stringify(payload)});
+      TEACHERS[i] = { ...TEACHERS[i], ...payload.data };
+      cacheSave_('cache_teachers', TEACHERS);
+      setTeacherStatus('Saved ' + payload.data.Teacher_ID);
+      return true;
+    }catch(err){ setTeacherStatus('Save failed'); return false; }
+  }
+
+  async function deleteTeacherRow(i){
+    const t = TEACHERS[i];
+    if(!confirm(`Delete teacher ${t.Name||t.Teacher_ID}? This can't be undone.`)) return;
+    const tr = document.querySelector(`#teacherRows tr[data-idx="${i}"]`);
+    setRowLoading_(tr, true);
+    setTeacherStatus('Deleting…');
+    try{
+      await fetch(TEACHER_API_URL, {method:'POST', body: JSON.stringify({
+        action:'deleteTeacher', data:{ Teacher_ID: t.Teacher_ID }
+      })});
+      TEACHERS.splice(i, 1);
+      cacheSave_('cache_teachers', TEACHERS);
+      renderTeacherRows();
+      setTeacherStatus('Deleted ' + t.Teacher_ID);
+    }catch(err){
+      setRowLoading_(tr, false);
+      setTeacherStatus('Delete failed');
+    }
+  }
+
+  async function submitAddTeacher(){
+    if(!isValidUrl_(TEACHER_API_URL)){ alert('TEACHER_API_URL is not set correctly — edit it at the top of the script.'); return; }
+    const g = id => document.getElementById(id).value.trim();
+    if(!g('t-Name')){ alert('Name required.'); return; }
+    const payload = { action:'addTeacher', data:{
+      Name:g('t-Name'), Email:g('t-Email'), Phone:g('t-Phone'),
+      Role:g('t-Role'), Subject1:g('t-Subject1')
+    }};
+    setTeacherStatus('Saving…');
+    try{
+      await fetch(TEACHER_API_URL, {method:'POST', body: JSON.stringify(payload)});
+      document.getElementById('teacherModal').close();
+      ['t-Name','t-Email','t-Phone','t-Subject1'].forEach(id=>document.getElementById(id).value='');
+      setTeacherStatus('Teacher added — refreshing…');
+      await loadTeachers();               // real-time: refresh right away, no delay
+    }catch(err){ setTeacherStatus('Save failed'); }
+  }
+
+  /* ---------- boot ---------- */
+  if(STUDENTS.length) renderStudentRows(STUDENTS);   // instant paint from cache
+  if(TEACHERS.length) renderTeacherRows();            // instant paint from cache
+  if(isValidUrl_(STUDENT_API_URL)) loadStudents(!!STUDENTS.length);
+  if(isValidUrl_(TEACHER_API_URL)) loadTeachers(!!TEACHERS.length);
+
+  setInterval(()=>{
+    if(isValidUrl_(STUDENT_API_URL)) loadStudents(true);
+    if(isValidUrl_(TEACHER_API_URL)) loadTeachers(true);
+  }, 5000);
+</script>
+</body>
+</html>
