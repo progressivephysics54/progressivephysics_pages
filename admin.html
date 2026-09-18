@@ -42,6 +42,8 @@
     border:1px solid var(--rule);padding:8px 12px}
   .url-box label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#6b6350;white-space:nowrap}
   .url-box input{flex:1;border:none;background:transparent;outline:none;color:var(--ink)}
+  .search-box{flex:0 0 auto;min-width:220px}
+  .search-box select{border:none;background:transparent;color:var(--ink);outline:none}
   .btn{background:var(--accent);color:#fdf6e8;border:none;padding:10px 20px;cursor:pointer;
     font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;
     box-shadow:3px 3px 0 var(--ink);transition:transform .12s}
@@ -143,6 +145,14 @@
   <section class="section active" id="section-student">
     <div class="bar">
       <button class="btn ghost" onclick="loadStudents()">Refresh</button>
+      <div class="url-box search-box">
+        <select id="studentSearchField">
+          <option value="Student Name">Name</option>
+          <option value="Student ID">ID</option>
+          <option value="Student Contact No">Phone</option>
+        </select>
+        <input id="studentSearchInput" placeholder="Search…" oninput="filterStudents()">
+      </div>
       <span class="status" id="studentStatus"></span>
     </div>
 
@@ -150,9 +160,9 @@
     <table>
       <thead><tr>
         <th>ID</th><th>Admission</th><th>Name</th><th>Phone</th><th>Guardian</th>
-        <th>Class</th><th>Batch</th><th>Board</th><th>Subjects</th><th>Fee</th>
+        <th>Class</th><th>Batch</th><th>Board</th><th>Subjects</th><th>Fee</th><th></th>
       </tr></thead>
-      <tbody id="studentRows"><tr><td colspan="10" class="empty">Enter your Student Web App URL above and hit Refresh.</td></tr></tbody>
+      <tbody id="studentRows"><tr><td colspan="11" class="empty">Enter your Student Web App URL above and hit Refresh.</td></tr></tbody>
     </table>
     </div>
   </section>
@@ -161,6 +171,14 @@
   <section class="section" id="section-teacher">
     <div class="bar">
       <button class="btn ghost" onclick="loadTeachers()">Refresh</button>
+      <div class="url-box search-box">
+        <select id="teacherSearchField">
+          <option value="Name">Name</option>
+          <option value="Teacher_ID">ID</option>
+          <option value="Phone">Phone</option>
+        </select>
+        <input id="teacherSearchInput" placeholder="Search…" oninput="filterTeachers()">
+      </div>
       <span class="status" id="teacherStatus"></span>
     </div>
 
@@ -258,17 +276,31 @@
     try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }catch(e){ return null; }
   }
 
+  /* Keeps a loader running until a write shows up when re-read from the sheet
+     (not just applied optimistically in memory). Polls the list endpoint,
+     calling checkFn(list) each time, until it returns truthy or tries run out. */
+  async function waitUntilSynced_(fetchListFn, checkFn, {tries=12, delay=700}={}){
+    for(let i=0;i<tries;i++){
+      try{
+        const list = await fetchListFn();
+        if(checkFn(list)) return {ok:true, list};
+      }catch(e){ /* keep polling */ }
+      await new Promise(r=>setTimeout(r, delay));
+    }
+    return {ok:false, list:null};
+  }
+
   /* ---------- STUDENT ---------- */
   let STUDENTS = cacheLoad_('cache_students') || [];
   function setStudentStatus(msg){ document.getElementById('studentStatus').textContent = msg; }
 
   async function loadStudents(silent){
     if(!isValidUrl_(STUDENT_API_URL)){
-      if(!silent){ showTableError_('studentRows', 10, 'Invalid URL'); }
+      if(!silent){ showTableError_('studentRows', 11, 'Invalid URL'); }
       setStudentStatus('');
       return;
     }
-    if(!silent && !STUDENTS.length){ setStudentStatus(''); showLoading_('studentRows', 10); }
+    if(!silent && !STUDENTS.length){ setStudentStatus(''); showLoading_('studentRows', 11); }
     let res;
     try{
       res = await fetch(STUDENT_API_URL + '?action=listStudents');
@@ -276,37 +308,124 @@
       const data = await res.json();
       STUDENTS = data.students || [];
       cacheSave_('cache_students', STUDENTS);
-      renderStudentRows(STUDENTS);
+      filterStudents(); // re-renders, respecting an active search
       setStudentStatus(`${STUDENTS.length} students`);
     }catch(err){
       // silent (auto-poll) failures keep the last good table on screen —
       // only a manual refresh with no cached data shows an error row.
-      if(!silent && !STUDENTS.length){ showTableError_('studentRows', 10, classifyError_(err, res)); }
+      if(!silent && !STUDENTS.length){ showTableError_('studentRows', 11, classifyError_(err, res)); }
       setStudentStatus(silent ? 'Refresh failed' : '');
     }
   }
 
   function renderStudentRows(list){
+    list = list || STUDENTS;
     const body = document.getElementById('studentRows');
-    if(!list.length){ body.innerHTML = '<tr><td colspan="10" class="empty">No students yet.</td></tr>'; return; }
-    body.innerHTML = [...list].reverse().map(s => `
-      <tr>
+    if(!list.length){ body.innerHTML = '<tr><td colspan="11" class="empty">No students yet.</td></tr>'; return; }
+    const idxOf = s => STUDENTS.indexOf(s);
+    body.innerHTML = [...list].reverse().map(s => { const i = idxOf(s); return `
+      <tr data-idx="${i}">
         <td>${s['Student ID']||''}</td>
-        <td>${fmtDate(s['Admission Date'])}</td>
-        <td>${s['Student Name']||''}</td>
-        <td>${s['Student Contact No']||''}</td>
-        <td>${s['Guardian Name']||''}</td>
-        <td><span class="pill">${s['Class']||''}</span></td>
-        <td>${s['Batch']||''}</td>
-        <td>${s['Board']||''}</td>
-        <td>${s['Subjects']||''}</td>
-        <td>${s['Monthly Fee']||''}</td>
-      </tr>`).join('');
+        <td data-field="Admission Date" contenteditable="false">${fmtDate(s['Admission Date'])}</td>
+        <td data-field="Student Name" contenteditable="false">${s['Student Name']||''}</td>
+        <td data-field="Student Contact No" contenteditable="false">${s['Student Contact No']||''}</td>
+        <td data-field="Guardian Name" contenteditable="false">${s['Guardian Name']||''}</td>
+        <td data-field="Class" contenteditable="false">${s['Class']||''}</td>
+        <td data-field="Batch" contenteditable="false">${s['Batch']||''}</td>
+        <td data-field="Board" contenteditable="false">${s['Board']||''}</td>
+        <td data-field="Subjects" contenteditable="false">${s['Subjects']||''}</td>
+        <td data-field="Monthly Fee" contenteditable="false">${s['Monthly Fee']||''}</td>
+        <td class="actions-cell">
+          <button class="icon-btn edit-btn" title="Edit" onclick="toggleEditStudentRow(${i})"><i class="fa-solid fa-pen"></i></button>
+          <button class="icon-btn delete-btn" title="Delete" onclick="deleteStudentRow(${i})"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`; }).join('');
+  }
+
+  function filterStudents(){
+    const field = document.getElementById('studentSearchField').value;
+    const q = document.getElementById('studentSearchInput').value.trim().toLowerCase();
+    if(!q){ renderStudentRows(STUDENTS); return; }
+    renderStudentRows(STUDENTS.filter(s => String(s[field]||'').toLowerCase().includes(q)));
   }
   function fmtDate(v){
     if(!v) return '';
     const d = new Date(v);
     return isNaN(d) ? v : d.toISOString().slice(0,10);
+  }
+
+  async function fetchStudentList_(){
+    const res = await fetch(STUDENT_API_URL + '?action=listStudents');
+    if(!res.ok) throw new Error('server');
+    const data = await res.json();
+    return data.students || [];
+  }
+
+  function toggleEditStudentRow(i){
+    const tr = document.querySelector(`#studentRows tr[data-idx="${i}"]`);
+    if(!tr || tr.classList.contains('row-loading')) return;
+    if(tr.classList.contains('editing')) commitEditStudentRow(i, tr);
+    else enterEditMode_(tr);
+  }
+
+  async function commitEditStudentRow(i, tr){
+    setRowLoading_(tr, true);
+    const ok = await saveStudentRow(i, tr);
+    setRowLoading_(tr, false);
+    if(ok) exitEditMode_(tr);
+    else enterEditMode_(tr);
+  }
+
+  async function saveStudentRow(i, tr){
+    tr = tr || document.querySelector(`#studentRows tr[data-idx="${i}"]`);
+    const s = STUDENTS[i];
+    const g = f => tr.querySelector(`[data-field="${f}"]`).innerText.trim();
+    const data = {
+      'Student ID': s['Student ID'],
+      'Admission Date': g('Admission Date'),
+      'Student Name': g('Student Name'),
+      'Student Contact No': g('Student Contact No'),
+      'Guardian Name': g('Guardian Name'),
+      'Class': g('Class'),
+      'Batch': g('Batch'),
+      'Board': g('Board'),
+      'Subjects': g('Subjects'),
+      'Monthly Fee': g('Monthly Fee')
+    };
+    setStudentStatus('Saving…');
+    try{
+      await fetch(STUDENT_API_URL, {method:'POST', body: JSON.stringify({action:'updateStudent', data})});
+      const {ok, list} = await waitUntilSynced_(fetchStudentList_, list =>
+        list.some(x => x['Student ID']===s['Student ID'] && String(x['Student Name']||'')===data['Student Name'] && String(x['Student Contact No']||'')===data['Student Contact No'])
+      );
+      STUDENTS = ok ? list : STUDENTS.map((x,idx)=> idx===i ? {...x, ...data} : x);
+      cacheSave_('cache_students', STUDENTS);
+      // No full re-render here: the edited row is still open in the DOM and
+      // already shows the typed values; a re-render would detach it mid-edit.
+      setStudentStatus(ok ? 'Saved ' + data['Student ID'] : 'Saved (sync unconfirmed)');
+      return true;
+    }catch(err){ setStudentStatus('Save failed'); return false; }
+  }
+
+  async function deleteStudentRow(i){
+    const s = STUDENTS[i];
+    if(!confirm(`Delete student ${s['Student Name']||s['Student ID']}? This can't be undone.`)) return;
+    const tr = document.querySelector(`#studentRows tr[data-idx="${i}"]`);
+    setRowLoading_(tr, true);
+    setStudentStatus('Deleting…');
+    try{
+      await fetch(STUDENT_API_URL, {method:'POST', body: JSON.stringify({action:'deleteStudent', data:{'Student ID': s['Student ID']}})});
+      const {ok, list} = await waitUntilSynced_(fetchStudentList_, list =>
+        !list.some(x => x['Student ID']===s['Student ID'])
+      );
+      STUDENTS = ok ? list : STUDENTS.filter((_,idx)=>idx!==i);
+      cacheSave_('cache_students', STUDENTS);
+      renderStudentRows(STUDENTS);
+      setStudentStatus((ok?'Deleted ':'Deleted (sync unconfirmed) ') + s['Student ID']);
+    }catch(err){
+      setRowLoading_(tr, false);
+      setStudentStatus('Delete failed');
+    }
   }
 
   /* ---------- TEACHER ---------- */
@@ -328,7 +447,7 @@
       const data = await res.json();
       TEACHERS = data.teachers || [];
       cacheSave_('cache_teachers', TEACHERS);
-      renderTeacherRows();
+      filterTeachers(); // re-renders, respecting an active search
       setTeacherStatus(`${TEACHERS.length} teachers`);
     }catch(err){
       if(!silent && !TEACHERS.length){ showTableError_('teacherRows', 8, classifyError_(err, res)); }
@@ -336,10 +455,12 @@
     }
   }
 
-  function renderTeacherRows(){
+  function renderTeacherRows(list){
+    list = list || TEACHERS;
     const body = document.getElementById('teacherRows');
-    if(!TEACHERS.length){ body.innerHTML = '<tr><td colspan="8" class="empty">No teachers yet.</td></tr>'; return; }
-    body.innerHTML = TEACHERS.map((t,i) => ({t,i})).reverse().map(({t,i}) => `
+    if(!list.length){ body.innerHTML = '<tr><td colspan="8" class="empty">No teachers yet.</td></tr>'; return; }
+    const idxOf = t => TEACHERS.indexOf(t);
+    body.innerHTML = list.map(t => ({t,i:idxOf(t)})).reverse().map(({t,i}) => `
       <tr data-idx="${i}">
         <td>${t.Teacher_ID||''}</td>
         <td data-field="Name" contenteditable="false">${t.Name||''}</td>
@@ -360,6 +481,13 @@
           <button class="icon-btn delete-btn" title="Delete" onclick="deleteTeacherRow(${i})"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>`).join('');
+  }
+
+  function filterTeachers(){
+    const field = document.getElementById('teacherSearchField').value;
+    const q = document.getElementById('teacherSearchInput').value.trim().toLowerCase();
+    if(!q){ renderTeacherRows(TEACHERS); return; }
+    renderTeacherRows(TEACHERS.filter(t => String(t[field]||'').toLowerCase().includes(q)));
   }
 
   /* Flip a row between locked (display) and editable, or commit the edit. */
@@ -442,11 +570,23 @@
     setTeacherStatus('Saving…');
     try{
       await fetch(TEACHER_API_URL, {method:'POST', body: JSON.stringify(payload)});
-      TEACHERS[i] = { ...TEACHERS[i], ...payload.data };
+      const {ok, list} = await waitUntilSynced_(fetchTeacherList_, list =>
+        list.some(x => x.Teacher_ID===t.Teacher_ID && String(x.Name||'')===payload.data.Name && String(x.Phone||'')===payload.data.Phone)
+      );
+      TEACHERS = ok ? list : TEACHERS.map((x,idx)=> idx===i ? {...x, ...payload.data} : x);
       cacheSave_('cache_teachers', TEACHERS);
-      setTeacherStatus('Saved ' + payload.data.Teacher_ID);
+      // No full re-render here: the edited row is still open in the DOM and
+      // already shows the typed values; a re-render would detach it mid-edit.
+      setTeacherStatus(ok ? 'Saved ' + payload.data.Teacher_ID : 'Saved (sync unconfirmed)');
       return true;
     }catch(err){ setTeacherStatus('Save failed'); return false; }
+  }
+
+  async function fetchTeacherList_(){
+    const res = await fetch(TEACHER_API_URL + '?action=listTeachers');
+    if(!res.ok) throw new Error('server');
+    const data = await res.json();
+    return data.teachers || [];
   }
 
   async function deleteTeacherRow(i){
@@ -459,10 +599,13 @@
       await fetch(TEACHER_API_URL, {method:'POST', body: JSON.stringify({
         action:'deleteTeacher', data:{ Teacher_ID: t.Teacher_ID }
       })});
-      TEACHERS.splice(i, 1);
+      const {ok, list} = await waitUntilSynced_(fetchTeacherList_, list =>
+        !list.some(x => x.Teacher_ID===t.Teacher_ID)
+      );
+      TEACHERS = ok ? list : TEACHERS.filter((_,idx)=>idx!==i);
       cacheSave_('cache_teachers', TEACHERS);
-      renderTeacherRows();
-      setTeacherStatus('Deleted ' + t.Teacher_ID);
+      renderTeacherRows(TEACHERS);
+      setTeacherStatus((ok?'Deleted ':'Deleted (sync unconfirmed) ') + t.Teacher_ID);
     }catch(err){
       setRowLoading_(tr, false);
       setTeacherStatus('Delete failed');
@@ -477,14 +620,25 @@
       Name:g('t-Name'), Email:g('t-Email'), Phone:g('t-Phone'),
       Role:g('t-Role'), Subject1:g('t-Subject1')
     }};
+    const saveBtn = document.querySelector('#teacherModal .modal-actions .btn:not(.ghost)');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="fade-loader"><span></span><span></span><span></span></span> Saving…';
     setTeacherStatus('Saving…');
     try{
       await fetch(TEACHER_API_URL, {method:'POST', body: JSON.stringify(payload)});
+      // Loader stays up until the new teacher actually shows up in a fresh
+      // read of the sheet, not just after the write request returns.
+      const {ok, list} = await waitUntilSynced_(fetchTeacherList_, list =>
+        list.some(x => String(x.Name||'')===payload.data.Name && String(x.Phone||'')===payload.data.Phone)
+      );
+      TEACHERS = ok ? list : TEACHERS;
+      cacheSave_('cache_teachers', TEACHERS);
+      renderTeacherRows(TEACHERS);
       document.getElementById('teacherModal').close();
       ['t-Name','t-Email','t-Phone','t-Subject1'].forEach(id=>document.getElementById(id).value='');
-      setTeacherStatus('Teacher added — refreshing…');
-      await loadTeachers();               // real-time: refresh right away, no delay
+      setTeacherStatus(ok ? 'Teacher added' : 'Added (sync unconfirmed)');
     }catch(err){ setTeacherStatus('Save failed'); }
+    finally{ saveBtn.disabled = false; saveBtn.innerHTML = 'Save Teacher'; }
   }
 
   /* ---------- boot ---------- */
