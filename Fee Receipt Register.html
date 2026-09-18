@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fee Receipt Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#132521;
+    --paper:#f4efe4;
+    --paper-2:#ece4d2;
+    --teal:#0f766e;
+    --teal-deep:#0a4d47;
+    --teal-pale:#d7ece9;
+    --rule:#c9bfa5;
+    --stamp:#b3402f;
+    --ok:#1f7a4d;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #fffef9 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(19,37,33,0.035) 28px),
+      var(--paper);
+    font-family:'Space Mono', monospace;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:48px 20px 80px;
+  }
+  .sheet{
+    width:100%;
+    max-width:760px;
+    background:var(--paper);
+    border:1.5px solid var(--ink);
+    position:relative;
+    box-shadow:8px 8px 0 rgba(19,37,33,0.12), 0 40px 80px -40px rgba(0,0,0,0.35);
+  }
+  .sheet::before{
+    content:"";
+    position:absolute; inset:10px;
+    border:1px dashed var(--rule);
+    pointer-events:none;
+  }
+  header{
+    padding:34px 40px 22px;
+    border-bottom:2px solid var(--ink);
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:20px;
+    background:linear-gradient(180deg, var(--teal-pale), transparent 90%);
+  }
+  .brand-mark{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:28px;
+    letter-spacing:0.5px;
+    color:var(--teal-deep);
+    line-height:1;
+  }
+  .brand-sub{
+    font-size:11px;
+    letter-spacing:2.5px;
+    text-transform:uppercase;
+    color:var(--ink);
+    opacity:0.6;
+    margin-top:6px;
+  }
+  .serial{
+    text-align:right;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    opacity:0.7;
+  }
+  .serial strong{
+    display:block;
+    font-size:20px;
+    letter-spacing:1px;
+    color:var(--stamp);
+    font-family:'Fraunces', serif;
+    opacity:1;
+  }
+  form{padding:30px 40px 10px;}
+  .row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:22px 24px;
+    margin-bottom:22px;
+  }
+  .field{position:relative;}
+  .field.full{grid-column:1 / -1;}
+  label{
+    display:block;
+    font-size:10.5px;
+    letter-spacing:1.8px;
+    text-transform:uppercase;
+    color:var(--teal-deep);
+    margin-bottom:7px;
+    font-weight:700;
+  }
+  input, select{
+    width:100%;
+    border:none;
+    border-bottom:1.5px solid var(--ink);
+    background:transparent;
+    font-family:'Space Mono', monospace;
+    font-size:16px;
+    padding:6px 2px 8px;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .2s, background .2s;
+  }
+  input:focus, select:focus{
+    border-color:var(--teal);
+    background:rgba(15,118,110,0.06);
+  }
+  input::placeholder{color:#8a8270;}
+  input[readonly]{
+    color:#5a5546;
+    border-bottom-style:dotted;
+  }
+  .hint{
+    font-size:10px;
+    color:#8a8270;
+    margin-top:4px;
+    letter-spacing:0.3px;
+  }
+  .amount-wrap{display:flex; align-items:baseline; gap:6px;}
+  .amount-wrap span{font-size:16px; color:var(--teal-deep); font-weight:700;}
+  .divider{
+    border:none;
+    border-top:1px dashed var(--rule);
+    margin:8px 0 26px;
+  }
+  .actions{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:22px 40px 34px;
+  }
+  button{
+    appearance:none;
+    border:1.5px solid var(--ink);
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:0.5px;
+    padding:14px 26px;
+    cursor:pointer;
+    position:relative;
+    transition:transform .12s ease, box-shadow .12s ease;
+    box-shadow:4px 4px 0 var(--teal);
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+  }
+  .spinner{
+    width:18px; height:18px;
+    border:2px solid transparent;
+    border-top-color:var(--paper);
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    display:none;
+  }
+  .spinner.show{display:block;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .mini-spinner{
+    display:none;
+    width:9px; height:9px;
+    border:1.5px solid var(--rule);
+    border-top-color:var(--teal);
+    border-radius:50%;
+    vertical-align:middle;
+    margin-right:2px;
+    animation:spin .6s linear infinite;
+  }
+  .mini-spinner.show{display:inline-block;}
+  button:hover{transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--teal);}
+  button:active{transform:translate(0,0); box-shadow:2px 2px 0 var(--teal);}
+  button:disabled{opacity:0.55; cursor:wait; transform:none;}
+  .status{
+    font-size:11.5px;
+    letter-spacing:0.5px;
+    min-height:16px;
+  }
+  .status.ok{color:var(--ok); font-weight:700;}
+  .status.err{color:var(--stamp); font-weight:700;}
+  .stamp{
+    position:absolute;
+    top:38px; right:38px;
+    width:104px; height:104px;
+    border:3px solid var(--stamp);
+    border-radius:50%;
+    color:var(--stamp);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:13px;
+    line-height:1.2;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    transform:rotate(-14deg);
+    opacity:0;
+  }
+  .stamp.show{
+    display:flex;
+    animation:stampIn .4s cubic-bezier(.2,1.4,.4,1) forwards;
+  }
+  @keyframes stampIn{
+    0%{opacity:0; transform:rotate(-14deg) scale(1.8);}
+    60%{opacity:1;}
+    100%{opacity:0.85; transform:rotate(-14deg) scale(1);}
+  }
+  footer{
+    text-align:center;
+    font-size:10px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:#8a8270;
+    padding:0 40px 26px;
+  }
+  .stu-info{
+    display:none;
+  }
+  .stu-info.show{display:grid;}
+  .stu-status{
+    font-size:10px;
+    color:#8a8270;
+    margin-top:4px;
+    letter-spacing:0.3px;
+  }
+  .stu-status.ok{color:var(--ok);}
+  .stu-status.err{color:var(--stamp);}
+  .subjects-box{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 18px;
+    padding:8px 2px 4px;
+    border-bottom:1.5px solid var(--ink);
+    min-height:40px;
+  }
+  .subjects-box.empty::after{
+    content:"No student loaded yet — enter Student ID above";
+    font-size:11px;
+    color:#8a8270;
+    padding:6px 0;
+  }
+  .subj-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:13px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .subj-chip input{width:auto; accent-color:var(--teal); cursor:pointer;}
+  .name-search{position:relative;}
+  .suggest-box{
+    display:none;
+    position:absolute;
+    top:calc(100% + 4px);
+    left:0; right:0;
+    z-index:20;
+    background:var(--paper);
+    border:1.5px solid var(--ink);
+    box-shadow:5px 5px 0 rgba(19,37,33,0.15);
+    max-height:220px;
+    overflow-y:auto;
+  }
+  .suggest-box.show{display:block;}
+  .suggest-item{
+    padding:9px 12px;
+    border-bottom:1px dashed var(--rule);
+    cursor:pointer;
+  }
+  .suggest-item:last-child{border-bottom:none;}
+  .suggest-item:hover, .suggest-item.active{background:var(--teal-pale);}
+  .suggest-name{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:14px;
+    color:var(--teal-deep);
+    white-space:nowrap;
+  }
+  .suggest-details{
+    display:flex;
+    gap:14px;
+    margin-top:3px;
+    overflow-x:auto;
+    white-space:nowrap;
+    font-size:10.5px;
+    color:#6f6a58;
+    letter-spacing:0.3px;
+    padding-bottom:2px;
+  }
+  .suggest-details span{flex:0 0 auto;}
+  .suggest-empty{padding:10px 12px; font-size:11px; color:#8a8270;}
+  input[readonly]#receiptCount{color:var(--teal-deep); font-weight:700;}
+  @media (max-width:560px){
+    .row{grid-template-columns:1fr;}
+    header{flex-direction:column; align-items:flex-start;}
+    .serial{text-align:left;}
+    .stamp{top:auto; bottom:120px; right:24px; width:86px; height:86px; font-size:11px;}
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="stamp" id="stamp">Logged<br>✓</div>
+    <header>
+      <div>
+        <div class="brand-mark">Fee Receipt Register</div>
+        <div class="brand-sub">Progressive Physics · Ledger Entry</div>
+      </div>
+      <div class="serial">
+        Entry no.
+        <strong id="entryPreview">—</strong>
+      </div>
+    </header>
+
+    <form id="feeForm" autocomplete="off">
+      <div class="row">
+        <div class="field">
+          <label for="teacherId">Teacher ID</label>
+          <input type="text" id="teacherId" placeholder="e.g. T-104" required>
+        </div>
+        <div class="field">
+          <label for="date">Date</label>
+          <input type="date" id="date" required>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field name-search">
+          <label for="stuId">Student ID <span id="stuIdSpinner" class="mini-spinner"></span></label>
+          <input type="text" id="stuId" placeholder="e.g. PP 26 0001" required autocomplete="off">
+          <div class="suggest-box" id="suggestBoxId"></div>
+        </div>
+        <div class="field name-search">
+          <label for="stuName">Student Name <span id="stuNameSpinner" class="mini-spinner"></span></label>
+          <input type="text" id="stuName" placeholder="start typing name…" required autocomplete="off">
+          <div class="suggest-box" id="suggestBoxName"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="amount">Amount</label>
+          <div class="amount-wrap">
+            <span>₹</span>
+            <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="stuPhone">Student Phone</label>
+          <input type="text" id="stuPhone" readonly placeholder="—">
+          <div class="stu-status" id="stuStatus"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="receiptId">Receipt ID <span id="receiptSpinner" class="mini-spinner"></span><span id="receiptStatus" style="opacity:.5;font-weight:400;">· syncing…</span></label>
+          <input type="text" id="receiptId" placeholder="e.g. RC-0231" required>
+          <div class="hint">Auto-suggested from last saved receipt · refreshes every 10s · edit anytime</div>
+        </div>
+        <div class="field">
+          <label for="receiptCount">Receipt Count</label>
+          <input type="number" id="receiptCount" placeholder="0" min="0" step="1" readonly required>
+          <div class="hint">Auto = number of subjects checked below</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field full">
+          <label>Fees for Subjects</label>
+          <div class="subjects-box empty" id="subjectsBox"></div>
+          <input type="hidden" id="feesSubjects">
+          <div class="hint">Checked subjects saved for this entry · list loads from Student ID</div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="actions">
+        <button type="submit" id="submitBtn">
+          <span class="btn-text">Record Entry</span>
+          <span class="spinner" id="spinner"></span>
+        </button>
+        <div class="status" id="status"></div>
+      </div>
+    </form>
+    <footer>Writes to sheet named after Teacher ID · one tab per teacher</footer>
+  </div>
+
+<script>
+  // Collector Web App URL — saves fee entries, tracks last Receipt ID
+  const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbzNwbWsa3dix5brNfSMd_GqBHegwVAas1VQw7LUTy1QT5-kg6aEzWRf0JRhmFhyMMEpqA/exec";
+
+  // Student Details Web App URL — looks up name/phone/subjects from student_details sheet
+  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwg8hiahikFMpHHS1BPwOl6sgmEAsmeMhatJXdAnWDonYW7-yzQDMw5J0Zq4vzAAbZK/exec";
+
+  const form = document.getElementById('feeForm');
+  const statusEl = document.getElementById('status');
+  const btn = document.getElementById('submitBtn');
+  const btnText = document.querySelector('.btn-text');
+  const spinner = document.getElementById('spinner');
+  const stamp = document.getElementById('stamp');
+  const entryPreview = document.getElementById('entryPreview');
+
+  const dateInput = document.getElementById('date');
+  dateInput.value = new Date().toISOString().slice(0,10);
+
+  const receiptIdInput = document.getElementById('receiptId');
+  const receiptStatus = document.getElementById('receiptStatus');
+  const receiptSpinner = document.getElementById('receiptSpinner');
+  let lastKnownReceiptId = '';
+
+  function nextReceiptId(last) {
+    const m = String(last || '').match(/^(.*?)(\d+)$/);
+    if (!m) return 'RC-0001';
+    const prefix = m[1];
+    const numStr = m[2];
+    const nextNum = (parseInt(numStr, 10) + 1).toString().padStart(numStr.length, '0');
+    return prefix + nextNum;
+  }
+
+  async function refreshReceiptId() {
+    receiptSpinner.classList.add('show');
+    receiptStatus.textContent = '· syncing…';
+    try {
+      const res = await fetch(COLLECTOR_URL + '?action=lastReceipt');
+      const result = await res.json();
+      if (result.status === 'ok') {
+        lastKnownReceiptId = result.lastReceiptId || '';
+        const next = lastKnownReceiptId ? nextReceiptId(lastKnownReceiptId) : 'RC-0001';
+        if (document.activeElement !== receiptIdInput) {
+          receiptIdInput.value = next;
+          entryPreview.textContent = next;
+        }
+        receiptStatus.textContent = '· synced';
+      } else {
+        throw new Error(result.message || 'sync failed');
+      }
+    } catch (err) {
+      receiptStatus.textContent = '· sync failed';
+    } finally {
+      receiptSpinner.classList.remove('show');
+    }
+  }
+
+  refreshReceiptId();
+  setInterval(refreshReceiptId, 10000);
+
+  receiptIdInput.addEventListener('input', () => {
+    entryPreview.textContent = receiptIdInput.value || '—';
+  });
+
+  // ---- Student ID / Name search (both fields searchable) + subject checkboxes ----
+  const stuIdInput = document.getElementById('stuId');
+  const stuNameInput = document.getElementById('stuName');
+  const stuIdSpinner = document.getElementById('stuIdSpinner');
+  const stuNameSpinner = document.getElementById('stuNameSpinner');
+  const stuStatus = document.getElementById('stuStatus');
+  const stuPhoneInput = document.getElementById('stuPhone');
+  const subjectsBox = document.getElementById('subjectsBox');
+  const feesSubjectsHidden = document.getElementById('feesSubjects');
+  const suggestBoxId = document.getElementById('suggestBoxId');
+  const suggestBoxName = document.getElementById('suggestBoxName');
+  const receiptCountInput = document.getElementById('receiptCount');
+
+  function clearStudentInfo(msg) {
+    stuPhoneInput.value = '';
+    subjectsBox.innerHTML = '';
+    subjectsBox.classList.add('empty');
+    feesSubjectsHidden.value = '';
+    receiptCountInput.value = '';
+    stuStatus.textContent = msg || '';
+    stuStatus.className = 'stu-status';
+  }
+
+  function renderSubjects(subjects) {
+    subjectsBox.innerHTML = '';
+    if (!subjects || !subjects.length) {
+      subjectsBox.classList.add('empty');
+      feesSubjectsHidden.value = '';
+      receiptCountInput.value = '';
+      return;
+    }
+    subjectsBox.classList.remove('empty');
+    subjects.forEach((subj, i) => {
+      const id = 'subj_' + i;
+      const label = document.createElement('label');
+      label.className = 'subj-chip';
+      label.innerHTML = `<input type="checkbox" id="${id}" value="${subj}"> ${subj}`;
+      subjectsBox.appendChild(label);
+    });
+    subjectsBox.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      cb.addEventListener('change', updateFeesSubjects);
+    });
+    updateFeesSubjects();
+  }
+
+  function updateFeesSubjects() {
+    const checked = Array.from(subjectsBox.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+    feesSubjectsHidden.value = checked.join(', ');
+    receiptCountInput.value = checked.length;
+  }
+
+  function selectStudent(s) {
+    stuIdInput.value = s.id || '';
+    stuNameInput.value = s.name || '';
+    stuPhoneInput.value = s.phone || '';
+    stuStatus.textContent = '· selected';
+    stuStatus.className = 'stu-status ok';
+    renderSubjects(s.subjects || []);
+    hideSuggest(suggestBoxId);
+    hideSuggest(suggestBoxName);
+  }
+
+  function hideSuggest(box) {
+    box.classList.remove('show');
+    box.innerHTML = '';
+  }
+
+  function renderSuggestions(box, students) {
+    box.innerHTML = '';
+    if (!students || !students.length) {
+      box.innerHTML = '<div class="suggest-empty">No matching students</div>';
+      box.classList.add('show');
+      return;
+    }
+    students.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'suggest-item';
+      const details = [
+        s.phone ? `Ph: ${s.phone}` : '',
+        s.class ? `Class: ${s.class}` : '',
+        (s.subjects && s.subjects.length) ? `Subjects: ${s.subjects.join(', ')}` : ''
+      ].filter(Boolean).map(d => `<span>${d}</span>`).join('');
+      row.innerHTML = `<div class="suggest-name">${s.id || ''} — ${s.name || ''}</div><div class="suggest-details">${details}</div>`;
+      row.addEventListener('click', () => selectStudent(s));
+      box.appendChild(row);
+    });
+    box.classList.add('show');
+  }
+
+  async function searchStudents(query, box, spinner) {
+    if (!STUDENT_URL || STUDENT_URL.startsWith('PASTE_')) {
+      stuStatus.textContent = '· Set STUDENT_URL first';
+      stuStatus.className = 'stu-status err';
+      return;
+    }
+    spinner.classList.add('show');
+    stuStatus.textContent = '· searching…';
+    stuStatus.className = 'stu-status';
+    try {
+      // backend should match q against BOTH student id and name
+      const res = await fetch(STUDENT_URL + '?action=searchStudents&q=' + encodeURIComponent(query));
+      const result = await res.json();
+      if (result.status === 'ok') {
+        renderSuggestions(box, result.students || []);
+        stuStatus.textContent = '· ' + (result.students || []).length + ' match(es)';
+        stuStatus.className = 'stu-status';
+      } else {
+        hideSuggest(box);
+        stuStatus.textContent = '· ' + (result.message || 'no matches');
+        stuStatus.className = 'stu-status err';
+      }
+    } catch (err) {
+      hideSuggest(box);
+      stuStatus.textContent = '· search failed';
+      stuStatus.className = 'stu-status err';
+    } finally {
+      spinner.classList.remove('show');
+    }
+  }
+
+  // wire up both fields identically: typing in either searches, suggestion click fills both
+  [
+    { input: stuIdInput, box: suggestBoxId, spinner: stuIdSpinner },
+    { input: stuNameInput, box: suggestBoxName, spinner: stuNameSpinner }
+  ].forEach(({ input, box, spinner }) => {
+    let timer = null;
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      clearStudentInfo('');
+      const q = input.value.trim();
+      if (!q) { hideSuggest(box); return; }
+      timer = setTimeout(() => searchStudents(q, box, spinner), 350);
+    });
+    input.addEventListener('keydown', (e) => {
+      if (!box.classList.contains('show')) return;
+      const rows = box.querySelectorAll('.suggest-item');
+      let active = box.querySelector('.suggest-item.active');
+      let idx = active ? Array.from(rows).indexOf(active) : -1;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        idx = Math.min(idx + 1, rows.length - 1);
+        rows.forEach((r, i) => r.classList.toggle('active', i === idx));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        idx = Math.max(idx - 1, 0);
+        rows.forEach((r, i) => r.classList.toggle('active', i === idx));
+      } else if (e.key === 'Enter') {
+        if (idx >= 0 && rows[idx]) { e.preventDefault(); rows[idx].click(); }
+      } else if (e.key === 'Escape') {
+        hideSuggest(box);
+      }
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.name-search')) {
+      hideSuggest(suggestBoxId);
+      hideSuggest(suggestBoxName);
+    }
+  });
+
+  // ---- Submit ----
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    stamp.classList.remove('show');
+    statusEl.textContent = '';
+    statusEl.className = 'status';
+
+    const payload = {
+      teacherId: document.getElementById('teacherId').value.trim(),
+      date: dateInput.value,
+      stuId: stuIdInput.value.trim(),
+      amount: document.getElementById('amount').value,
+      receiptId: receiptIdInput.value.trim(),
+      feesSubjects: feesSubjectsHidden.value,
+      receiptCount: document.getElementById('receiptCount').value
+    };
+
+    if (!COLLECTOR_URL || COLLECTOR_URL.startsWith('PASTE_')) {
+      statusEl.textContent = 'Set COLLECTOR_URL to your deployed Apps Script web app first.';
+      statusEl.className = 'status err';
+      return;
+    }
+
+    btn.disabled = true;
+    btnText.textContent = 'Recording…';
+    spinner.classList.add('show');
+
+    try {
+      const res = await fetch(COLLECTOR_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight on Apps Script
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json();
+
+      if (result.status === 'ok') {
+        statusEl.textContent = `Saved to sheet "${result.sheet}", row ${result.row}.`;
+        statusEl.className = 'status ok';
+        stamp.classList.add('show');
+        form.reset();
+        dateInput.value = new Date().toISOString().slice(0,10);
+        clearStudentInfo('');
+        refreshReceiptId();
+      } else {
+        throw new Error(result.message || 'Unknown error');
+      }
+    } catch (err) {
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'status err';
+    } finally {
+      btn.disabled = false;
+      btnText.textContent = 'Record Entry';
+      spinner.classList.remove('show');
+    }
+  });
+</script>
+</body>
+</html>
