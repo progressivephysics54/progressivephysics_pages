@@ -385,6 +385,27 @@
       </div>
 
       <div class="row">
+        <div class="field">
+          <label for="feesMonth">Fees For (Month)</label>
+          <select id="feesMonth" required>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+          </select>
+          <div class="hint">Defaults to current month · change if backdating</div>
+        </div>
+      </div>
+
+      <div class="row">
         <div class="field full">
           <label>Fees for Subjects</label>
           <div class="subjects-box empty" id="subjectsBox"></div>
@@ -408,7 +429,7 @@
 
 <script>
   // Collector Web App URL — saves fee entries, tracks last Receipt ID
-  const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbzNwbWsa3dix5brNfSMd_GqBHegwVAas1VQw7LUTy1QT5-kg6aEzWRf0JRhmFhyMMEpqA/exec";
+  const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbzQ11ZwBDfjYFwm2XUBXITCY0WPNaZE5j0gixIf3W2aWMiJ9YadDSRw-ooNaUs901e0IA/exec";
 
   // Student Details Web App URL — looks up name/phone/subjects from student_details sheet
   const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwg8hiahikFMpHHS1BPwOl6sgmEAsmeMhatJXdAnWDonYW7-yzQDMw5J0Zq4vzAAbZK/exec";
@@ -423,6 +444,9 @@
 
   const dateInput = document.getElementById('date');
   dateInput.value = new Date().toISOString().slice(0,10);
+
+  const feesMonthSelect = document.getElementById('feesMonth');
+  feesMonthSelect.value = new Date().toLocaleString('en-US', { month: 'long' });
 
   const receiptIdInput = document.getElementById('receiptId');
   const receiptStatus = document.getElementById('receiptStatus');
@@ -643,6 +667,7 @@
       stuId: stuIdInput.value.trim(),
       amount: document.getElementById('amount').value,
       receiptId: receiptIdInput.value.trim(),
+      feesMonth: feesMonthSelect.value,
       feesSubjects: feesSubjectsHidden.value,
       receiptCount: document.getElementById('receiptCount').value
     };
@@ -671,6 +696,7 @@
         stamp.classList.add('show');
         form.reset();
         dateInput.value = new Date().toISOString().slice(0,10);
+        feesMonthSelect.value = new Date().toLocaleString('en-US', { month: 'long' });
         clearStudentInfo('');
         refreshReceiptId();
       } else {
