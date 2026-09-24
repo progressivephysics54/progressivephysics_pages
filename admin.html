@@ -32,7 +32,7 @@
   nav button.active{color:var(--ink);border-bottom-color:var(--accent)}
   nav button:hover{color:var(--ink)}
 
-  main{max-width:1180px;margin:0 auto;padding:28px 40px 60px}
+  main{max-width:1180px;margin:0 auto;padding:28px 40px 96px}
   .section{display:none}
   .section.active{display:block}
 
@@ -43,6 +43,7 @@
   .url-box label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#6b6350;white-space:nowrap}
   .url-box input{flex:1;border:none;background:transparent;outline:none;color:var(--ink)}
   .search-box{flex:0 0 auto;min-width:220px}
+  .search-box input{min-width:170px}
   .search-box select{border:none;background:transparent;color:var(--ink);outline:none}
   .btn{background:var(--accent);color:#fdf6e8;border:none;padding:10px 20px;cursor:pointer;
     font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;
@@ -50,6 +51,25 @@
   .btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
   .btn:active{transform:translate(0,0);box-shadow:1px 1px 0 var(--ink)}
   .btn.ghost{background:transparent;color:var(--accent);box-shadow:none;border:1.5px solid var(--accent)}
+  /* --- write-problem banner --- */
+  #warnBar{display:flex;align-items:flex-start;gap:12px;margin:0 0 18px;padding:10px 14px;
+    background:#fbeae6;border:1.5px solid var(--brick);color:var(--brick);font-size:.78rem;font-weight:700}
+  #warnBar[hidden]{display:none}
+  #warnBar span{flex:1}
+  #warnBar button{background:none;border:none;color:var(--brick);cursor:pointer;font-size:1rem;line-height:1}
+  /* --- sync status pill (bottom-right corner) --- */
+  #syncPill{position:fixed;right:16px;bottom:max(16px, env(safe-area-inset-bottom));z-index:50;
+    display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--parchment-dk);
+    border:1.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink);color:var(--ink);
+    font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;cursor:default;user-select:none}
+  #syncPill .dot{width:10px;height:10px;border-radius:50%;background:var(--forest);flex:0 0 auto}
+  #syncPill small{font-weight:400;color:#6b6350;text-transform:none;letter-spacing:0}
+  #syncPill.syncing .dot{background:transparent;border:2px solid var(--rule);border-top-color:var(--accent);
+    animation:spin .7s linear infinite}
+  #syncPill.error{color:var(--brick);cursor:pointer}
+  #syncPill.error .dot{background:var(--brick)}
+  .btn:disabled{opacity:.6;cursor:wait;transform:none;box-shadow:none}
   .btn.small{padding:6px 12px;font-size:.65rem;box-shadow:2px 2px 0 var(--ink)}
 
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -109,7 +129,7 @@
     #primaryAction{width:100%;text-align:center;padding:12px 16px}
     nav{overflow-x:auto;-webkit-overflow-scrolling:touch;gap:0;margin-top:2px}
     nav button{padding:10px 14px;font-size:.7rem;white-space:nowrap;flex:none}
-    main{padding:16px 16px 40px}
+    main{padding:16px 16px 84px}
     .bar{gap:8px;margin-bottom:14px}
     .bar .btn{padding:8px 14px;font-size:.68rem}
     .status{width:100%;order:1;font-size:.68rem}
@@ -141,17 +161,25 @@
 
 <main>
 
+  <div id="warnBar" hidden role="alert"><span id="warnText"></span><button type="button" onclick="hideWarn_()" title="Dismiss">✕</button></div>
+
   <!-- ================= STUDENT SECTION ================= -->
   <section class="section active" id="section-student">
     <div class="bar">
-      <button class="btn ghost" onclick="loadStudents()">Refresh</button>
+      <button class="btn ghost" id="studentRefreshBtn" type="button" onclick="loadStudents(false)">Refresh</button>
       <div class="url-box search-box">
-        <select id="studentSearchField">
+        <select id="studentSearchField" onchange="filterStudents()">
+          <option value="*">All fields</option>
           <option value="Student Name">Name</option>
           <option value="Student ID">ID</option>
           <option value="Student Contact No">Phone</option>
+          <option value="Guardian Name">Guardian</option>
+          <option value="Class">Class</option>
+          <option value="Batch">Batch</option>
+          <option value="Board">Board</option>
+          <option value="Subjects">Subjects</option>
         </select>
-        <input id="studentSearchInput" placeholder="Search…" oninput="filterStudents()">
+        <input id="studentSearchInput" type="search" placeholder="Search… (% = wildcard)" autocomplete="off" oninput="filterStudents()">
       </div>
       <span class="status" id="studentStatus"></span>
     </div>
@@ -170,14 +198,18 @@
   <!-- ================= TEACHER SECTION ================= -->
   <section class="section" id="section-teacher">
     <div class="bar">
-      <button class="btn ghost" onclick="loadTeachers()">Refresh</button>
+      <button class="btn ghost" id="teacherRefreshBtn" type="button" onclick="loadTeachers(false)">Refresh</button>
       <div class="url-box search-box">
-        <select id="teacherSearchField">
+        <select id="teacherSearchField" onchange="filterTeachers()">
+          <option value="*">All fields</option>
           <option value="Name">Name</option>
           <option value="Teacher_ID">ID</option>
           <option value="Phone">Phone</option>
+          <option value="Email">Email</option>
+          <option value="Role">Role</option>
+          <option value="Subject1">Subject</option>
         </select>
-        <input id="teacherSearchInput" placeholder="Search…" oninput="filterTeachers()">
+        <input id="teacherSearchInput" type="search" placeholder="Search… (% = wildcard)" autocomplete="off" oninput="filterTeachers()">
       </div>
       <span class="status" id="teacherStatus"></span>
     </div>
@@ -215,10 +247,14 @@
   </form>
 </dialog>
 
+<button type="button" id="syncPill" class="syncing" role="status" aria-live="polite" onclick="syncRetry_()">
+  <span class="dot"></span><span id="syncText">Syncing…</span>
+</button>
+
 <script>
 
-  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbxdjvD-gUWtyHtOv5xG4D6P2oOE_hmZFucFe9oYxEBf_a_R5rISx06p-orhx1c4WaqF/exec';
-  const TEACHER_API_URL = 'https://script.google.com/macros/s/AKfycbw2Bdm_gFlI6efD75j0YrTTzFwJ1zwKHAJeyZsxnVUz5dbGLef0-6--lQaum2untAlI/exec';
+  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbyqIYNC04_sjYMQ1rAXXXrBRuRDWpRLTV80UU8z4eYd0tgGlokVbxMtOaF-urv7AB2D/exec';
+  const TEACHER_API_URL = 'https://script.google.com/macros/s/AKfycbyQd0Wx8FYNvKNqNL05Zr2M_GqWXtELVzyWHJK1nws3lgR267dAC5FiXKlHfKxvtHHY/exec';
  
 
   function isValidUrl_(u){ return typeof u === 'string' && /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(u); }
@@ -290,98 +326,269 @@
     return {ok:false, list:null};
   }
 
+  /* ---------- shared search: SQL  WHERE col LIKE '%term%'  style ----------
+     - case-insensitive substring match (LIKE '%q%')
+     - several words = AND  (every word must match)
+     - field "All fields" = any column matches (col1 LIKE .. OR col2 LIKE ..)
+     - % or * inside a word = wildcard, e.g.  "ra%ul"  "STU*07"
+     - spaces / - . ( ) _ ignored, so "98765 43210" finds 9876543210
+     - column lookup is trim/case-insensitive, so sheet header typos don't break it */
+  const norm_    = v => String(v == null ? '' : v).toLowerCase().trim();
+  const compact_ = v => norm_(v).replace(/[\s\-.()_,]/g, '');
+  const esc_     = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function termMatches_(term, text){
+    if(/[%*]/.test(term)){
+      const re = term.split(/[%*]+/).map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*');
+      return new RegExp(re, 'i').test(text);
+    }
+    if(text.includes(term)) return true;
+    const ct = compact_(term);
+    return ct.length > 0 && compact_(text).includes(ct);
+  }
+
+  function searchList_(list, field, query, cellText){
+    const terms = norm_(query).split(/\s+/).filter(Boolean);
+    if(!terms.length) return list;
+    const want = norm_(field);
+    return list.filter(row => {
+      const keys = Object.keys(row);
+      const cols = (field === '*' || !field) ? keys : keys.filter(k => norm_(k) === want);
+      if(!cols.length) return false;
+      const texts = cols.map(k => norm_(cellText(k, row[k])));
+      return terms.every(t => texts.some(tx => termMatches_(t, tx)));
+    });
+  }
+
+  /* ---------- shared refresh helpers ---------- */
+  /* true while a row is being edited or saved/deleted. Refreshing then would
+     re-render the table and wipe the open row, so auto-polls skip and a manual
+     refresh asks the user to finish first. */
+  function rowBusy_(tbodyId){
+    return !!document.querySelector(`#${tbodyId} tr.editing, #${tbodyId} tr.row-loading`);
+  }
+  function setRefreshBtn_(id, busy){
+    const b = document.getElementById(id);
+    b.disabled = busy;
+    b.textContent = busy ? 'Refreshing…' : 'Refresh';
+  }
+
+  /* ---------- sync status pill ----------
+     Syncing…            → any load / save / delete / add in flight
+     Sync completed      → everything read or written and confirmed by the sheet
+     Not synced          → last attempt failed or write unconfirmed (click = retry)
+     Background polls stay quiet (no flashing) unless they fail or it's the first sync. */
+  let syncPending_ = 0, lastSync_ = null;
+  const syncErr_ = {student:false, teacher:false};
+  const syncedOnce_ = {student:false, teacher:false};
+
+  function syncRender_(){
+    const pill = document.getElementById('syncPill');
+    const text = document.getElementById('syncText');
+    const need = [['student',STUDENT_API_URL],['teacher',TEACHER_API_URL]]
+      .filter(([k,u]) => isValidUrl_(u)).map(x => x[0]);
+    let state, html;
+    if(syncPending_ > 0){
+      state = 'syncing'; html = 'Syncing…';
+    } else if(syncErr_.student || syncErr_.teacher || !need.length || !need.every(k => syncedOnce_[k])){
+      state = 'error'; html = 'Not synced <small>· click to retry</small>';
+    } else {
+      const t = lastSync_ ? new Date(lastSync_).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+      state = 'done'; html = 'Sync completed' + (t ? ` <small>· ${t}</small>` : '');
+    }
+    pill.className = state;
+    text.innerHTML = html;
+    pill.title = state === 'error' ? 'Click to retry' : '';
+  }
+  function syncBegin_(){ syncPending_++; syncRender_(); }
+  /* counted=false → quiet background poll that never called syncBegin_ */
+  function syncEnd_(key, ok, counted){
+    if(counted) syncPending_ = Math.max(0, syncPending_ - 1);
+    syncErr_[key] = !ok;
+    if(ok){ syncedOnce_[key] = true; lastSync_ = Date.now(); }
+    syncRender_();
+  }
+  function syncRetry_(){
+    if(syncPending_ > 0) return;
+    if(syncErr_.student || !syncedOnce_.student) loadStudents(false);
+    if(syncErr_.teacher || !syncedOnce_.teacher) loadTeachers(false);
+  }
+
+  /* ---------- optimistic writes ----------
+     Edit / delete change the screen + local cache INSTANTLY. The request to the
+     sheet then runs in the background (sync pill shows progress). If it fails the
+     change is rolled back. While any write is in flight, polls / manual refresh
+     for that section are held off so they can't overwrite the local change with
+     stale sheet data. Rows are found by ID (data-id), never by array position. */
+  const inflight_ = {student:0, teacher:0};
+
+  function rowFor_(tbodyId, id){
+    return [...document.querySelectorAll(`#${tbodyId} tr[data-id]`)].find(r => r.dataset.id === String(id));
+  }
+
+  let warnTimer_ = null;
+  function showWarn_(msg){
+    document.getElementById('warnText').textContent = msg;
+    document.getElementById('warnBar').hidden = false;
+    clearTimeout(warnTimer_);
+    warnTimer_ = setTimeout(hideWarn_, 20000);
+  }
+  function hideWarn_(){ document.getElementById('warnBar').hidden = true; }
+
+  async function runWrite_(sec, o){
+    const cfg = sec === 'student'
+      ? {url:STUDENT_API_URL, fetchList:fetchStudentList_, status:setStudentStatus, reload:() => loadStudents(true)}
+      : {url:TEACHER_API_URL, fetchList:fetchTeacherList_, status:setTeacherStatus, reload:() => loadTeachers(true)};
+    inflight_[sec]++; syncBegin_();
+    let syncOk = false, snapBack = false;
+    cfg.status(o.label);
+    try{
+      const res = await fetch(cfg.url, {method:'POST', body: JSON.stringify(o.post)});
+      if(res && res.ok === false) throw new Error('HTTP ' + res.status);
+      // Apps Script can answer {success:true} / {success:false, error:"…"}.
+      // Use that when present; if the answer is unreadable, fall back to re-reading the sheet.
+      let out = null;
+      try{ out = await res.clone().json(); }catch(e){ /* unreadable */ }
+      if(out && (out.success === false || out.ok === false || out.error)){
+        throw new Error(String(out.error || out.message || 'server rejected the change'));
+      }
+      let ok = !!(out && (out.success === true || out.ok === true));
+      if(!ok) ({ok} = await waitUntilSynced_(cfg.fetchList, o.confirm));
+      syncOk = ok;
+      cfg.status(ok ? o.okMsg : o.unconfirmedMsg);
+      if(!ok){ snapBack = true; showWarn_(o.unconfirmedMsg + ' The screen will now reload from the sheet.'); }
+    }catch(err){
+      o.rollback();
+      const why = err && err.message ? err.message : 'unknown error';
+      cfg.status(o.failMsg);
+      showWarn_(o.failMsg + ' — ' + why);
+    }finally{
+      inflight_[sec]--;
+      syncEnd_(sec, syncOk, true);
+      if(snapBack) cfg.reload();        // show what the sheet really holds
+    }
+  }
+
   /* ---------- STUDENT ---------- */
   let STUDENTS = cacheLoad_('cache_students') || [];
   function setStudentStatus(msg){ document.getElementById('studentStatus').textContent = msg; }
 
+  let studentLoading_ = false;
   async function loadStudents(silent){
+    if(studentLoading_) return;                       // no overlapping requests
     if(!isValidUrl_(STUDENT_API_URL)){
       if(!silent){ showTableError_('studentRows', 11, 'Invalid URL'); }
       setStudentStatus('');
       return;
     }
-    if(!silent && !STUDENTS.length){ setStudentStatus(''); showLoading_('studentRows', 11); }
+    if(rowBusy_('studentRows') || inflight_.student){
+      if(!silent) setStudentStatus(inflight_.student ? 'Saving… refresh in a moment' : 'Finish editing first');
+      return;
+    }
+    studentLoading_ = true;
+    const track = !silent || !syncedOnce_.student;   // show "Syncing…" for manual + first load
+    if(track) syncBegin_();
+    let syncOk = false;
+    if(!silent){
+      setRefreshBtn_('studentRefreshBtn', true);
+      setStudentStatus('Refreshing…');
+      if(!STUDENTS.length) showLoading_('studentRows', 11);
+    }
     let res;
     try{
-      res = await fetch(STUDENT_API_URL + '?action=listStudents');
+      // _=timestamp busts any browser/proxy cache so Refresh really re-reads the sheet
+      res = await fetch(STUDENT_API_URL + '?action=listStudents&_=' + Date.now());
       if(!res.ok) throw new Error('server');
       const data = await res.json();
+      syncOk = true;
+      // user may have opened a row for edit while the request was in flight —
+      // swapping the list now would shift row indexes under them, so drop it.
+      if(rowBusy_('studentRows') || inflight_.student){ if(!silent) setStudentStatus('Saving… refresh in a moment'); return; }
       STUDENTS = data.students || [];
       cacheSave_('cache_students', STUDENTS);
-      filterStudents(); // re-renders, respecting an active search
-      setStudentStatus(`${STUDENTS.length} students`);
+      filterStudents(); // re-renders + sets count, respecting an active search
     }catch(err){
-      // silent (auto-poll) failures keep the last good table on screen —
-      // only a manual refresh with no cached data shows an error row.
+      // silent (auto-poll) failures keep the last good table on screen.
+      // manual refresh: show the reason in the status, and an error row if nothing cached.
       if(!silent && !STUDENTS.length){ showTableError_('studentRows', 11, classifyError_(err, res)); }
-      setStudentStatus(silent ? 'Refresh failed' : '');
+      setStudentStatus(silent ? 'Refresh failed' : 'Refresh failed — ' + classifyError_(err, res));
+    }finally{
+      studentLoading_ = false;
+      syncEnd_('student', syncOk, track);
+      if(!silent) setRefreshBtn_('studentRefreshBtn', false);
     }
   }
 
-  function renderStudentRows(list){
+  const cell_ = v => esc_(v == null ? '' : v);
+
+  function renderStudentRows(list, emptyMsg){
     list = list || STUDENTS;
     const body = document.getElementById('studentRows');
-    if(!list.length){ body.innerHTML = '<tr><td colspan="11" class="empty">No students yet.</td></tr>'; return; }
-    const idxOf = s => STUDENTS.indexOf(s);
-    body.innerHTML = [...list].reverse().map(s => { const i = idxOf(s); return `
-      <tr data-idx="${i}">
-        <td>${s['Student ID']||''}</td>
-        <td data-field="Admission Date" contenteditable="false">${fmtDate(s['Admission Date'])}</td>
-        <td data-field="Student Name" contenteditable="false">${s['Student Name']||''}</td>
-        <td data-field="Student Contact No" contenteditable="false">${s['Student Contact No']||''}</td>
-        <td data-field="Guardian Name" contenteditable="false">${s['Guardian Name']||''}</td>
-        <td data-field="Class" contenteditable="false">${s['Class']||''}</td>
-        <td data-field="Batch" contenteditable="false">${s['Batch']||''}</td>
-        <td data-field="Board" contenteditable="false">${s['Board']||''}</td>
-        <td data-field="Subjects" contenteditable="false">${s['Subjects']||''}</td>
-        <td data-field="Monthly Fee" contenteditable="false">${s['Monthly Fee']||''}</td>
+    if(!list.length){ body.innerHTML = `<tr><td colspan="11" class="empty">${emptyMsg || 'No students yet.'}</td></tr>`; return; }
+    body.innerHTML = [...list].reverse().map(s => `
+      <tr data-id="${esc_(s['Student ID']||'')}">
+        <td>${cell_(s['Student ID'])}</td>
+        <td data-field="Admission Date" contenteditable="false">${cell_(fmtDate(s['Admission Date']))}</td>
+        <td data-field="Student Name" contenteditable="false">${cell_(s['Student Name'])}</td>
+        <td data-field="Student Contact No" contenteditable="false">${cell_(s['Student Contact No'])}</td>
+        <td data-field="Guardian Name" contenteditable="false">${cell_(s['Guardian Name'])}</td>
+        <td data-field="Class" contenteditable="false">${cell_(s['Class'])}</td>
+        <td data-field="Batch" contenteditable="false">${cell_(s['Batch'])}</td>
+        <td data-field="Board" contenteditable="false">${cell_(s['Board'])}</td>
+        <td data-field="Subjects" contenteditable="false">${cell_(s['Subjects'])}</td>
+        <td data-field="Monthly Fee" contenteditable="false">${cell_(s['Monthly Fee'])}</td>
         <td class="actions-cell">
-          <button class="icon-btn edit-btn" title="Edit" onclick="toggleEditStudentRow(${i})"><i class="fa-solid fa-pen"></i></button>
-          <button class="icon-btn delete-btn" title="Delete" onclick="deleteStudentRow(${i})"><i class="fa-solid fa-trash"></i></button>
+          <button class="icon-btn edit-btn" title="Edit" onclick="toggleEditStudentRow(this)"><i class="fa-solid fa-pen"></i></button>
+          <button class="icon-btn delete-btn" title="Delete" onclick="deleteStudentRow(this)"><i class="fa-solid fa-trash"></i></button>
         </td>
-      </tr>`; }).join('');
+      </tr>`).join('');
   }
 
   function filterStudents(){
     const field = document.getElementById('studentSearchField').value;
-    const q = document.getElementById('studentSearchInput').value.trim().toLowerCase();
-    if(!q){ renderStudentRows(STUDENTS); return; }
-    renderStudentRows(STUDENTS.filter(s => String(s[field]||'').toLowerCase().includes(q)));
+    const q = document.getElementById('studentSearchInput').value.trim();
+    if(!q){ renderStudentRows(STUDENTS); setStudentStatus(`${STUDENTS.length} students`); return; }
+    const hits = searchList_(STUDENTS, field, q,
+      (k, v) => norm_(k) === 'admission date' ? fmtDate(v) : v);
+    renderStudentRows(hits, `No student matches “${esc_(q)}”.`);
+    setStudentStatus(`${hits.length} of ${STUDENTS.length} students`);
   }
   function fmtDate(v){
     if(!v) return '';
-    const d = new Date(v);
-    return isNaN(d) ? v : d.toISOString().slice(0,10);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(String(v))) return String(v);       // already a plain date
+    const d = new Date(v);                                              // old-style timestamp: use LOCAL day
+    if(isNaN(d)) return v;
+    const p = n => String(n).padStart(2,'0');
+    return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate());
   }
 
   async function fetchStudentList_(){
-    const res = await fetch(STUDENT_API_URL + '?action=listStudents');
+    const res = await fetch(STUDENT_API_URL + '?action=listStudents&_=' + Date.now());
     if(!res.ok) throw new Error('server');
     const data = await res.json();
     return data.students || [];
   }
 
-  function toggleEditStudentRow(i){
-    const tr = document.querySelector(`#studentRows tr[data-idx="${i}"]`);
-    if(!tr || tr.classList.contains('row-loading')) return;
-    if(tr.classList.contains('editing')) commitEditStudentRow(i, tr);
+  const studentIdx_ = id => STUDENTS.findIndex(x => String(x['Student ID']) === String(id));
+
+  function toggleEditStudentRow(btn){
+    const tr = btn.closest('tr');
+    if(!tr) return;
+    if(tr.classList.contains('editing')) saveStudentRow(tr);
     else enterEditMode_(tr);
   }
 
-  async function commitEditStudentRow(i, tr){
-    setRowLoading_(tr, true);
-    const ok = await saveStudentRow(i, tr);
-    setRowLoading_(tr, false);
-    if(ok) exitEditMode_(tr);
-    else enterEditMode_(tr);
-  }
-
-  async function saveStudentRow(i, tr){
-    tr = tr || document.querySelector(`#studentRows tr[data-idx="${i}"]`);
-    const s = STUDENTS[i];
+  function saveStudentRow(tr){
+    const id = tr.dataset.id;
+    const i = studentIdx_(id);
+    if(i < 0) return;
     const g = f => tr.querySelector(`[data-field="${f}"]`).innerText.trim();
+    if(!g('Student Name')){ showWarn_('Name cannot be empty.'); return; }
+    if(g('Admission Date') && !/^\d{4}-\d{2}-\d{2}$/.test(g('Admission Date'))){
+      showWarn_('Admission date must look like 2026-06-12 (YYYY-MM-DD).'); return;   // row stays open
+    }
     const data = {
-      'Student ID': s['Student ID'],
+      'Student ID': STUDENTS[i]['Student ID'],
       'Admission Date': g('Admission Date'),
       'Student Name': g('Student Name'),
       'Student Contact No': g('Student Contact No'),
@@ -392,40 +599,48 @@
       'Subjects': g('Subjects'),
       'Monthly Fee': g('Monthly Fee')
     };
-    setStudentStatus('Saving…');
-    try{
-      await fetch(STUDENT_API_URL, {method:'POST', body: JSON.stringify({action:'updateStudent', data})});
-      const {ok, list} = await waitUntilSynced_(fetchStudentList_, list =>
-        list.some(x => x['Student ID']===s['Student ID'] && String(x['Student Name']||'')===data['Student Name'] && String(x['Student Contact No']||'')===data['Student Contact No'])
-      );
-      STUDENTS = ok ? list : STUDENTS.map((x,idx)=> idx===i ? {...x, ...data} : x);
-      cacheSave_('cache_students', STUDENTS);
-      // No full re-render here: the edited row is still open in the DOM and
-      // already shows the typed values; a re-render would detach it mid-edit.
-      setStudentStatus(ok ? 'Saved ' + data['Student ID'] : 'Saved (sync unconfirmed)');
-      return true;
-    }catch(err){ setStudentStatus('Save failed'); return false; }
+    const before = STUDENTS[i];
+    STUDENTS[i] = {...before, ...data};          // instant local update
+    cacheSave_('cache_students', STUDENTS);
+    exitEditMode_(tr);                           // row already shows what was typed
+    runWrite_('student', {
+      label:'Saving…', post:{action:'updateStudent', data},
+      confirm: list => list.some(x => String(x['Student ID'])===String(id) && String(x['Student Name']||'')===data['Student Name'] && String(x['Student Contact No']||'')===data['Student Contact No']),
+      okMsg:'Saved ' + id, unconfirmedMsg:'Sheet did not confirm the edit of ' + id + ' (check Apps Script).',
+      failMsg:'Save failed (reopened, press ✓ to retry)',
+      rollback(){
+        const j = studentIdx_(id);
+        if(j >= 0) STUDENTS[j] = before;
+        cacheSave_('cache_students', STUDENTS);
+        const row = rowFor_('studentRows', id);
+        if(row) enterEditMode_(row);             // keep typed values, let user retry
+      }
+    });
   }
 
-  async function deleteStudentRow(i){
+  function deleteStudentRow(btn){
+    const tr = btn.closest('tr');
+    if(!tr) return;
+    const id = tr.dataset.id;
+    const i = studentIdx_(id);
+    if(i < 0) return;
     const s = STUDENTS[i];
     if(!confirm(`Delete student ${s['Student Name']||s['Student ID']}? This can't be undone.`)) return;
-    const tr = document.querySelector(`#studentRows tr[data-idx="${i}"]`);
-    setRowLoading_(tr, true);
-    setStudentStatus('Deleting…');
-    try{
-      await fetch(STUDENT_API_URL, {method:'POST', body: JSON.stringify({action:'deleteStudent', data:{'Student ID': s['Student ID']}})});
-      const {ok, list} = await waitUntilSynced_(fetchStudentList_, list =>
-        !list.some(x => x['Student ID']===s['Student ID'])
-      );
-      STUDENTS = ok ? list : STUDENTS.filter((_,idx)=>idx!==i);
-      cacheSave_('cache_students', STUDENTS);
-      renderStudentRows(STUDENTS);
-      setStudentStatus((ok?'Deleted ':'Deleted (sync unconfirmed) ') + s['Student ID']);
-    }catch(err){
-      setRowLoading_(tr, false);
-      setStudentStatus('Delete failed');
-    }
+    STUDENTS.splice(i, 1);                       // instant local delete
+    cacheSave_('cache_students', STUDENTS);
+    tr.remove();
+    if(!document.querySelector('#studentRows tr[data-id]')) filterStudents();  // empty-state message
+    runWrite_('student', {
+      label:'Deleting…', post:{action:'deleteStudent', data:{'Student ID': s['Student ID']}},
+      confirm: list => !list.some(x => x['Student ID']===s['Student ID']),
+      okMsg:'Deleted ' + id, unconfirmedMsg:'Sheet did not confirm the delete of ' + id + ' (check Apps Script).',
+      failMsg:'Delete failed (entry restored)',
+      rollback(){
+        STUDENTS.splice(Math.min(i, STUDENTS.length), 0, s);
+        cacheSave_('cache_students', STUDENTS);
+        if(!rowBusy_('studentRows')) filterStudents();
+      }
+    });
   }
 
   /* ---------- TEACHER ---------- */
@@ -433,72 +648,91 @@
 
   function setTeacherStatus(msg){ document.getElementById('teacherStatus').textContent = msg; }
 
+  let teacherLoading_ = false;
   async function loadTeachers(silent){
+    if(teacherLoading_) return;
     if(!isValidUrl_(TEACHER_API_URL)){
       if(!silent){ showTableError_('teacherRows', 8, 'Invalid URL'); }
       setTeacherStatus('');
       return;
     }
-    if(!silent && !TEACHERS.length){ setTeacherStatus(''); showLoading_('teacherRows', 8); }
+    if(rowBusy_('teacherRows') || inflight_.teacher){
+      if(!silent) setTeacherStatus(inflight_.teacher ? 'Saving… refresh in a moment' : 'Finish editing first');
+      return;
+    }
+    teacherLoading_ = true;
+    const track = !silent || !syncedOnce_.teacher;
+    if(track) syncBegin_();
+    let syncOk = false;
+    if(!silent){
+      setRefreshBtn_('teacherRefreshBtn', true);
+      setTeacherStatus('Refreshing…');
+      if(!TEACHERS.length) showLoading_('teacherRows', 8);
+    }
     let res;
     try{
-      res = await fetch(TEACHER_API_URL + '?action=listTeachers');
+      res = await fetch(TEACHER_API_URL + '?action=listTeachers&_=' + Date.now());
       if(!res.ok) throw new Error('server');
       const data = await res.json();
+      syncOk = true;
+      if(rowBusy_('teacherRows') || inflight_.teacher){ if(!silent) setTeacherStatus('Saving… refresh in a moment'); return; }
       TEACHERS = data.teachers || [];
       cacheSave_('cache_teachers', TEACHERS);
-      filterTeachers(); // re-renders, respecting an active search
-      setTeacherStatus(`${TEACHERS.length} teachers`);
+      filterTeachers(); // re-renders + sets count, respecting an active search
     }catch(err){
       if(!silent && !TEACHERS.length){ showTableError_('teacherRows', 8, classifyError_(err, res)); }
-      setTeacherStatus(silent ? 'Refresh failed' : '');
+      setTeacherStatus(silent ? 'Refresh failed' : 'Refresh failed — ' + classifyError_(err, res));
+    }finally{
+      teacherLoading_ = false;
+      syncEnd_('teacher', syncOk, track);
+      if(!silent) setRefreshBtn_('teacherRefreshBtn', false);
     }
   }
 
-  function renderTeacherRows(list){
+  function renderTeacherRows(list, emptyMsg){
     list = list || TEACHERS;
     const body = document.getElementById('teacherRows');
-    if(!list.length){ body.innerHTML = '<tr><td colspan="8" class="empty">No teachers yet.</td></tr>'; return; }
-    const idxOf = t => TEACHERS.indexOf(t);
-    body.innerHTML = list.map(t => ({t,i:idxOf(t)})).reverse().map(({t,i}) => `
-      <tr data-idx="${i}">
-        <td>${t.Teacher_ID||''}</td>
-        <td data-field="Name" contenteditable="false">${t.Name||''}</td>
-        <td data-field="Email" contenteditable="false">${t.Email||''}</td>
-        <td data-field="Phone" contenteditable="false">${t.Phone||''}</td>
+    if(!list.length){ body.innerHTML = `<tr><td colspan="8" class="empty">${emptyMsg || 'No teachers yet.'}</td></tr>`; return; }
+    body.innerHTML = [...list].reverse().map(t => `
+      <tr data-id="${esc_(t.Teacher_ID||'')}">
+        <td>${cell_(t.Teacher_ID)}</td>
+        <td data-field="Name" contenteditable="false">${cell_(t.Name)}</td>
+        <td data-field="Email" contenteditable="false">${cell_(t.Email)}</td>
+        <td data-field="Phone" contenteditable="false">${cell_(t.Phone)}</td>
         <td>
           <select class="role" data-field="Role" disabled>
             <option ${t.Role==='Teacher'?'selected':''}>Teacher</option>
             <option ${t.Role==='Admin'?'selected':''}>Admin</option>
           </select>
         </td>
-        <td data-field="Subject1" contenteditable="false">${t.Subject1||''}</td>
+        <td data-field="Subject1" contenteditable="false">${cell_(t.Subject1)}</td>
         <td style="text-align:center">
           <input type="checkbox" class="status-tick" data-field="Status" disabled ${t.Status?'checked':''}>
         </td>
         <td class="actions-cell">
-          <button class="icon-btn edit-btn" title="Edit" onclick="toggleEditTeacherRow(${i})"><i class="fa-solid fa-pen"></i></button>
-          <button class="icon-btn delete-btn" title="Delete" onclick="deleteTeacherRow(${i})"><i class="fa-solid fa-trash"></i></button>
+          <button class="icon-btn edit-btn" title="Edit" onclick="toggleEditTeacherRow(this)"><i class="fa-solid fa-pen"></i></button>
+          <button class="icon-btn delete-btn" title="Delete" onclick="deleteTeacherRow(this)"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>`).join('');
   }
 
   function filterTeachers(){
     const field = document.getElementById('teacherSearchField').value;
-    const q = document.getElementById('teacherSearchInput').value.trim().toLowerCase();
-    if(!q){ renderTeacherRows(TEACHERS); return; }
-    renderTeacherRows(TEACHERS.filter(t => String(t[field]||'').toLowerCase().includes(q)));
+    const q = document.getElementById('teacherSearchInput').value.trim();
+    if(!q){ renderTeacherRows(TEACHERS); setTeacherStatus(`${TEACHERS.length} teachers`); return; }
+    const hits = searchList_(TEACHERS, field, q, (k, v) => v);
+    renderTeacherRows(hits, `No teacher matches “${esc_(q)}”.`);
+    setTeacherStatus(`${hits.length} of ${TEACHERS.length} teachers`);
   }
 
   /* Flip a row between locked (display) and editable, or commit the edit. */
-  function toggleEditTeacherRow(i){
-    const tr = document.querySelector(`#teacherRows tr[data-idx="${i}"]`);
-    if(!tr || tr.classList.contains('row-loading')) return;
-    if(tr.classList.contains('editing')){
-      commitEditTeacherRow(i, tr);
-    } else {
-      enterEditMode_(tr);
-    }
+  const teacherIdx_ = id => TEACHERS.findIndex(x => String(x.Teacher_ID) === String(id));
+
+  function toggleEditTeacherRow(btn){
+    const tr = btn.closest('tr');
+    if(!tr) return;
+    if(tr.classList.contains('editing')) saveTeacherRow(tr);
+    else enterEditMode_(tr);
   }
 
   function enterEditMode_(tr){
@@ -510,7 +744,8 @@
     const btn = tr.querySelector('.edit-btn');
     btn.innerHTML = '<i class="fa-solid fa-check"></i>';
     btn.title = 'Save';
-    tr.querySelector('[data-field=Name]').focus();
+    const first = tr.querySelector('[data-field="Student Name"], [data-field=Name]'); // student rows have no plain "Name"
+    if(first) first.focus();
   }
 
   function exitEditMode_(tr){
@@ -524,92 +759,69 @@
     btn.title = 'Edit';
   }
 
-  /* Locks every field + hides the icons behind a fade loader while a
-     request for this row is in flight — re-editing/re-deleting mid-save
-     is blocked either way since the buttons are hidden. */
-  function setRowLoading_(tr, loading){
-    tr.classList.toggle('row-loading', loading);
-    tr.querySelectorAll('[data-field]').forEach(el=>{
-      if(el.tagName==='SELECT' || el.tagName==='INPUT'){ el.disabled = loading ? true : el.disabled; }
-      else if(loading){ el.contentEditable='false'; }
-    });
-    let loader = tr.querySelector('.row-loader');
-    if(loading && !loader){
-      loader = document.createElement('span');
-      loader.className = 'row-loader fade-loader';
-      loader.innerHTML = '<span></span><span></span><span></span>';
-      tr.querySelector('.actions-cell').appendChild(loader);
-    } else if(!loading && loader){
-      loader.remove();
-    }
-  }
-
-  async function commitEditTeacherRow(i, tr){
-    setRowLoading_(tr, true);
-    const ok = await saveTeacherRow(i, tr);
-    setRowLoading_(tr, false);
-    if(ok) exitEditMode_(tr);
-    else enterEditMode_(tr); // save failed — keep it open + editable for retry
-  }
-
-  async function saveTeacherRow(i, tr){
-    tr = tr || document.querySelector(`#teacherRows tr[data-idx="${i}"]`);
-    const t = TEACHERS[i];
-    const payload = {
-      action:'updateTeacher',
-      data:{
-        Teacher_ID: t.Teacher_ID,
-        Name: tr.querySelector('[data-field=Name]').innerText.trim(),
-        Email: tr.querySelector('[data-field=Email]').innerText.trim(),
-        Phone: tr.querySelector('[data-field=Phone]').innerText.trim(),
-        Role: tr.querySelector('[data-field=Role]').value,
-        Subject1: tr.querySelector('[data-field=Subject1]').innerText.trim(),
-        Status: tr.querySelector('[data-field=Status]').checked
-      }
+  function saveTeacherRow(tr){
+    const id = tr.dataset.id;
+    const i = teacherIdx_(id);
+    if(i < 0) return;
+    if(!tr.querySelector('[data-field=Name]').innerText.trim()){ showWarn_('Name cannot be empty.'); return; }
+    const data = {
+      Teacher_ID: TEACHERS[i].Teacher_ID,
+      Name: tr.querySelector('[data-field=Name]').innerText.trim(),
+      Email: tr.querySelector('[data-field=Email]').innerText.trim(),
+      Phone: tr.querySelector('[data-field=Phone]').innerText.trim(),
+      Role: tr.querySelector('[data-field=Role]').value,
+      Subject1: tr.querySelector('[data-field=Subject1]').innerText.trim(),
+      Status: tr.querySelector('[data-field=Status]').checked
     };
-    setTeacherStatus('Saving…');
-    try{
-      await fetch(TEACHER_API_URL, {method:'POST', body: JSON.stringify(payload)});
-      const {ok, list} = await waitUntilSynced_(fetchTeacherList_, list =>
-        list.some(x => x.Teacher_ID===t.Teacher_ID && String(x.Name||'')===payload.data.Name && String(x.Phone||'')===payload.data.Phone)
-      );
-      TEACHERS = ok ? list : TEACHERS.map((x,idx)=> idx===i ? {...x, ...payload.data} : x);
-      cacheSave_('cache_teachers', TEACHERS);
-      // No full re-render here: the edited row is still open in the DOM and
-      // already shows the typed values; a re-render would detach it mid-edit.
-      setTeacherStatus(ok ? 'Saved ' + payload.data.Teacher_ID : 'Saved (sync unconfirmed)');
-      return true;
-    }catch(err){ setTeacherStatus('Save failed'); return false; }
+    const before = TEACHERS[i];
+    TEACHERS[i] = {...before, ...data};          // instant local update
+    cacheSave_('cache_teachers', TEACHERS);
+    exitEditMode_(tr);
+    runWrite_('teacher', {
+      label:'Saving…', post:{action:'updateTeacher', data},
+      confirm: list => list.some(x => String(x.Teacher_ID)===String(id) && String(x.Name||'')===data.Name && String(x.Phone||'')===data.Phone),
+      okMsg:'Saved ' + id, unconfirmedMsg:'Sheet did not confirm the edit of ' + id + ' (check Apps Script).',
+      failMsg:'Save failed (reopened, press ✓ to retry)',
+      rollback(){
+        const j = teacherIdx_(id);
+        if(j >= 0) TEACHERS[j] = before;
+        cacheSave_('cache_teachers', TEACHERS);
+        const row = rowFor_('teacherRows', id);
+        if(row) enterEditMode_(row);
+      }
+    });
   }
 
   async function fetchTeacherList_(){
-    const res = await fetch(TEACHER_API_URL + '?action=listTeachers');
+    const res = await fetch(TEACHER_API_URL + '?action=listTeachers&_=' + Date.now());
     if(!res.ok) throw new Error('server');
     const data = await res.json();
     return data.teachers || [];
   }
 
-  async function deleteTeacherRow(i){
+  function deleteTeacherRow(btn){
+    const tr = btn.closest('tr');
+    if(!tr) return;
+    const id = tr.dataset.id;
+    const i = teacherIdx_(id);
+    if(i < 0) return;
     const t = TEACHERS[i];
     if(!confirm(`Delete teacher ${t.Name||t.Teacher_ID}? This can't be undone.`)) return;
-    const tr = document.querySelector(`#teacherRows tr[data-idx="${i}"]`);
-    setRowLoading_(tr, true);
-    setTeacherStatus('Deleting…');
-    try{
-      await fetch(TEACHER_API_URL, {method:'POST', body: JSON.stringify({
-        action:'deleteTeacher', data:{ Teacher_ID: t.Teacher_ID }
-      })});
-      const {ok, list} = await waitUntilSynced_(fetchTeacherList_, list =>
-        !list.some(x => x.Teacher_ID===t.Teacher_ID)
-      );
-      TEACHERS = ok ? list : TEACHERS.filter((_,idx)=>idx!==i);
-      cacheSave_('cache_teachers', TEACHERS);
-      renderTeacherRows(TEACHERS);
-      setTeacherStatus((ok?'Deleted ':'Deleted (sync unconfirmed) ') + t.Teacher_ID);
-    }catch(err){
-      setRowLoading_(tr, false);
-      setTeacherStatus('Delete failed');
-    }
+    TEACHERS.splice(i, 1);                       // instant local delete
+    cacheSave_('cache_teachers', TEACHERS);
+    tr.remove();
+    if(!document.querySelector('#teacherRows tr[data-id]')) filterTeachers();
+    runWrite_('teacher', {
+      label:'Deleting…', post:{action:'deleteTeacher', data:{ Teacher_ID: t.Teacher_ID }},
+      confirm: list => !list.some(x => x.Teacher_ID===t.Teacher_ID),
+      okMsg:'Deleted ' + id, unconfirmedMsg:'Sheet did not confirm the delete of ' + id + ' (check Apps Script).',
+      failMsg:'Delete failed (entry restored)',
+      rollback(){
+        TEACHERS.splice(Math.min(i, TEACHERS.length), 0, t);
+        cacheSave_('cache_teachers', TEACHERS);
+        if(!rowBusy_('teacherRows')) filterTeachers();
+      }
+    });
   }
 
   async function submitAddTeacher(){
@@ -624,21 +836,43 @@
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<span class="fade-loader"><span></span><span></span><span></span></span> Saving…';
     setTeacherStatus('Saving…');
+    inflight_.teacher++; syncBegin_();
+    let syncOk = false, snapBack = false;
     try{
-      await fetch(TEACHER_API_URL, {method:'POST', body: JSON.stringify(payload)});
-      // Loader stays up until the new teacher actually shows up in a fresh
-      // read of the sheet, not just after the write request returns.
-      const {ok, list} = await waitUntilSynced_(fetchTeacherList_, list =>
-        list.some(x => String(x.Name||'')===payload.data.Name && String(x.Phone||'')===payload.data.Phone)
-      );
-      TEACHERS = ok ? list : TEACHERS;
+      const res = await fetch(TEACHER_API_URL, {method:'POST', body: JSON.stringify(payload)});
+      if(res && res.ok === false) throw new Error('HTTP ' + res.status);
+      let out = null;
+      try{ out = await res.clone().json(); }catch(e){ /* unreadable */ }
+      if(out && (out.success === false || out.ok === false || out.error)){
+        throw new Error(String(out.error || out.message || 'server rejected the change'));
+      }
+      if(out && out.success === true && out.id){
+        // sheet accepted it and told us the new ID → show the row right away
+        TEACHERS = [...TEACHERS, {Teacher_ID: out.id, ...payload.data, Status: true}];
+        syncOk = true;
+      } else {
+        // unreadable reply: fall back to waiting until the sheet shows the new teacher
+        const {ok, list} = await waitUntilSynced_(fetchTeacherList_, list =>
+          list.some(x => String(x.Name||'')===payload.data.Name && String(x.Phone||'')===payload.data.Phone)
+        );
+        syncOk = ok;
+        if(ok) TEACHERS = list; else snapBack = true;
+      }
       cacheSave_('cache_teachers', TEACHERS);
-      renderTeacherRows(TEACHERS);
+      filterTeachers();
       document.getElementById('teacherModal').close();
       ['t-Name','t-Email','t-Phone','t-Subject1'].forEach(id=>document.getElementById(id).value='');
-      setTeacherStatus(ok ? 'Teacher added' : 'Added (sync unconfirmed)');
-    }catch(err){ setTeacherStatus('Save failed'); }
-    finally{ saveBtn.disabled = false; saveBtn.innerHTML = 'Save Teacher'; }
+      setTeacherStatus(syncOk ? 'Teacher added' : 'Added (sync unconfirmed)');
+      if(snapBack) showWarn_('Sheet did not confirm the new teacher (check Apps Script). The screen will now reload from the sheet.');
+    }catch(err){
+      setTeacherStatus('Save failed');
+      showWarn_('Add teacher failed — ' + (err && err.message ? err.message : 'unknown error'));
+    }finally{
+      inflight_.teacher--;
+      saveBtn.disabled = false; saveBtn.innerHTML = 'Save Teacher';
+      syncEnd_('teacher', syncOk, true);
+      if(snapBack) loadTeachers(true);
+    }
   }
 
   /* ---------- boot ---------- */
@@ -647,10 +881,18 @@
   if(isValidUrl_(STUDENT_API_URL)) loadStudents(!!STUDENTS.length);
   if(isValidUrl_(TEACHER_API_URL)) loadTeachers(!!TEACHERS.length);
 
+  // auto-refresh every 15 s, paused while the tab is in the background
+  // (Apps Script has a daily request quota - 5 s x 2 sheets would burn it)
   setInterval(()=>{
+    if(document.hidden) return;
     if(isValidUrl_(STUDENT_API_URL)) loadStudents(true);
     if(isValidUrl_(TEACHER_API_URL)) loadTeachers(true);
-  }, 5000);
+  }, 15000);
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden) return;                       // catch up as soon as the tab is opened again
+    if(isValidUrl_(STUDENT_API_URL)) loadStudents(true);
+    if(isValidUrl_(TEACHER_API_URL)) loadTeachers(true);
+  });
 </script>
 </body>
 </html>
