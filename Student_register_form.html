@@ -534,7 +534,7 @@
   document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
 
   const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbyiYCckDlSoJDjQAH9Ddl7hNc63RyAucqmJn-YdEuG49BRf5cQJWjJzaad82l5gAMgyIA/exec";
-  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbyITF_wTLL-O__iJQ33ruTi6BQ91SGWlVMVHzurlpsmasqhXrugjTfd1sqN-lOD_7ed/exec";
+  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycby4YuXl8tU4SrCbglViR7_FPMUJFtE2HFI5XjIrvPTbCcrK1Oe7tDf4zGqC4Q0mPauU/exec";
 
   const form = document.getElementById('studentForm');
   const status = document.getElementById('status');
@@ -686,9 +686,12 @@
     studentIdPrefix.innerHTML = '<span class="spinner dark"></span>';
     studentIdInput.placeholder = 'Fetching…';
     try {
-      const res = await fetchWithTimeout(`${STUDENT_DETAILS_URL}?action=nextId`, {}, 8000);
+      const res = await fetchWithTimeout(`${STUDENT_DETAILS_URL}?action=nextId&t=${Date.now()}`, {}, 25000);
       const result = await res.json();
-      if (result.result === 'success' && result.id) {
+      if (result.result !== 'success' || !result.id) {
+        throw new Error(result.error || 'Backend old/wrong: redeploy script as New version');
+      }
+      {
         
         const untouched = force || studentIdInput.value === '' || studentIdInput.value === lastSuggestedId;
         if (untouched) studentIdInput.value = result.id;
@@ -696,6 +699,10 @@
       }
     } catch (err) {
       console.error('Could not fetch next Student ID', err);
+      if (force) {
+        status.textContent = '✗ ID fetch failed: ' + err.message;
+        status.className = 'status err';
+      }
     } finally {
       studentIdPrefix.textContent = 'ID';
       studentIdInput.placeholder = 'PP 26 0001';
@@ -728,7 +735,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(data)
-      }, 15000);
+      }, 30000);
       const result = await res.json();
 
       if (result.result === 'success') {
