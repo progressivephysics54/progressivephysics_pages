@@ -617,6 +617,81 @@
     }
   }
 
+  // ---- Subjects cache (localStorage): fetch once, reuse forever, refresh silently ----
+  const SUBJECT_CACHE_KEY = 'pp_subjects_cache_v1';
+  const SUBJECT_TTL = 24 * 60 * 60 * 1000; // silent refresh after 24h
+  function readSubjectCache(){
+    try { return JSON.parse(localStorage.getItem(SUBJECT_CACHE_KEY)) || {}; } catch (e) { return {}; }
+  }
+  function writeSubjectCache(){
+    try { localStorage.setItem(SUBJECT_CACHE_KEY, JSON.stringify(subjectCache)); } catch (e) {}
+  }
+  let subjectCache = readSubjectCache();
+  const subjectKey = (cls, board) => {
+    cls = (cls || '').trim();
+    return cls + '|' + (NO_BOARD_CLASSES.includes(cls) ? '' : (board || ''));
+  };
+  function storeSubjects(key, list){
+    if (!list || !list.length) return;
+    subjectCache[key] = { subjects: list, ts: Date.now() };
+    writeSubjectCache();
+  }
+
+  async function fetchSubjectsRemote(cls, board, tries = 3){
+    let lastErr;
+    for (let i = 0; i < tries; i++){
+      try {
+        const url = `${SUBJECT_URL}?action=getSubjects&class=${encodeURIComponent(cls)}&board=${encodeURIComponent(board || '')}`;
+        const res = await fetchWithTimeout(url, {}, 10000);
+        const result = await res.json();
+        if (result.result === 'success' && Array.isArray(result.subjects)) return result.subjects;
+        throw new Error(result.error || 'Bad response');
+      } catch (err) {
+        lastErr = err;
+        if (i < tries - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)));
+      }
+    }
+    throw lastErr;
+  }
+
+  // Background: pull every class x board combo once and keep in localStorage
+  let prefetching = false;
+  async function prefetchAllSubjects(){
+    if (prefetching) return;
+    prefetching = true;
+    try {
+      const classes = Array.from(classSelect.options).filter(o => !o.disabled).map(o => o.value);
+      const boards  = Array.from(boardSelect.options).filter(o => !o.disabled).map(o => o.value);
+      const jobs = [];
+      classes.forEach(c => {
+        const list = NO_BOARD_CLASSES.includes(c.trim()) ? [''] : boards;
+        list.forEach(b => {
+          const cached = subjectCache[subjectKey(c, b)];
+          if (!cached || Date.now() - cached.ts > SUBJECT_TTL) jobs.push([c, b]);
+        });
+      });
+      const worker = async () => {
+        while (jobs.length){
+          const [c, b] = jobs.shift();
+          try { storeSubjects(subjectKey(c, b), await fetchSubjectsRemote(c, b, 2)); } catch (e) {}
+        }
+      };
+      await Promise.all([worker(), worker(), worker()]);
+    } finally {
+      prefetching = false;
+    }
+  }
+
+  function refreshSubjectsSilently(cls, board, key){
+    fetchSubjectsRemote(cls, board, 1).then(list => {
+      if (!list.length) return;
+      const changed = JSON.stringify(list) !== JSON.stringify((subjectCache[key] || {}).subjects);
+      storeSubjects(key, list);
+      const stillCurrent = subjectKey(classSelect.value, boardSelect.value) === key;
+      if (changed && stillCurrent && !subjectPanel.classList.contains('open')) buildSubjectPanel(list);
+    }).catch(() => {});
+  }
+
   let subjectFetchToken = 0;
   async function loadSubjectsForSelection(){
     const cls = classSelect.value;
@@ -625,17 +700,29 @@
     if (!cls) { buildSubjectPanel(DEFAULT_SUBJECTS); return; }
     if (!noBoard && !board) { buildSubjectPanel([]); subjectBtnText.textContent = 'Select board first'; subjectBtnText.classList.add('placeholder'); subjectPanel.innerHTML=''; return; }
 
+    const key = subjectKey(cls, board);
     const myToken = ++subjectFetchToken;
+
+    // 1) Cache hit -> instant, no network wait
+    const cached = subjectCache[key];
+    if (cached && cached.subjects && cached.subjects.length){
+      buildSubjectPanel(cached.subjects);
+      if (status.textContent.startsWith('Offline')) status.textContent = '';
+      if (Date.now() - cached.ts > SUBJECT_TTL) refreshSubjectsSilently(cls, board, key);
+      return;
+    }
+
+    // 2) No cache -> fetch with retries
     subjectBtnText.textContent = 'Loading subjects…';
     subjectBtnText.classList.add('placeholder');
     showSubjectSkeleton();
     try {
-      const url = `${SUBJECT_URL}?action=getSubjects&class=${encodeURIComponent(cls)}&board=${encodeURIComponent(board || '')}`;
-      const res = await fetchWithTimeout(url, {}, 8000);
-      const result = await res.json();
+      const list = await fetchSubjectsRemote(cls, board, 3);
       if (myToken !== subjectFetchToken) return;
-      if (result.result === 'success' && result.subjects && result.subjects.length){
-        buildSubjectPanel(result.subjects);
+      if (list.length){
+        storeSubjects(key, list);
+        buildSubjectPanel(list);
+        if (status.textContent.startsWith('Offline')) status.textContent = '';
       } else {
         subjectPanel.innerHTML = '';
         subjectBtnText.textContent = 'No subjects found';
@@ -643,11 +730,11 @@
       }
     } catch (err) {
       console.error('Could not fetch subjects', err);
-      if (myToken === subjectFetchToken) {
-        subjectPanel.innerHTML = '';
-        subjectBtnText.textContent = 'Couldn\'t load subjects';
-        subjectBtnText.classList.add('placeholder');
-      }
+      if (myToken !== subjectFetchToken) return;
+      // 3) Server down + no cache -> default list so form still usable
+      buildSubjectPanel(DEFAULT_SUBJECTS);
+      status.textContent = 'Offline — default subjects shown';
+      status.className = 'status err';
     }
   }
 
@@ -666,6 +753,8 @@
   });
 
   buildSubjectPanel(DEFAULT_SUBJECTS);
+  prefetchAllSubjects();
+  window.addEventListener('online', prefetchAllSubjects);
 
 
   const studentIdInput = document.getElementById('studentIdInput');
