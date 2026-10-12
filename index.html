@@ -1,11 +1,185 @@
-<html>
-    <head>
-        <title>navigation page</title>
-    </head>
-    <body>
-        <h1> Progressive physics </h1>
-        <a href="fee_receipt_register.html" ><button>fees recipt</button></a><br>
-        <a href="Student_register_form.html"><button>student registration</button></a><br>
-        <a href="admin.html"><button>admin panel</button></a>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progressive Physics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --fg: #111827;
+      --fg-muted: #6B7280;
+      --accent: #2563EB;
+      --accent-hover: #1D4ED8;
+      --border: #E5E7EB;
+      --card-bg: #FAFAFA;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 60px 24px 40px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+      font-size: 1rem;
+      color: var(--fg-muted);
+      max-width: 420px;
+      margin-bottom: 48px;
+    }
+
+    .modules {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .module-link {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--fg);
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .module-link:hover {
+      border-color: var(--accent);
+      background: #F0F7FF;
+    }
+
+    .module-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .module-icon {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      background: #EFF6FF;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .module-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .module-content {
+      text-align: left;
+      flex: 1;
+    }
+
+    .module-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .module-desc {
+      font-size: 0.8125rem;
+      color: var(--fg-muted);
+      margin-top: 2px;
+    }
+
+    .footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      width: 100%;
+      text-align: center;
+    }
+
+    .footer p {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Progressive Physics</h1>
+      <p class="hero-subtitle">Build intuition through structured modules. From fundamentals to advanced concepts — each step derives from the last.</p>
+    </header>
+
+    <nav class="modules" aria-label="Course modules">
+      <a href="fee_receipt_register.html" class="module-link">
+        <div class="module-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="module-content">
+          <div class="module-title">Fees Receipt Register</div>
+         
+        </div>
+      </a>
+
+      <a href="Student_register_form.html" class="module-link">
+        <div class="module-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="module-content">
+          <div class="module-title">Student Registration</div>
+         
+        </div>
+      </a>
+
+      <a href="admin.html" class="module-link">
+        <div class="module-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+        </div>
+        <div class="module-content">
+          <div class="module-title">Admin Panel</div>
+        
+        </div>
+      </a>
+    </nav>
+
+   
+  </div>
+</body>
 </html>
