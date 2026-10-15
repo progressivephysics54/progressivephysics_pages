@@ -178,6 +178,8 @@
     .modal-actions{flex-direction:column-reverse}
     .modal-actions .btn{width:100%;text-align:center}
   }
+  .subj-chip{display:inline-block;margin:1px 3px 1px 0;padding:1px 8px;border:1px solid var(--rule);background:var(--parchment-dk);font-size:.85em;line-height:1.5;border-radius:10px}
+  td[data-field="Subject"][contenteditable="true"]{min-width:140px}
 </style>
 </head>
 <body>
@@ -242,7 +244,7 @@
           <option value="Phone">Phone</option>
           <option value="Email">Email</option>
           <option value="Role">Role</option>
-          <option value="Subject1">Subject</option>
+          <option value="Subject">Subjects</option>
         </select>
         <input id="teacherSearchInput" type="search" placeholder="Search… (% = wildcard)" autocomplete="off" oninput="filterTeachers()">
       </div>
@@ -253,7 +255,7 @@
     <table>
       <thead><tr>
         <th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th>
-        <th>Subject</th><th>Active</th><th></th>
+        <th>Subjects</th><th>Active</th><th></th>
       </tr></thead>
       <tbody id="teacherRows"><tr><td colspan="8" class="empty">Enter your Teacher Web App URL above and hit Refresh.</td></tr></tbody>
     </table>
@@ -273,7 +275,7 @@
       <div class="field"><label>Phone</label><input id="t-Phone"></div>
       <div class="field"><label>Role</label>
         <select id="t-Role"><option>Teacher</option><option>Admin</option></select></div>
-      <div class="field"><label>Subject</label><input id="t-Subject1"></div>
+      <div class="field full"><label>Subjects <span style="opacity:.6;font-weight:400">(comma separated)</span></label><input id="t-Subject" placeholder="physics, chemistry, math"></div>
     </div>
     <div class="modal-actions">
       <button class="btn ghost" type="button" onclick="document.getElementById('teacherModal').close()">Cancel</button>
@@ -302,7 +304,7 @@
 <script>
 
   const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbyqIYNC04_sjYMQ1rAXXXrBRuRDWpRLTV80UU8z4eYd0tgGlokVbxMtOaF-urv7AB2D/exec';
-  const TEACHER_API_URL = 'https://script.google.com/macros/s/AKfycbyQd0Wx8FYNvKNqNL05Zr2M_GqWXtELVzyWHJK1nws3lgR267dAC5FiXKlHfKxvtHHY/exec';
+  const TEACHER_API_URL = 'https://script.google.com/macros/s/AKfycbxIe7QVlhDVkufRs_aND-J8Y_eZvDACZTm4ObN2HXsc9B_tVujVhYltuxSfOt-dybbb/exec';
  
 
   function isValidUrl_(u){ return typeof u === 'string' && /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(u); }
@@ -568,6 +570,9 @@
   }
 
   const cell_ = v => esc_(v == null ? '' : v);
+  /* subjects: sheet may hold "physics\nmath" or "physics, math" -> normalise to "physics, math" */
+  const normSubjects_ = v => { const seen = {}; return String(v == null ? '' : v).split(/[,;\n\r\/|]+/).map(x => x.trim()).filter(x => { const k = x.toLowerCase(); if(!x || seen[k]) return false; seen[k] = 1; return true; }).join(', '); };
+  const subjChips_ = v => normSubjects_(v).split(', ').filter(Boolean).map(x => `<span class="subj-chip">${esc_(x)}</span>`).join('');
 
   function renderStudentRows(list, emptyMsg){
     list = list || STUDENTS;
@@ -887,7 +892,7 @@
             <option ${t.Role==='Admin'?'selected':''}>Admin</option>
           </select>
         </td>
-        <td data-field="Subject1" contenteditable="false">${cell_(t.Subject1)}</td>
+        <td data-field="Subject" data-raw="${esc_(normSubjects_(t.Subject != null ? t.Subject : t.Subject1))}" contenteditable="false">${subjChips_(t.Subject != null ? t.Subject : t.Subject1)}</td>
         <td style="text-align:center">
           <input type="checkbox" class="status-tick" data-field="Status" disabled ${t.Status?'checked':''}>
         </td>
@@ -921,7 +926,10 @@
     tr.classList.add('editing');
     tr.querySelectorAll('[data-field]').forEach(el=>{
       if(el.tagName==='SELECT' || el.tagName==='INPUT'){ el.disabled=false; }
-      else { el.contentEditable='true'; }
+      else {
+        if(el.dataset.field==='Subject') el.textContent = el.dataset.raw || '';
+        el.contentEditable='true';
+      }
     });
     const btn = tr.querySelector('.edit-btn');
     btn.innerHTML = '<i class="fa-solid fa-check"></i>';
@@ -934,7 +942,10 @@
     tr.classList.remove('editing');
     tr.querySelectorAll('[data-field]').forEach(el=>{
       if(el.tagName==='SELECT' || el.tagName==='INPUT'){ el.disabled=true; }
-      else { el.contentEditable='false'; }
+      else {
+        el.contentEditable='false';
+        if(el.dataset.field==='Subject'){ const raw = normSubjects_(el.innerText); el.dataset.raw = raw; el.innerHTML = subjChips_(raw); }
+      }
     });
     const btn = tr.querySelector('.edit-btn');
     btn.innerHTML = '<i class="fa-solid fa-pen"></i>';
@@ -952,7 +963,7 @@
       Email: tr.querySelector('[data-field=Email]').innerText.trim(),
       Phone: tr.querySelector('[data-field=Phone]').innerText.trim(),
       Role: tr.querySelector('[data-field=Role]').value,
-      Subject1: tr.querySelector('[data-field=Subject1]').innerText.trim(),
+      Subject: normSubjects_(tr.querySelector('[data-field=Subject]').innerText),
       Status: tr.querySelector('[data-field=Status]').checked
     };
     const before = TEACHERS[i];
@@ -1012,7 +1023,7 @@
     if(!g('t-Name')){ alert('Name required.'); return; }
     const payload = { action:'addTeacher', data:{
       Name:g('t-Name'), Email:g('t-Email'), Phone:g('t-Phone'),
-      Role:g('t-Role'), Subject1:g('t-Subject1')
+      Role:g('t-Role'), Subject:normSubjects_(g('t-Subject'))
     }};
     const saveBtn = document.querySelector('#teacherModal .modal-actions .btn:not(.ghost)');
     saveBtn.disabled = true;
@@ -1043,7 +1054,7 @@
       cacheSave_('cache_teachers', TEACHERS);
       filterTeachers();
       document.getElementById('teacherModal').close();
-      ['t-Name','t-Email','t-Phone','t-Subject1'].forEach(id=>document.getElementById(id).value='');
+      ['t-Name','t-Email','t-Phone','t-Subject'].forEach(id=>document.getElementById(id).value='');
       setTeacherStatus(syncOk ? 'Teacher added' : 'Added (sync unconfirmed)');
       if(snapBack) showWarn_('Sheet did not confirm the new teacher (check Apps Script). The screen will now reload from the sheet.');
     }catch(err){
