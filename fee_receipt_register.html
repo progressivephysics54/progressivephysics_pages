@@ -420,6 +420,8 @@
         <div class="field">
           <label for="teacherId">Teacher ID</label>
           <input type="text" id="teacherId" placeholder="e.g. T-104" required>
+          <div class="suggest-box" id="suggestBoxTeacher"></div>
+          <div class="hint" id="teacherHint"></div>
         </div>
         <div class="field">
           <label for="date">Date</label>
@@ -542,6 +544,9 @@
 
   // Student Details Web App URL — looks up name/phone/subjects from student_details sheet
   const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwg8hiahikFMpHHS1BPwOl6sgmEAsmeMhatJXdAnWDonYW7-yzQDMw5J0Zq4vzAAbZK/exec";
+
+  // Teacher Web App URL — looks up teachers + their subjects, auto-fills Teacher ID
+  const TEACHER_URL = "https://script.google.com/macros/s/AKfycbxIe7QVlhDVkufRs_aND-J8Y_eZvDACZTm4ObN2HXsc9B_tVujVhYltuxSfOt-dybbb/exec";
 
   const form = document.getElementById('feeForm');
   const statusEl = document.getElementById('status');
@@ -852,6 +857,139 @@
       hideSuggest(suggestBoxId);
       hideSuggest(suggestBoxName);
     }
+  });
+
+  // ---- Teacher auto-fill: tick a subject -> Teacher ID fills; several teachers -> dropdown ----
+  const TCH_KEY = 'fr_teachers_v1', TCH_TTL = 5 * 60e3;
+  const teacherIdInput = document.getElementById('teacherId');
+  const suggestBoxTeacher = document.getElementById('suggestBoxTeacher');
+  const teacherHint = document.getElementById('teacherHint');
+  let TEACHERS = [], teacherAuto = false, lastCands = [], lastSubj = '', teachersReady = null;
+
+  const splitSubj = v => String(v == null ? '' : v).split(/[,;\n\r\/|]+/).map(x => x.trim()).filter(Boolean);
+  const subjKey = v => String(v || '').toLowerCase().replace(/[^a-z]/g, '');
+  // "Maths" ~ "math" ~ "Mathematics", "Phy" ~ "Physics"
+  function subjMatch(a, b) {
+    a = subjKey(a); b = subjKey(b);
+    if (!a || !b) return false;
+    if (a === b) return true;
+    return Math.min(a.length, b.length) >= 3 && (a.startsWith(b) || b.startsWith(a));
+  }
+
+  function buildTeachers(list) {
+    TEACHERS = (list || [])
+      .filter(t => !(t.Status === false || String(t.Status).toLowerCase() === 'false'))   // skip inactive
+      .map(t => ({
+        id: String(t.Teacher_ID || '').trim(), name: String(t.Name || '').trim(), role: String(t.Role || '').trim(),
+        subjects: splitSubj(t.Subject != null ? t.Subject : t.Subject1)
+      }))
+      .filter(t => t.id);
+  }
+
+  function loadTeachers() {
+    let have = false, fresh = false;
+    try {
+      const c = JSON.parse(localStorage.getItem(TCH_KEY) || 'null');
+      if (c && c.list) { buildTeachers(c.list); have = true; fresh = Date.now() - c.t < TCH_TTL; }
+    } catch (e) {}
+    if (have && fresh) return Promise.resolve();
+    const p = fetch(TEACHER_URL + '?action=listTeachers&_=' + Date.now())
+      .then(r => r.json())
+      .then(j => {
+        if (Array.isArray(j.teachers)) {
+          buildTeachers(j.teachers);
+          try { localStorage.setItem(TCH_KEY, JSON.stringify({ t: Date.now(), list: j.teachers })); } catch (e) {}
+        }
+      })
+      .catch(() => { if (!have) teachersReady = null; });   // retry on next tick if nothing cached
+    return have ? Promise.resolve() : p;                      // cached -> instant, refresh in background
+  }
+  teachersReady = loadTeachers();
+
+  function setTeacher(t, subj) {
+    teacherIdInput.value = t.id;
+    teacherAuto = true;
+    teacherHint.textContent = t.name + (subj ? ' · ' + subj : '');
+    hideSuggest(suggestBoxTeacher);
+  }
+
+  function renderTeacherSuggest(cands, subj) {
+    const box = suggestBoxTeacher;
+    box.innerHTML = '';
+    cands.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'suggest-item';
+      const details = [t.role, t.subjects.length ? 'Subjects: ' + t.subjects.join(', ') : ''].filter(Boolean)
+        .map(d => `<span>${esc(d)}</span>`).join('');
+      row.innerHTML = `<div class="suggest-name">${esc(t.id)} — ${esc(t.name)}</div><div class="suggest-details">${details}</div>`;
+      row.addEventListener('click', () => setTeacher(t, subj));
+      box.appendChild(row);
+    });
+    box.classList.add('show');
+  }
+
+  async function resolveTeacher(subj) {
+    await (teachersReady || (teachersReady = loadTeachers()));
+    const cands = TEACHERS.filter(t => t.subjects.some(x => subjMatch(x, subj)));
+    lastCands = cands; lastSubj = subj;
+    hideSuggest(suggestBoxTeacher);
+    const cur = teacherIdInput.value.trim();
+    if (cur && !teacherAuto) { teacherHint.textContent = ''; return; }      // typed by hand -> leave it alone
+    if (!TEACHERS.length) { teacherHint.textContent = 'Teacher list not loaded — type ID by hand'; return; }
+    if (!cands.length) {
+      if (teacherAuto) { teacherIdInput.value = ''; }
+      teacherHint.textContent = 'No active teacher found for ' + subj;
+      return;
+    }
+    if (teacherAuto && cands.some(t => t.id === cur)) {                      // already a valid pick for this subject
+      const t = cands.find(t => t.id === cur); teacherHint.textContent = t.name + ' · ' + subj; return;
+    }
+    if (cands.length === 1) { setTeacher(cands[0], subj); return; }
+    teacherIdInput.value = ''; teacherAuto = true;                           // several teachers -> choose
+    teacherHint.textContent = cands.length + ' teachers teach ' + subj + ' — pick one';
+    renderTeacherSuggest(cands, subj);
+  }
+
+  function onSubjectToggle(cb) {
+    const checked = Array.from(subjectsBox.querySelectorAll('input[type=checkbox]:checked')).map(x => x.value);
+    if (cb.checked) { resolveTeacher(cb.value); return; }
+    if (!teacherAuto) return;
+    if (!checked.length) {                                                   // all unticked -> drop auto-filled teacher
+      teacherIdInput.value = ''; teacherAuto = false; teacherHint.textContent = '';
+      lastCands = []; hideSuggest(suggestBoxTeacher); return;
+    }
+    const cur = teacherIdInput.value.trim();
+    const stillOk = TEACHERS.some(t => t.id === cur && t.subjects.some(x => checked.some(c => subjMatch(x, c))));
+    if (!stillOk) resolveTeacher(checked[checked.length - 1]);
+  }
+
+  function resetTeacherAuto() {
+    teacherAuto = false; lastCands = []; lastSubj = '';
+    teacherHint.textContent = ''; hideSuggest(suggestBoxTeacher);
+  }
+
+  subjectsBox.addEventListener('change', e => {
+    if (e.target.matches('input[type=checkbox]')) onSubjectToggle(e.target);
+  });
+  teacherIdInput.addEventListener('input', () => {
+    teacherAuto = false; teacherHint.textContent = ''; hideSuggest(suggestBoxTeacher);
+  });
+  teacherIdInput.addEventListener('focus', () => {                           // reopen the picker if still undecided
+    if (lastCands.length > 1 && !teacherIdInput.value.trim()) renderTeacherSuggest(lastCands, lastSubj);
+  });
+  teacherIdInput.addEventListener('keydown', e => {
+    const box = suggestBoxTeacher;
+    if (!box.classList.contains('show')) return;
+    const rows = box.querySelectorAll('.suggest-item');
+    const active = box.querySelector('.suggest-item.active');
+    let idx = active ? Array.from(rows).indexOf(active) : -1;
+    if (e.key === 'ArrowDown') { e.preventDefault(); idx = Math.min(idx + 1, rows.length - 1); rows.forEach((r, i) => r.classList.toggle('active', i === idx)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); idx = Math.max(idx - 1, 0); rows.forEach((r, i) => r.classList.toggle('active', i === idx)); }
+    else if (e.key === 'Enter') { if (idx >= 0 && rows[idx]) { e.preventDefault(); rows[idx].click(); } }
+    else if (e.key === 'Escape') hideSuggest(box);
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#teacherId') && !e.target.closest('#suggestBoxTeacher')) hideSuggest(suggestBoxTeacher);
   });
 
   // ======================= NAVBAR · HISTORY · RECEIPT · SEND TIMER =======================
@@ -1287,6 +1425,7 @@
         dateInput.value = new Date().toISOString().slice(0,10);
         feesMonthSelect.value = new Date().toLocaleString('en-US', { month: 'long' });
         clearStudentInfo('');
+        resetTeacherAuto();
         refreshReceiptId();
       } else {
         throw new Error(result.message || 'Unknown error');
