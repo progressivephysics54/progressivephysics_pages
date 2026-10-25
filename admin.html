@@ -62,6 +62,10 @@ i.fa-solid,i.fa-regular,i.fa-brands{line-height:1}
 .seg button{border:0;background:none;padding:0 0 10px;font-weight:500;font-size:14px;color:var(--muted);display:flex;gap:8px;align-items:center;margin-bottom:-1px;border-bottom:2px solid transparent}
 .seg button i{display:none}
 .seg button.on{color:var(--deep);border-bottom-color:var(--brass)}
+.fseg{display:flex;gap:8px}
+.fseg button{flex:1;display:flex;gap:8px;align-items:center;justify-content:center;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer}
+.fseg button.on{border-color:var(--brass);color:var(--deep);box-shadow:inset 0 0 0 1px var(--brass)}
+.fseg button:disabled{opacity:.5;cursor:not-allowed}
 form.fm{display:grid;gap:18px}
 .fm label,dialog label,.field label{font-size:12px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:.01em}
 .inp{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:4px;background:#fff;padding:0 4px 0 12px}
@@ -542,6 +546,7 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
         <div><label for="lid">Admin ID</label><div class="inp"><i class="fa-solid fa-id-badge"></i><input id="lid" placeholder="Your Teacher/admin ID" required autocapitalize="characters"></div></div>
         <div><label for="lpw">Password</label><div class="inp"><i class="fa-solid fa-lock"></i><input id="lpw" type="password" required autocomplete="current-password"><button type="button" class="eye" data-for="lpw" aria-label="Show password"><i class="fa-solid fa-eye"></i></button></div></div>
         <button class="btn" id="lgo" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
+        <a href="#" id="fgo" style="font-size:13px;text-align:center;color:var(--muted)">Forgot password?</a>
         <div class="msg" id="msg" role="alert"></div>
       </form>
 
@@ -551,6 +556,22 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
         <div><label for="spw2">Confirm password</label><div class="inp"><i class="fa-solid fa-shield-halved"></i><input id="spw2" type="password" required minlength="6" autocomplete="new-password"></div></div>
         <button class="btn gold" id="sgo" type="submit"><i class="fa-solid fa-user-check"></i> Create account</button>
         <div class="msg" id="smsg" role="alert"></div>
+      </form>
+
+      <form class="fm" id="ff" autocomplete="off" hidden>
+        <div class="fseg" role="tablist" aria-label="Reset using">
+          <button type="button" data-f="id" class="on"><i class="fa-solid fa-id-badge"></i>Admin ID</button>
+          <button type="button" data-f="email"><i class="fa-solid fa-envelope"></i>Email</button>
+        </div>
+        <div><label for="fid" id="flab">Admin ID</label><div class="inp"><i class="fa-solid fa-id-badge" id="fico"></i><input id="fid" placeholder="Your admin ID" required autocapitalize="characters"></div></div>
+        <div id="fstep2" class="fm" hidden>
+          <div><label for="fotp">Code from email</label><div class="inp"><i class="fa-solid fa-envelope-open-text"></i><input id="fotp" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div></div>
+          <div><label for="fpw">New password (6+ characters)</label><div class="inp"><i class="fa-solid fa-key"></i><input id="fpw" type="password" minlength="6" autocomplete="new-password"></div></div>
+          <div><label for="fpw2">Confirm password</label><div class="inp"><i class="fa-solid fa-shield-halved"></i><input id="fpw2" type="password" minlength="6" autocomplete="new-password"></div></div>
+        </div>
+        <button class="btn gold" id="ffgo" type="submit"><i class="fa-solid fa-paper-plane"></i> Send code</button>
+        <a href="#" id="fback" style="font-size:13px;text-align:center;color:var(--muted)">Back to sign in</a>
+        <div class="msg" id="fmsg" role="alert"></div>
       </form>
     </div>
   </div>
@@ -796,7 +817,7 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
 
 <script>
 /* ═════════ AUTH + SHELL (same Auth.gs web app as the teacher panel) ═════════ */
-const AUTH_URL = "https://script.google.com/macros/s/AKfycbz-TktPwZr95Y5t3nWjTU48u6Si5FXNwdaWbLJkyqCef90meVhQQr5HTWVKHahPI9Cnig/exec";
+const AUTH_URL = "https://script.google.com/macros/s/AKfycbwvoWrRNad9Tvz-DOJzqeiZqQ2ecZlIEGg14LVgo2FnU4-7pnRgSb_e0fFjDP_PL7ahgg/exec";
 const SESSION_KEY = 'ap';           // separate from the teacher panel's 'tp'
 const $ = id => document.getElementById(id);
 const $$ = s => document.querySelectorAll(s);
@@ -921,9 +942,10 @@ $$('dialog').forEach(d => {
 });
 
 function mode(m) {
-  $('lf').hidden = m !== 'in'; $('sf').hidden = m !== 'up';
+  $('lf').hidden = m !== 'in'; $('sf').hidden = m !== 'up'; $('ff').hidden = m !== 'f';
   $$('.seg button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
-  $('msg').textContent = ''; $('smsg').textContent = '';
+  $('msg').textContent = ''; $('smsg').textContent = ''; $('fmsg').textContent = '';
+  if (m !== 'f') fReset_();
 }
 $$('[data-m]').forEach(b => b.addEventListener('click', () => mode(b.dataset.m)));
 
@@ -947,6 +969,50 @@ $('sf').addEventListener('submit', async e => {
     } else m.textContent = r.message || 'Sign-up failed';
   } catch (err) { m.textContent = 'Cannot reach the server. Check AUTH_URL and your connection.'; }
   b.disabled = false; b.innerHTML = LABEL.sgo;
+});
+
+let fStep = 1, fBy = 'id';
+function setFBy_(by) {
+  fBy = by;
+  $$('.fseg button').forEach(b => b.classList.toggle('on', b.dataset.f === by));
+  const em = by === 'email', i = $('fid');
+  $('flab').textContent = em ? 'Email' : 'Admin ID';
+  $('fico').className = 'fa-solid ' + (em ? 'fa-envelope' : 'fa-id-badge');
+  i.type = em ? 'email' : 'text'; i.placeholder = em ? 'Your registered email' : 'Your admin ID';
+  i.autocapitalize = em ? 'none' : 'characters'; i.value = '';
+}
+$$('.fseg button').forEach(b => b.addEventListener('click', () => { if (fStep === 1) setFBy_(b.dataset.f); }));
+const F1 = '<i class="fa-solid fa-paper-plane"></i> Send code';
+const F2 = '<i class="fa-solid fa-rotate-left"></i> Reset password';
+function fReset_() {
+  fStep = 1; $('fstep2').hidden = true; $('fid').readOnly = false;
+  $$('.fseg button').forEach(b => b.disabled = false);
+  $('fotp').required = $('fpw').required = $('fpw2').required = false;
+  $('fotp').value = $('fpw').value = $('fpw2').value = ''; $('ffgo').innerHTML = F1;
+}
+$('fgo').addEventListener('click', e => { e.preventDefault(); const v = $('lid').value; mode('f'); setFBy_('id'); $('fid').value = v; });
+$('fback').addEventListener('click', e => { e.preventDefault(); mode('in'); });
+$('ff').addEventListener('submit', async e => {
+  e.preventDefault();
+  const b = $('ffgo'), m = $('fmsg'); m.textContent = '';
+  if (fStep === 2 && $('fpw').value !== $('fpw2').value) { m.textContent = 'Passwords do not match'; return; }
+  b.disabled = true; b.innerHTML = spin(fStep === 1 ? 'Sending…' : 'Resetting…');
+  try {
+    const r = fStep === 1
+      ? await post({ action: 'forgot', by: fBy, id: $('fid').value.trim() })
+      : await post({ action: 'resetPassword', by: fBy, id: $('fid').value.trim(), otp: $('fotp').value.trim(), newPassword: $('fpw').value });
+    if (r.status === 'ok' && fStep === 1) {
+      fStep = 2; $('fstep2').hidden = false; $('fid').readOnly = true; $$('.fseg button').forEach(b => b.disabled = true);
+      $('fotp').required = $('fpw').required = $('fpw2').required = true;
+      toast('If ID is valid, code sent to email');
+      b.disabled = false; b.innerHTML = F2; return;
+    }
+    if (r.status === 'ok') {
+      if (isAdmin(r)) { enter(r); toast('Password reset'); fReset_(); }
+      else m.textContent = 'Reset done, but this console is for administrators only.';
+    } else m.textContent = r.message || 'Failed';
+  } catch (err) { m.textContent = 'Cannot reach the server. Check AUTH_URL and your connection.'; }
+  b.disabled = false; b.innerHTML = fStep === 1 ? F1 : F2;
 });
 
 $('lf').addEventListener('submit', async e => {
