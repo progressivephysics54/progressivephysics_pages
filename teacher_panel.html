@@ -4,144 +4,314 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Progressive Physics · Staff Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 <style>
-:root{--navy:#0d1b5e;--blue:#0b5b94;--gold:#b8982f;--ivory:#f7f2e6;--ink:#14213d;--stamp:#b3402f;--bar:56px}
+:root{
+  --ink:#0d1636; --muted:#5b6485; --bg:#f3efe6; --card:#ffffff; --line:#e4dece; --line-2:#e4dece;
+  --accent:#b8891a; --accent-d:#8f6a12; --navy:#0b1745; --navy-2:#16296f; --gold:#e0b030; --ok:#1f7a4d; --err:#c0392b;
+  --adm:#b4423a; --fee:#0e8a7c; --his:#2456c8;
+  --rail:240px;
+  --display:'Newsreader',Georgia,serif; --body:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{font-family:'Space Mono',monospace;color:var(--ink);background:var(--ivory);display:flex;flex-direction:column}
+body{font-family:var(--body);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;font-size:15px}
 [hidden]{display:none!important}
-button{font:inherit;cursor:pointer}
-#login{flex:1;display:grid;place-items:center;padding:24px;background:repeating-linear-gradient(0deg,transparent 0 27px,rgba(13,27,94,.045) 28px),var(--ivory)}
-.idcard{width:100%;max-width:380px;background:#fff;border:1.5px solid var(--navy);box-shadow:8px 8px 0 rgba(13,27,94,.14);position:relative}
-.idcard::before{content:"";position:absolute;top:12px;left:50%;width:54px;height:10px;margin-left:-27px;border-radius:6px;background:var(--ivory);border:1.5px solid var(--navy)}
-.idhead{background:var(--navy);color:#fff;padding:36px 28px 20px;border-bottom:4px solid var(--gold)}
-.idhead b{font-family:'Fraunces',serif;font-size:25px;display:block;font-weight:700}
-.idhead span{font-size:12px;opacity:.75}
-.idbody{padding:24px 28px 28px;display:grid;gap:18px}
-label{font-size:12px;font-weight:700;color:var(--blue);display:block;margin-bottom:6px}
-.inp{display:flex;border-bottom:1.5px solid var(--ink)}
-.inp input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:16px;padding:8px 2px;outline:0;color:var(--ink)}
-.inp:focus-within{border-color:var(--blue);background:rgba(11,91,148,.05)}
-.inp button{background:none;border:0;color:var(--blue);font-size:12px;padding:0 6px}
-.go{background:var(--navy);color:#fff;border:1.5px solid var(--navy);padding:14px;font-family:'Fraunces',serif;font-weight:600;font-size:16px;box-shadow:4px 4px 0 var(--gold)}
-.go:disabled{opacity:.6;cursor:wait}
-.msg{min-height:18px;font-size:12px;color:var(--stamp);font-weight:700}
-#app{flex:1;display:flex;flex-direction:column;min-height:0}
-.bar{height:var(--bar);flex:none;display:flex;align-items:center;gap:14px;padding:0 14px;background:var(--navy);color:#fff;border-bottom:3px solid var(--gold)}
-.brand{font-family:'Fraunces',serif;font-weight:700;white-space:nowrap}
-.tabs{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none;height:100%}
-.tabs button{background:transparent;border:0;color:#cfd6f3;padding:0 12px;font-size:13px;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-3px}
-.tabs button.on{color:#fff;border-bottom-color:var(--gold)}
-.who{font-size:12px;line-height:1.3;text-align:right;white-space:nowrap}
-.who button{background:none;border:0;color:#f6e2a0;padding:0 0 0 8px;font-size:12px;text-decoration:underline}
-#stage{flex:1;position:relative;min-height:0}
-#stage iframe,#home{position:absolute;inset:0;width:100%;height:100%;border:0}
-#home{overflow:auto;padding:44px 20px}
-.hello{max-width:780px;margin:0 auto}
-.hello h1{font-family:'Fraunces',serif;font-size:clamp(28px,6vw,44px);line-height:1.1;margin:0 0 8px;color:var(--navy)}
-.hello p{margin:0;font-size:13px;color:#4a5370}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 32px}
-.chip{border:1.5px solid var(--navy);padding:5px 10px;font-size:12px;background:#fff}
-.chip b{color:var(--stamp)}
-.tiles{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
-.tile{text-align:left;background:#fff;border:1.5px solid var(--ink);padding:20px 18px 22px;box-shadow:5px 5px 0 var(--c);transition:transform .12s}
-.tile:hover,.tile:focus-visible{transform:translate(-2px,-2px)}
-.tile h2{font-family:'Fraunces',serif;font-size:21px;margin:0 0 8px;color:var(--c)}
-.tile p{font-size:12px;line-height:1.55}
-dialog{border:1.5px solid var(--navy);padding:22px;max-width:340px;width:90%;box-shadow:6px 6px 0 rgba(13,27,94,.2)}
-dialog::backdrop{background:rgba(13,27,94,.45)}
-dialog form{display:grid;gap:14px}
+button{font:inherit;cursor:pointer;color:inherit}
+i.fa-solid,i.fa-regular,i.fa-brands{line-height:1}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── LOGIN ── */
+#login{min-height:100dvh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.hero{padding:44px 56px;display:flex;flex-direction:column;justify-content:space-between;background:#0b1745;color:#f3efe6;position:relative}
+.logo{display:flex;align-items:center;gap:12px}
+.logo .lg{width:34px;height:34px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:15px}
+.logo b{display:block;font-family:var(--display);font-size:19px;font-weight:600;line-height:1.1}
+.logo span{font-family:var(--mono);font-size:11px;opacity:.6;letter-spacing:.04em}
+.orbit{display:none}
+.pitch{max-width:440px}
+.pitch h1{font-family:var(--display);font-weight:500;font-size:clamp(36px,4.6vw,58px);line-height:1.02;margin:0 0 20px;letter-spacing:-.02em}
+.pitch h1 em{font-style:italic;color:#e0b030;font-weight:500}
+.pitch p{margin:0 0 28px;color:rgba(246,243,236,.7);line-height:1.6;font-size:15px}
+.perks{list-style:none;margin:0;padding:0;border-top:1px solid rgba(246,243,236,.18)}
+.perks li{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid rgba(246,243,236,.18);font-size:14px}
+.perks li i{width:16px;text-align:center;color:#e0b030;font-size:13px;background:none;border:0}
+.panel{display:grid;place-items:center;padding:32px 22px;background:var(--bg)}
+.card{width:100%;max-width:380px}
+.card h2{font-family:var(--display);font-weight:600;font-size:32px;margin:0 0 6px;letter-spacing:-.01em}
+.card .lead{margin:0 0 26px;color:var(--muted);font-size:14.5px}
+.seg{display:flex;gap:22px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.seg button{border:0;background:none;padding:0 0 10px;font-weight:500;font-size:14px;color:var(--muted);display:flex;gap:8px;align-items:center;margin-bottom:-1px;border-bottom:2px solid transparent}
+.seg button i{display:none}
+.seg button.on{color:var(--navy);border-bottom-color:var(--gold)}
+form.fm{display:grid;gap:18px}
+.fm label,dialog label{font-size:12px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:.01em}
+.inp{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:4px;background:#fff;padding:0 4px 0 12px}
+.inp>i{color:var(--muted);font-size:13px;width:14px;text-align:center}
+.inp:focus-within{border-color:var(--ink);outline:1px solid var(--ink)}
+.inp input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:16px;padding:12px 0;outline:0;color:var(--ink)}
+.inp input::placeholder{color:#a9a392}
+.eye{border:0;background:none;color:var(--muted);width:36px;height:36px;font-size:14px}
+.eye:hover{color:var(--ink)}
+.btn{border:1px solid var(--navy-2);border-radius:4px;padding:13px 18px;font-weight:500;font-size:15px;color:#fff;background:var(--navy-2);display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s}
+.btn:hover{background:var(--navy)}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:var(--navy);font-weight:600}
+.btn.gold:hover{background:#f0cb56}
+.msg{min-height:18px;font-size:13px;color:var(--err);font-weight:500;display:flex;gap:8px;align-items:center}
+.msg:empty{min-height:0}
+.msg:not(:empty)::before{content:"\f06a";font-family:"Font Awesome 6 Free";font-weight:900}
+.msg.ok{color:var(--ok)}.msg.ok:not(:empty)::before{content:"\f058"}
+
+/* ── APP SHELL ── */
+#app{height:100dvh;display:grid;grid-template-columns:var(--rail) 1fr;grid-template-rows:minmax(0,1fr)}
+.rail{background:#ece6d7;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 14px 14px}
+.rail .logo{padding:0 8px 20px;border-bottom:1px solid var(--line)}
+.rail .logo .lg{width:30px;height:30px;font-size:13px}
+.rail .logo b{font-size:17px}
+.rail .logo span{color:var(--muted);opacity:1}
+.nav{display:grid;gap:2px;margin-top:18px}
+.nav .cap{font-family:var(--mono);font-size:11px;color:var(--muted);padding:0 10px 8px;text-transform:uppercase;letter-spacing:.08em}
+.nb{position:relative;display:flex;align-items:center;gap:12px;border:0;background:transparent;color:var(--muted);text-align:left;padding:9px 10px;border-radius:4px;font-weight:500;font-size:14.5px}
+.nb i{width:16px;text-align:center;font-size:14px;background:none}
+.nb:hover{color:var(--ink);background:rgba(27,26,23,.05)}
+.nb.on{color:var(--ink);background:#ffffff;box-shadow:inset 0 0 0 1px var(--line)}
+.nb.on i{color:var(--accent)}
+.me{margin-top:auto;display:flex;align-items:center;gap:12px;padding:12px 8px;border-top:1px solid var(--line)}
+.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:600;font-size:16px;flex:none}
+.mi{min-width:0}.mi b{display:block;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.me-act{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.me-act button{border:1px solid var(--line);background:transparent;border-radius:4px;padding:8px;font-size:13px;font-weight:500;color:var(--muted);display:flex;gap:8px;align-items:center;justify-content:center}
+.me-act button:hover{color:var(--ink);border-color:var(--ink)}
+.me-act .js-out:hover{color:var(--err);border-color:var(--err)}
+
+.topbar,.dock{display:none}
+#stage{position:relative;min-height:0;min-width:0;background:var(--bg)}
+#stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+#home{position:absolute;inset:0;overflow:auto;padding:48px 44px 60px;background:var(--bg)}
+.wrap{max-width:860px;margin:0 auto}
+.greet{padding:0 0 28px;border-bottom:1px solid var(--ink)}
+.kick{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 14px;text-transform:uppercase;letter-spacing:.08em}
+.greet h1{font-family:var(--display);font-weight:500;font-size:clamp(34px,5vw,54px);line-height:1.04;margin:0 0 10px;letter-spacing:-.02em}
+.greet .sub{margin:0;color:var(--muted);font-size:15.5px}
+.chips{display:flex;gap:0;flex-wrap:wrap;margin-top:22px;border:1px solid var(--line);border-radius:4px;width:fit-content;max-width:100%;background:var(--card)}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;border-right:1px solid var(--line)}
+.chip:last-child{border-right:0}
+.chip i{color:var(--muted);font-size:12px}
+.chip b{font-family:var(--mono);font-weight:500}
+.sec-t{margin:34px 0 4px;font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.tiles{display:block;border-top:1px solid var(--line)}
+.tile{position:relative;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;padding:22px 8px 22px 56px;display:block;transition:background .15s}
+.tile:hover,.tile:focus-visible{background:var(--card);outline:0}
+.tile .no{position:absolute;left:8px;top:25px;font-family:var(--mono);font-size:13px;color:var(--c)}
+.ti{display:none}
+.tile h2{font-family:var(--display);font-weight:600;font-size:24px;margin:0 0 4px;letter-spacing:-.01em}
+.tile p{margin:0;font-size:14px;color:var(--muted);max-width:52ch}
+.tile .go{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:500;color:var(--c);display:inline-flex;gap:8px;align-items:center}
+.tile .go i{transition:transform .15s}
+.tile:hover .go i{transform:translateX(4px)}
+
+dialog{border:1px solid var(--ink);border-radius:6px;padding:0;max-width:380px;width:92%;color:var(--ink);font-family:var(--body);background:var(--card)}
+dialog::backdrop{background:rgba(27,26,23,.5)}
+dialog form{display:grid;gap:16px;padding:24px}
+dialog h3{margin:0;font-family:var(--display);font-weight:600;font-size:24px;display:flex;align-items:center;gap:10px}
+dialog h3 i{font-size:15px;color:var(--accent)}
 .row{display:flex;gap:10px}
-.row button{flex:1;padding:10px;border:1.5px solid var(--navy);background:#fff;color:var(--navy)}
-.row .go{box-shadow:none;color:#fff;background:var(--navy);font-size:14px}
-@media (max-width:560px){.brand{display:none}.who span.nm{display:none}}
-@media (prefers-reduced-motion:reduce){.tile{transition:none}}
-.go.alt{background:#fff;color:var(--navy)}
-.back{background:none;border:0;color:var(--blue);font-size:12px;text-decoration:underline;justify-self:start;padding:0}
-.note{font-size:12px;line-height:1.5;color:#4a5370}
+.row button{flex:1;padding:11px;border-radius:4px;border:1px solid var(--line);background:#fff;font-weight:500;display:flex;gap:8px;align-items:center;justify-content:center}
+.row button:hover{border-color:var(--ink)}
+.row .btn{border-color:var(--navy-2);color:#fff;background:var(--navy-2)}
+
+
+.rail{background:linear-gradient(180deg,#0b1745,#08113a);color:#fff;border-right:0}
+.rail .logo{border-bottom-color:rgba(255,255,255,.12)}
+.rail .logo span{color:rgba(255,255,255,.6)}
+.rail .logo .lg{color:var(--gold)}
+.nav .cap{color:rgba(255,255,255,.4)}
+.nb{color:rgba(255,255,255,.72)}
+.nb:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nb.on{color:#fff;background:rgba(255,255,255,.12);box-shadow:inset 3px 0 0 var(--gold)}
+.nb.on i{color:var(--gold)}
+.me{border-top-color:rgba(255,255,255,.12)}
+.av{background:var(--gold);color:var(--navy)}
+.mi span{color:rgba(255,255,255,.6)}
+.me-act button{border-color:rgba(255,255,255,.18);color:rgba(255,255,255,.85)}
+.me-act button:hover{color:#fff;border-color:#fff}
+.me-act .js-out:hover{color:#ff9d90;border-color:#ff9d90}
+.topbar{background:var(--navy);color:#fff;border-bottom:0}
+.topbar .logo .lg{color:var(--gold)}
+.topbar .id{color:rgba(255,255,255,.7)}
+.topbar button{border-color:rgba(255,255,255,.18);color:#fff}
+.greet{border-bottom-color:var(--navy)}
+@media (max-width:900px){
+  #login{grid-template-columns:1fr}
+  .hero{padding:24px 22px 28px}
+  .hero .pitch p,.perks{display:none}
+  .pitch h1{font-size:32px;margin:28px 0 0}
+  .panel{padding:28px 20px 40px;align-items:start}
+  #app{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) auto}
+  .rail{display:none}
+  .topbar{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:var(--navy);color:#fff}
+  .topbar .logo{flex:1;min-width:0;gap:10px}.topbar .logo .lg{width:28px;height:28px;font-size:12px}
+  .topbar .logo b{font-size:16px;white-space:nowrap}.topbar .logo span{display:none}
+  .topbar .id{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .topbar button{width:36px;height:36px;border-radius:4px;border:1px solid var(--line);background:transparent;font-size:14px}
+  .dock{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  .dock .nb{flex-direction:column;gap:4px;padding:8px 2px;font-size:11.5px;justify-content:center;align-items:center;text-align:center}
+  .dock .nb i{font-size:17px;width:auto}
+  .dock .nb{color:var(--muted)}.dock .nb:hover{background:none;color:var(--ink)}
+  .dock .nb.on{background:transparent;box-shadow:none;color:var(--navy)}
+  .dock .nb.on i{color:var(--navy)}
+  #home{padding:26px 18px 40px}
+  .tile{padding:18px 8px 18px 40px}.tile .no{top:21px}.tile .go span,.tile .go{font-size:0}.tile .go i{font-size:13px}
+  .chip{padding:7px 10px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
+<!-- ═════════ LOGIN ═════════ -->
 <section id="login">
-  <div class="idcard">
-    <div class="idhead"><b>Progressive Physics</b><span>Staff portal</span></div>
-    <div class="idbody" id="choose">
-      <button class="go" type="button" data-m="in">Sign in</button>
-      <button class="go alt" type="button" data-m="up">Sign up</button>
-      <div class="note">First time here? Sign up once with your Teacher ID.</div>
+  <div class="hero">
+    <div class="logo"><span class="lg"><i class="fa-solid fa-atom"></i></span><div><b>Progressive Physics</b><span>Staff portal</span></div></div>
+    <div class="pitch">
+      <h1>Every admission. Every receipt. <em>One desk.</em></h1>
+      <p>Enroll students, issue fee receipts and review your collection history — all recorded under your Teacher ID.</p>
+      <ul class="perks">
+        <li><i class="fa-solid fa-user-plus"></i>Student admission register</li>
+        <li><i class="fa-solid fa-receipt"></i>Instant fee receipts</li>
+        <li><i class="fa-solid fa-clock-rotate-left"></i>Your own collection history</li>
+      </ul>
     </div>
-    <form class="idbody" id="lf" autocomplete="off" hidden>
-      <div><label for="lid">Teacher ID</label><div class="inp"><input id="lid" placeholder="e.g. T-104" required autocapitalize="characters"></div></div>
-      <div><label for="lpw">Password</label><div class="inp"><input id="lpw" type="password" required autocomplete="current-password"><button type="button" id="tg">Show</button></div></div>
-      <button class="go" id="go" type="submit">Sign in</button>
-      <div class="msg" id="msg" role="alert"></div>
-      <button class="back" type="button" data-m="c">&larr; Back</button>
-    </form>
-    <form class="idbody" id="sf" autocomplete="off" hidden>
-      <div><label for="sid">Teacher ID</label><div class="inp"><input id="sid" placeholder="e.g. T-104" required autocapitalize="characters"></div></div>
-      <div><label for="spw">Create password (6+ characters)</label><div class="inp"><input id="spw" type="password" required minlength="6" autocomplete="new-password"></div></div>
-      <div><label for="spw2">Confirm password</label><div class="inp"><input id="spw2" type="password" required minlength="6" autocomplete="new-password"></div></div>
-      <button class="go" id="sgo" type="submit">Create account</button>
-      <div class="msg" id="smsg" role="alert"></div>
-      <button class="back" type="button" data-m="c">&larr; Back</button>
-    </form>
+  </div>
+
+  <div class="panel">
+    <div class="card">
+      <h2>Welcome</h2>
+      <p class="lead">Sign in with your Teacher ID to continue.</p>
+      <div class="seg" role="tablist">
+        <button type="button" data-m="in" class="on"><i class="fa-solid fa-right-to-bracket"></i>Sign in</button>
+        <button type="button" data-m="up"><i class="fa-solid fa-user-plus"></i>Sign up</button>
+      </div>
+
+      <form class="fm" id="lf" autocomplete="off">
+        <div><label for="lid">Teacher ID</label><div class="inp"><i class="fa-solid fa-id-badge"></i><input id="lid" placeholder="e.g. T-104" required autocapitalize="characters"></div></div>
+        <div><label for="lpw">Password</label><div class="inp"><i class="fa-solid fa-lock"></i><input id="lpw" type="password" required autocomplete="current-password"><button type="button" class="eye" data-for="lpw" aria-label="Show password"><i class="fa-solid fa-eye"></i></button></div></div>
+        <button class="btn" id="go" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
+        <div class="msg" id="msg" role="alert"></div>
+      </form>
+
+      <form class="fm" id="sf" autocomplete="off" hidden>
+        <div><label for="sid">Teacher ID</label><div class="inp"><i class="fa-solid fa-id-badge"></i><input id="sid" placeholder="e.g. T-104" required autocapitalize="characters"></div></div>
+        <div><label for="spw">Create password (6+ characters)</label><div class="inp"><i class="fa-solid fa-key"></i><input id="spw" type="password" required minlength="6" autocomplete="new-password"><button type="button" class="eye" data-for="spw" aria-label="Show password"><i class="fa-solid fa-eye"></i></button></div></div>
+        <div><label for="spw2">Confirm password</label><div class="inp"><i class="fa-solid fa-shield-halved"></i><input id="spw2" type="password" required minlength="6" autocomplete="new-password"></div></div>
+        <button class="btn gold" id="sgo" type="submit"><i class="fa-solid fa-user-check"></i> Create account</button>
+        <div class="msg" id="smsg" role="alert"></div>
+      </form>
+    </div>
   </div>
 </section>
 
+<!-- ═════════ APP ═════════ -->
 <section id="app" hidden>
-  <header class="bar">
-    <div class="brand">Staff Portal</div>
-    <nav class="tabs">
-      <button data-v="home" class="on">Home</button>
-      <button data-v="adm">Admission</button>
-      <button data-v="receipt">Receipt</button>
-      <button data-v="history">History</button>
+  <aside class="rail">
+    <div class="logo"><span class="lg"><i class="fa-solid fa-atom"></i></span><div><b>Progressive Physics</b><span>Staff portal</span></div></div>
+    <nav class="nav">
+      <div class="cap">Workspace</div>
+      <button class="nb on" data-v="home"><i class="fa-solid fa-house"></i>Home</button>
+      <button class="nb" data-v="adm"><i class="fa-solid fa-user-plus"></i>Admission</button>
+      <button class="nb" data-v="receipt"><i class="fa-solid fa-receipt"></i>Fee receipt</button>
+      <button class="nb" data-v="history"><i class="fa-solid fa-clock-rotate-left"></i>Fees history</button>
     </nav>
-    <div class="who"><span class="nm" id="whoName"></span> <b id="whoId"></b><button id="chg">Password</button><button id="out">Log out</button></div>
+    <div class="me"><div class="av t-av"></div><div class="mi"><b class="t-name"></b><span class="t-id"></span></div></div>
+    <div class="me-act">
+      <button class="js-chg"><i class="fa-solid fa-key"></i>Password</button>
+      <button class="js-out"><i class="fa-solid fa-right-from-bracket"></i>Log out</button>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <div class="logo"><span class="lg"><i class="fa-solid fa-atom"></i></span><div><b>Staff Portal</b><span>Progressive Physics</span></div></div>
+    <span class="id t-id"></span>
+    <button class="js-chg" aria-label="Change password"><i class="fa-solid fa-key"></i></button>
+    <button class="js-out" aria-label="Log out"><i class="fa-solid fa-right-from-bracket"></i></button>
   </header>
+
   <main id="stage">
     <div id="home">
-      <div class="hello">
-        <h1 id="hello"></h1>
-        <p>Welcome back to the staff portal. What do you need to do?</p>
-        <div class="chips"><span class="chip">Teacher ID <b id="tid"></b></span><span class="chip" id="role"></span><span class="chip" id="today"></span></div>
+      <div class="wrap">
+        <section class="greet">
+          <p class="kick"><i class="fa-solid fa-sun" id="gicon"></i><span id="gword">Welcome</span></p>
+          <h1 id="hello"></h1>
+          <p class="sub">Welcome back to the staff portal. What do you need to do?</p>
+          <div class="chips">
+            <span class="chip"><i class="fa-solid fa-id-badge"></i>Teacher ID <b id="tid"></b></span>
+            <span class="chip"><i class="fa-solid fa-chalkboard-user"></i><span id="role"></span></span>
+            <span class="chip"><i class="fa-solid fa-calendar-day"></i><span id="today"></span></span>
+          </div>
+        </section>
+        <div class="sec-t">Quick actions</div>
         <div class="tiles">
-          <button class="tile" data-v="adm" style="--c:#7a2e2e"><h2>Student admission form</h2><p>Enroll a new student into the register.</p></button>
-          <button class="tile" data-v="receipt" style="--c:#0f766e"><h2>Fees receipt</h2><p>Record a fee payment and issue the receipt.</p></button>
-          <button class="tile" data-v="history" style="--c:#0b5b94"><h2>Fees history</h2><p>Receipts you have collected, newest first.</p></button>
+          <button class="tile" data-v="adm" style="--c:#b4423a"><span class="no">01</span><span class="ti"><i class="fa-solid fa-user-plus"></i></span><h2>Student admission</h2><p>Enroll a new student into the register.</p><span class="go">Open form <i class="fa-solid fa-arrow-right"></i></span></button>
+          <button class="tile" data-v="receipt" style="--c:#0e8a7c"><span class="no">02</span><span class="ti"><i class="fa-solid fa-receipt"></i></span><h2>Fees receipt</h2><p>Record a fee payment and issue the receipt.</p><span class="go">Collect fees <i class="fa-solid fa-arrow-right"></i></span></button>
+          <button class="tile" data-v="history" style="--c:#2456c8"><span class="no">03</span><span class="ti"><i class="fa-solid fa-clock-rotate-left"></i></span><h2>Fees history</h2><p>Receipts you have collected, newest first.</p><span class="go">View history <i class="fa-solid fa-arrow-right"></i></span></button>
         </div>
       </div>
     </div>
   </main>
+
+  <nav class="dock">
+    <button class="nb on" data-v="home"><i class="fa-solid fa-house"></i>Home</button>
+    <button class="nb" data-v="adm"><i class="fa-solid fa-user-plus"></i>Admission</button>
+    <button class="nb" data-v="receipt"><i class="fa-solid fa-receipt"></i>Receipt</button>
+    <button class="nb" data-v="history"><i class="fa-solid fa-clock-rotate-left"></i>History</button>
+  </nav>
 </section>
 
 <dialog id="pw"><form id="pwf" method="dialog">
-  <div><label for="op">Old password</label><div class="inp"><input id="op" type="password" required></div></div>
-  <div><label for="np">New password (6+ characters)</label><div class="inp"><input id="np" type="password" required minlength="6"></div></div>
+  <h3><i class="fa-solid fa-key"></i>Change password</h3>
+  <div><label for="op">Old password</label><div class="inp"><i class="fa-solid fa-lock"></i><input id="op" type="password" required></div></div>
+  <div><label for="np">New password (6+ characters)</label><div class="inp"><i class="fa-solid fa-key"></i><input id="np" type="password" required minlength="6"></div></div>
   <div class="msg" id="pwmsg"></div>
-  <div class="row"><button type="button" id="pwx">Cancel</button><button class="go" type="submit">Save</button></div>
+  <div class="row"><button type="button" id="pwx"><i class="fa-solid fa-xmark"></i>Cancel</button><button class="btn" type="submit"><i class="fa-solid fa-floppy-disk"></i>Save</button></div>
 </form></dialog>
 
 <script>
 const AUTH_URL = "https://script.google.com/macros/s/AKfycbxpflkp_2WvPCc5AxJeoskYWcnQZhvoMHVtAC-pfw8r-ODX3miVjQSBEOVQXdTIk7Rw/exec";   // Apps Script login web app (Auth.gs)
 const DOCS = { fee: 'doc-fee', adm: 'doc-adm' };
 const $ = id => document.getElementById(id);
+const $$ = s => document.querySelectorAll(s);
 let S = null, frames = {};
 
 const post = async body => {
   const r = await fetch(AUTH_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
   return r.json();
 };
-const greet = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; };
+const spin = t => '<i class="fa-solid fa-circle-notch fa-spin"></i> ' + t;
+const LABEL = {
+  go:  '<i class="fa-solid fa-right-to-bracket"></i> Sign in',
+  sgo: '<i class="fa-solid fa-user-check"></i> Create account'
+};
+function greet() {
+  const h = new Date().getHours();
+  return h < 12 ? ['Good morning', 'fa-sun'] : h < 17 ? ['Good afternoon', 'fa-cloud-sun'] : ['Good evening', 'fa-moon'];
+}
 
 function enter(s) {
   S = s; sessionStorage.setItem('tp', JSON.stringify(s));
   window.TEACHER = { id: s.id, name: s.name, token: s.token, authUrl: AUTH_URL, subjects: s.subjects || [] };
   $('login').hidden = true; $('app').hidden = false;
-  $('hello').textContent = greet() + ', ' + s.name;
-  $('tid').textContent = s.id; $('whoId').textContent = s.id; $('whoName').textContent = s.name;
+  const [word, ic] = greet();
+  $('hello').textContent = word + ', ' + s.name;
+  $('gword').textContent = word; $('gicon').className = 'fa-solid ' + ic;
+  $('tid').textContent = s.id;
+  $$('.t-id').forEach(e => e.textContent = s.id);
+  $$('.t-name').forEach(e => e.textContent = s.name);
+  $$('.t-av').forEach(e => e.textContent = (s.name || s.id || '?').trim().charAt(0).toUpperCase());
   $('role').textContent = s.role || 'Teacher';
   $('today').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   go('home');
@@ -161,7 +331,7 @@ function frame(key) {
   return frames[key] = f;
 }
 function go(v) {
-  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  $$('.nb').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $('home').hidden = v !== 'home';
   const need = { adm: 'adm', receipt: 'fee', history: 'fee' }[v];
   Object.entries(frames).forEach(([k, f]) => f.hidden = k !== need);
@@ -172,48 +342,57 @@ function go(v) {
     if (f.contentWindow.setView) set(); else f.addEventListener('load', set, { once: true });
   }
 }
-document.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => go(b.dataset.v)));
+$$('[data-v]').forEach(b => b.addEventListener('click', () => go(b.dataset.v)));
 
 function mode(m) {
-  $('choose').hidden = m !== 'c'; $('lf').hidden = m !== 'in'; $('sf').hidden = m !== 'up';
+  $('lf').hidden = m !== 'in'; $('sf').hidden = m !== 'up';
+  $$('.seg button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
   $('msg').textContent = ''; $('smsg').textContent = '';
 }
-document.querySelectorAll('[data-m]').forEach(b => b.addEventListener('click', () => mode(b.dataset.m)));
+$$('[data-m]').forEach(b => b.addEventListener('click', () => mode(b.dataset.m)));
+
+$$('.eye').forEach(b => b.addEventListener('click', () => {
+  const p = $(b.dataset.for), show = p.type === 'password';
+  p.type = show ? 'text' : 'password';
+  b.innerHTML = '<i class="fa-solid ' + (show ? 'fa-eye-slash' : 'fa-eye') + '"></i>';
+}));
+
 $('sf').addEventListener('submit', async e => {
   e.preventDefault();
   const b = $('sgo'), m = $('smsg'); m.textContent = '';
   if (AUTH_URL.startsWith('PASTE')) { m.textContent = 'Set AUTH_URL in this file first.'; return; }
   if ($('spw').value !== $('spw2').value) { m.textContent = 'Passwords do not match'; return; }
-  b.disabled = true; b.textContent = 'Creating…';
+  b.disabled = true; b.innerHTML = spin('Creating…');
   try {
     const r = await post({ action: 'signup', id: $('sid').value.trim(), password: $('spw').value });
     if (r.status === 'ok') { $('spw').value = $('spw2').value = ''; enter(r); } else m.textContent = r.message || 'Sign-up failed';
   } catch (err) { m.textContent = 'Cannot reach the server. Check AUTH_URL and your connection.'; }
-  b.disabled = false; b.textContent = 'Create account';
+  b.disabled = false; b.innerHTML = LABEL.sgo;
 });
 
 $('lf').addEventListener('submit', async e => {
   e.preventDefault();
   const b = $('go'), m = $('msg'); m.textContent = '';
   if (AUTH_URL.startsWith('PASTE')) { m.textContent = 'Set AUTH_URL in this file first.'; return; }
-  b.disabled = true; b.textContent = 'Checking…';
+  b.disabled = true; b.innerHTML = spin('Checking…');
   try {
     const r = await post({ action: 'login', id: $('lid').value.trim(), password: $('lpw').value });
     if (r.status === 'ok') enter(r); else m.textContent = r.message || 'Sign-in failed';
   } catch (err) { m.textContent = 'Cannot reach the server. Check AUTH_URL and your connection.'; }
-  b.disabled = false; b.textContent = 'Sign in';
+  b.disabled = false; b.innerHTML = LABEL.go;
 });
-$('tg').addEventListener('click', () => { const p = $('lpw'); p.type = p.type === 'password' ? 'text' : 'password'; $('tg').textContent = p.type === 'password' ? 'Show' : 'Hide'; });
-$('out').addEventListener('click', () => leave());
-$('chg').addEventListener('click', () => { $('pwmsg').textContent = ''; $('pw').showModal(); });
+
+$$('.js-out').forEach(b => b.addEventListener('click', () => leave()));
+$$('.js-chg').forEach(b => b.addEventListener('click', () => { $('pwmsg').textContent = ''; $('pwmsg').classList.remove('ok'); $('pw').showModal(); }));
 $('pwx').addEventListener('click', () => $('pw').close());
 $('pwf').addEventListener('submit', async e => {
   e.preventDefault(); const m = $('pwmsg');
   try {
     const r = await post({ action: 'changePassword', token: S.token, oldPassword: $('op').value, newPassword: $('np').value });
-    m.style.color = r.status === 'ok' ? '#1f7a4d' : ''; m.textContent = r.status === 'ok' ? 'Password changed' : r.message;
+    m.classList.toggle('ok', r.status === 'ok');
+    m.textContent = r.status === 'ok' ? 'Password changed' : r.message;
     if (r.status === 'ok') { $('op').value = $('np').value = ''; setTimeout(() => $('pw').close(), 900); }
-  } catch (err) { m.textContent = 'Cannot reach the server.'; }
+  } catch (err) { m.classList.remove('ok'); m.textContent = 'Cannot reach the server.'; }
 });
 setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in again.'); }, 20000);
 
@@ -607,14 +786,122 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
   body{padding-top:24px;}
   #teacherId{font-weight:700;color:var(--teal-deep);cursor:not-allowed;}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style id="theme">
+:root{--ink:#0d1636;--paper:#f3efe6;--paper-2:#ece6d7;--teal:#0e8a7c;--teal-deep:#0a5e55;--teal-pale:#dff1ee;--rule:#e4dece;--stamp:#c0392b;--ok:#1f7a4d;--muted:#5b6485;--accent:#b4423a;
+  --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+body{font-family:var(--body);padding:36px 24px 70px;background:var(--paper);display:block}
+.sheet{max-width:760px;margin:0 auto;background:var(--paper);border:0;border-radius:0;box-shadow:none;overflow:visible}
+.sheet::before{display:none}
+header{padding:26px 28px;border:0;background:#0b1745;color:#fff;align-items:flex-end;position:static;overflow:visible;border-radius:4px}
+header::after{display:none}
+.hd-l{display:block}
+.hd-ico{display:none}
+.brand-mark{font-family:var(--display);font-weight:500;font-size:clamp(28px,5vw,40px);line-height:1.05;letter-spacing:-.02em;color:#fff}
+.brand-sub{font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:none;color:#e0b030;opacity:1;font-weight:400;margin-top:8px}
+.serial{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);opacity:1;text-align:right}
+.serial strong{font-family:var(--mono);font-weight:500;font-size:20px;letter-spacing:0;color:#e0b030;margin-top:2px}
+form{padding:28px 0 4px}
+.row{gap:20px 24px;margin-bottom:20px}
+label{font-size:12px;font-weight:500;letter-spacing:.01em;text-transform:none;color:var(--muted);margin-bottom:6px}
+label>i{display:inline-block;width:14px;margin-right:7px;text-align:center;font-size:12px;color:var(--teal);opacity:.9}
+input,select{font-family:var(--body);font-size:16px;font-weight:400;padding:11px 12px;border:1px solid var(--rule);border-radius:4px;background:#fff;color:var(--ink);transition:none}
+input:focus,select:focus{border-color:var(--ink);outline:1px solid var(--ink);background:#fff}
+input::placeholder{color:#a9a392}
+input[readonly]{background:var(--paper-2);border-style:solid;color:#4a5370}
+#teacherId{font-family:var(--mono);font-weight:500;letter-spacing:.02em;color:var(--ink);cursor:not-allowed}
+input[readonly]#receiptCount{color:var(--ink);font-weight:500}
+.hint{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:0}
+.name-search .mini-refresh{position:absolute;top:-5px;right:0;padding:4px 9px;font-size:12px;gap:6px;background:transparent;color:var(--teal-deep);border:1px solid var(--rule);border-radius:4px;box-shadow:none}
+.name-search .mini-refresh:hover{background:var(--teal-pale);border-color:var(--teal)}
+.mini-refresh i{font-size:11px;margin:0;width:auto}
+.mini-refresh.spin i{animation:spin .7s linear infinite}
+.sel{position:relative}
+.sel select{appearance:none;-webkit-appearance:none;padding-right:36px;cursor:pointer}
+.sel::after{content:"\f078";font-family:"Font Awesome 6 Free";font-weight:900;font-size:10px;color:var(--muted);position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none}
+.amount-wrap{display:flex;align-items:center;border:1px solid var(--rule);border-radius:4px;background:#fff;padding-left:12px}
+.amount-wrap span{font-size:14px;color:var(--muted)}
+.amount-wrap input{border:0;background:transparent;outline:0;padding-left:8px}
+.amount-wrap:focus-within{border-color:var(--ink);outline:1px solid var(--ink)}
+.divider{border:0;border-top:1px solid var(--rule);margin:8px 0 22px}
+.actions{padding:4px 0 28px;gap:16px}
+.status{font-size:13px;font-weight:500;letter-spacing:0}
+.status.ok::before,.status.err::before{font-family:"Font Awesome 6 Free";font-weight:900;margin-right:7px}
+.status.ok::before{content:"\f058"}.status.err::before{content:"\f06a"}
+button{font-family:var(--body);font-weight:500;font-size:15px;letter-spacing:0;border:1px solid var(--teal);border-radius:4px;padding:12px 22px;color:#fff;background:var(--teal);box-shadow:none;gap:10px;transition:background .15s}
+button:hover{transform:none;box-shadow:none;background:var(--teal-deep);filter:none}
+button:active{transform:none;box-shadow:none}
+button:disabled{opacity:.55}
+#spinner{border-color:rgba(255,255,255,.35);border-top-color:#fff}
+.btn-sm{padding:8px 13px;font-size:13px;border-radius:4px;box-shadow:none;gap:8px}
+.btn-sm:hover{transform:none;box-shadow:none}
+.btn-sm.ghost{background:#fff;color:var(--ink);border:1px solid var(--rule)}
+.btn-sm.ghost:hover{background:#fff;border-color:var(--ink)}
+.btn-sm.hot{background:var(--stamp);border-color:var(--stamp);animation:none}
+.stamp{position:fixed;top:16px;right:16px;width:auto;height:auto;border:1px solid var(--ok);border-radius:4px;background:var(--ok);color:#fff;padding:10px 16px;transform:none;flex-direction:row;gap:9px;font-family:var(--body);font-size:14px;font-weight:500;letter-spacing:0;text-transform:none}
+@keyframes stampIn{0%{opacity:0;transform:translateY(-8px)}100%{opacity:1;transform:none}}
+.subjects-box{border:1px solid var(--rule);border-radius:4px;background:#fff;padding:10px 12px;gap:8px;min-height:50px}
+.subjects-box.empty::after{font-size:13px}
+.subj-chip{text-transform:none;letter-spacing:0;color:var(--ink);margin:0;font-weight:500;font-size:13.5px;padding:6px 12px;border:1px solid var(--rule);border-radius:4px;background:var(--paper);gap:8px}
+.subj-chip:hover{border-color:var(--ink)}
+.subj-chip:has(input:checked){background:var(--teal-pale);border-color:var(--teal);color:var(--teal-deep)}
+.subj-chip input{accent-color:var(--accent);width:14px;height:14px}
+.stu-status{font-size:12px;margin-top:6px}
+.suggest-box{border:1px solid var(--ink);border-radius:4px;background:#fff;box-shadow:none;top:calc(100% + 4px)}
+.suggest-item{border-bottom:1px solid var(--paper-2);padding:10px 12px}
+.suggest-item:hover,.suggest-item.active{background:var(--paper-2)}
+.suggest-name{font-family:var(--body);font-weight:500;font-size:14.5px;color:var(--ink)}
+.suggest-details{font-size:12px;color:var(--muted)}
+.sendbar{margin:20px 0 0;border:1px solid var(--ink);border-left:4px solid var(--teal);border-radius:0;background:var(--teal-pale);box-shadow:none;padding:14px 16px}
+.sb-title{font-family:var(--body);font-weight:500;font-size:14px;color:var(--ink)}
+.sb-count{font-family:var(--mono);font-weight:500;font-size:20px;color:var(--teal-deep)}
+.sb-track{height:4px;border:0;border-radius:0;background:var(--paper-2)}
+.sb-fill{border-radius:0;background:var(--teal)}
+.hist{padding:24px 0 34px}
+.hist-list{border-top:1px solid var(--ink);display:block;margin-top:14px}
+.h-row{border:0;border-bottom:1px solid var(--rule);border-radius:0;padding:14px 4px;background:transparent;transition:background .12s}
+.h-row:hover{background:var(--card,#ffffff);border-color:var(--rule);transform:none;box-shadow:none}
+.h-id{font-family:var(--mono);font-weight:500;font-size:14px;color:var(--ink)}
+.h-amt{font-family:var(--mono);font-weight:500;font-size:16px;color:var(--ink)}
+.h-sub{font-size:12.5px;color:var(--muted);letter-spacing:0}
+.tag{border:1px solid currentColor;border-radius:3px;padding:1px 7px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;margin-left:10px;background:none}
+.tag.sent{background:none;color:var(--ok)}.tag.unsent{background:none;color:var(--stamp)}
+.tag i{margin-right:4px;font-size:9px}
+.modal{background:rgba(27,26,23,.55);backdrop-filter:none}
+.rcpt{border:1px solid var(--ink);border-radius:6px;box-shadow:none}
+.rc-head{background:none;border-bottom:1px solid var(--ink)}
+.rc-brand{font-family:var(--display);font-weight:600;color:var(--ink)}
+.rc-sub{font-family:var(--mono)}
+.rc-no{font-family:var(--mono);font-weight:500;color:var(--stamp)}
+.rc-dl{font-family:var(--body)}
+.rc-dl dt{font-family:var(--mono);font-weight:400;color:var(--muted);letter-spacing:.06em}
+.rc-amt{background:var(--teal);border-radius:0}
+.rc-amt strong{font-family:var(--mono);font-weight:500}
+.rc-status{font-size:13px}
+footer{text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted);padding:6px 0 26px;text-align:left;border-top:1px solid var(--rule);padding-top:16px}
+footer i{color:var(--muted);margin-right:6px}
+@media (max-width:560px){
+  body{padding:22px 16px 30px}
+  header{flex-direction:column;align-items:flex-start;gap:12px}
+  .serial{text-align:left}
+  .row{grid-template-columns:1fr}
+  .actions{flex-direction:column;align-items:stretch}
+  .sendbar{margin:16px 0 0}
+  .stamp{top:12px;right:12px;bottom:auto;width:auto;height:auto}
+}
+</style>
 </head>
 <body>
   <div class="sheet">
-    <div class="stamp" id="stamp">Logged<br>✓</div>
+    <div class="stamp" id="stamp"><i class="fa-solid fa-circle-check"></i> Logged</div>
     <header>
-      <div>
-        <div class="brand-mark">Fee Receipt Register</div>
-        <div class="brand-sub">Progressive Physics · Ledger Entry</div>
+      <div class="hd-l">
+        <span class="hd-ico"><i class="fa-solid fa-receipt"></i></span>
+        <div>
+          <div class="brand-mark">Fee Receipt Register</div>
+          <div class="brand-sub">Progressive Physics · Ledger Entry</div>
+        </div>
       </div>
       <div class="serial">
         Entry no.
@@ -634,33 +921,34 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
       </div>
       <div class="sb-track" id="sbTrack"><div class="sb-fill" id="sbFill"></div></div>
       <div class="sb-btns">
-        <button type="button" class="btn-sm" id="sbSend">Send now</button>
-        <button type="button" class="btn-sm ghost" id="sbPrev">Preview</button>
-        <button type="button" class="btn-sm ghost" id="sbCancel">Cancel</button>
+        <button type="button" class="btn-sm" id="sbSend"><i class="fa-solid fa-paper-plane"></i>Send now</button>
+        <button type="button" class="btn-sm ghost" id="sbPrev"><i class="fa-solid fa-eye"></i>Preview</button>
+        <button type="button" class="btn-sm ghost" id="sbCancel"><i class="fa-solid fa-xmark"></i>Cancel</button>
       </div>
     </div>
 
     <form id="feeForm" autocomplete="off">
       <div class="row">
         <div class="field">
-          <label for="teacherId">Teacher ID &#128274;</label>
+          <label for="teacherId"><i class="fa-solid fa-chalkboard-user"></i>Teacher ID <i class="fa-solid fa-lock" style="margin:0 0 0 6px;color:var(--muted)"></i></label>
           <input type="text" id="teacherId" readonly required tabindex="-1" title="Locked to your login">
           <div class="hint" id="teacherHint"></div>
         </div>
         <div class="field">
-          <label for="date">Date</label>
+          <label for="date"><i class="fa-solid fa-calendar-day"></i>Date</label>
           <input type="date" id="date" required>
         </div>
       </div>
 
       <div class="row">
         <div class="field name-search">
-          <label for="stuId">Student ID <span id="stuIdSpinner" class="mini-spinner"></span></label>
+          <label for="stuId"><i class="fa-solid fa-id-card"></i>Student ID <span id="stuIdSpinner" class="mini-spinner"></span></label>
+          <button type="button" class="mini-refresh" id="stuRefresh" title="Refresh student list" aria-label="Refresh student list"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
           <input type="text" id="stuId" placeholder="e.g. PP 26 0001" required autocomplete="off">
           <div class="suggest-box" id="suggestBoxId"></div>
         </div>
         <div class="field name-search">
-          <label for="stuName">Student Name <span id="stuNameSpinner" class="mini-spinner"></span></label>
+          <label for="stuName"><i class="fa-solid fa-user-graduate"></i>Student Name <span id="stuNameSpinner" class="mini-spinner"></span></label>
           <input type="text" id="stuName" placeholder="start typing name…" required autocomplete="off">
           <div class="suggest-box" id="suggestBoxName"></div>
         </div>
@@ -668,14 +956,14 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
 
       <div class="row">
         <div class="field">
-          <label for="amount">Amount</label>
+          <label for="amount"><i class="fa-solid fa-indian-rupee-sign"></i>Amount</label>
           <div class="amount-wrap">
-            <span>₹</span>
+            <span><i class="fa-solid fa-indian-rupee-sign"></i></span>
             <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
           </div>
         </div>
         <div class="field">
-          <label for="stuPhone">Student Phone</label>
+          <label for="stuPhone"><i class="fa-solid fa-phone"></i>Student Phone</label>
           <input type="text" id="stuPhone" readonly placeholder="—">
           <div class="stu-status" id="stuStatus"></div>
         </div>
@@ -683,12 +971,12 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
 
       <div class="row">
         <div class="field">
-          <label for="receiptId">Receipt ID <span id="receiptSpinner" class="mini-spinner"></span><span id="receiptStatus" style="opacity:.5;font-weight:400;">· syncing…</span></label>
+          <label for="receiptId"><i class="fa-solid fa-hashtag"></i>Receipt ID <span id="receiptSpinner" class="mini-spinner"></span><span id="receiptStatus" style="opacity:.5;font-weight:400;">· syncing…</span></label>
           <input type="text" id="receiptId" placeholder="e.g. RC-0231" required>
           <div class="hint">Auto-suggested from last saved receipt · refreshes every 10s · edit anytime</div>
         </div>
         <div class="field">
-          <label for="receiptCount">Receipt Count</label>
+          <label for="receiptCount"><i class="fa-solid fa-layer-group"></i>Receipt Count</label>
           <input type="number" id="receiptCount" placeholder="0" min="0" step="1" readonly required>
           <div class="hint">Auto = number of subjects checked below</div>
         </div>
@@ -696,8 +984,8 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
 
       <div class="row">
         <div class="field">
-          <label for="feesMonth">Fees For (Month)</label>
-          <select id="feesMonth" required>
+          <label for="feesMonth"><i class="fa-solid fa-calendar-days"></i>Fees For (Month)</label>
+          <div class="sel"><select id="feesMonth" required>
             <option value="January">January</option>
             <option value="February">February</option>
             <option value="March">March</option>
@@ -710,14 +998,14 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
             <option value="October">October</option>
             <option value="November">November</option>
             <option value="December">December</option>
-          </select>
+          </select></div>
           <div class="hint">Defaults to current month · change if backdating</div>
         </div>
       </div>
 
       <div class="row">
         <div class="field full">
-          <label>Fees for Subjects</label>
+          <label><i class="fa-solid fa-book-open"></i>Fees for Subjects</label>
           <div class="subjects-box empty" id="subjectsBox"></div>
           <input type="hidden" id="feesSubjects">
           <div class="hint" id="subjHint">Only subjects you teach AND the student studies · list loads from Student ID</div>
@@ -728,7 +1016,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
 
       <div class="actions">
         <button type="submit" id="submitBtn">
-          <span class="btn-text">Record Entry</span>
+          <i class="fa-solid fa-file-invoice"></i><span class="btn-text">Record Entry</span>
           <span class="spinner" id="spinner"></span>
         </button>
         <div class="status" id="status"></div>
@@ -738,25 +1026,25 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
     <section class="hist" id="viewHistory" hidden>
       <div class="hist-tools">
         <div class="field">
-          <label for="histSearch">Search receipts</label>
+          <label for="histSearch"><i class="fa-solid fa-magnifying-glass"></i>Search receipts</label>
           <input type="text" id="histSearch" placeholder="name, student ID, receipt no, month…" autocomplete="off">
         </div>
-        <button type="button" class="btn-sm" id="histRefresh">↻ Refresh</button>
+        <button type="button" class="btn-sm" id="histRefresh"><i class="fa-solid fa-rotate"></i>Refresh</button>
       </div>
       <div class="hint" id="histNote"></div>
       <div class="hist-list" id="histList"></div>
     </section>
-    <footer id="footerEl">Every entry is recorded under your Teacher ID</footer>
+    <footer id="footerEl"><i class="fa-solid fa-shield-halved"></i>Every entry is recorded under your Teacher ID</footer>
   </div>
 
   <div class="modal" id="modal" hidden>
     <div class="rcpt-wrap">
       <div class="rcpt" id="rcptCard"></div>
       <div class="rc-actions">
-        <button type="button" class="btn-sm" id="mShare">Share</button>
-        <button type="button" class="btn-sm ghost" id="mPng">Save PNG</button>
-        <button type="button" class="btn-sm ghost" id="mPdf">Save PDF</button>
-        <button type="button" class="btn-sm ghost" id="mClose">Close</button>
+        <button type="button" class="btn-sm" id="mShare"><i class="fa-solid fa-share-nodes"></i>Share</button>
+        <button type="button" class="btn-sm ghost" id="mPng"><i class="fa-solid fa-image"></i>Save PNG</button>
+        <button type="button" class="btn-sm ghost" id="mPdf"><i class="fa-solid fa-file-pdf"></i>Save PDF</button>
+        <button type="button" class="btn-sm ghost" id="mClose"><i class="fa-solid fa-xmark"></i>Close</button>
       </div>
       <div class="rc-status" id="mStatus"></div>
     </div>
@@ -974,6 +1262,19 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
   }
   loadIndex();
 
+  const stuRefreshBtn = document.getElementById('stuRefresh');
+  stuRefreshBtn.addEventListener('click', async () => {
+    if (stuRefreshBtn.classList.contains('spin')) return;
+    stuRefreshBtn.classList.add('spin'); stuRefreshBtn.disabled = true;
+    stuStatus.textContent = '· refreshing student list…'; stuStatus.className = 'stu-status';
+    detailCache.clear();
+    try { await loadIndex(true); stuStatus.textContent = '· student list refreshed (' + STUDENTS.length + ')'; stuStatus.className = 'stu-status ok'; }
+    catch (e) { stuStatus.textContent = '· refresh failed'; stuStatus.className = 'stu-status err'; }
+    stuRefreshBtn.classList.remove('spin'); stuRefreshBtn.disabled = false;
+    const q = stuIdInput.value.trim() || stuNameInput.value.trim();
+    if (q && document.activeElement === stuIdInput) searchStudents(q, suggestBoxId, stuIdSpinner);
+  });
+
   function localSearch(q) {
     const ql = q.toLowerCase();
     const terms = ql.split(/\s+/).filter(Boolean);
@@ -1170,7 +1471,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
     const list = $('histList');
     list.innerHTML = rows.length ? '' : '<div class="suggest-empty">No receipts found</div>';
     rows.slice(0, 100).forEach(r => {
-      const tag = r.sent === true ? '<span class="tag sent">SENT ✓</span>' : (r.sent === false ? '<span class="tag unsent">NOT SENT</span>' : '');
+      const tag = r.sent === true ? '<span class="tag sent"><i class="fa-solid fa-check"></i>SENT</span>' : (r.sent === false ? '<span class="tag unsent"><i class="fa-solid fa-clock"></i>NOT SENT</span>' : '');
       const div = document.createElement('div');
       div.className = 'h-row';
       div.innerHTML = `<div class="h-id">${esc(r.receiptId)}${tag}</div><div class="h-amt">${money(r.amount)}</div>` +
@@ -1386,7 +1687,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
     } catch (e) { if (seq === renderSeq) box.innerHTML = '<div style="padding:40px 20px;text-align:center;">Preview failed: ' + esc(e.message) + '</div>'; }
   }
   function openReceipt(r) {
-    current = r; mStatus.textContent = r.sent ? 'Already sent ✓ — you can send again' : '';
+    current = r; mStatus.textContent = r.sent ? 'Already sent — you can send again' : '';
     modal.hidden = false;
     fillFromCache(r);
     rcBtns().forEach(b => b.disabled = false);
@@ -1407,7 +1708,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
       const file = new File([blob], fileBase(r) + '.png', { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], text: receiptText(r) });
-        markSent(r); mStatus.textContent = 'Shared ✓';
+        markSent(r); mStatus.textContent = 'Shared';
       } else {
         downloadBlob(blob, file.name);
         mStatus.textContent = 'Share not supported here — image saved instead';
@@ -1417,7 +1718,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
   $('mPng').addEventListener('click', async () => {
     const r = current; if (!r) return;
     mStatus.textContent = 'Preparing image…';
-    try { downloadBlob(await canvasBlob(await receiptCanvas(r)), fileBase(r) + '.png'); mStatus.textContent = 'Saved PNG ✓'; }
+    try { downloadBlob(await canvasBlob(await receiptCanvas(r)), fileBase(r) + '.png'); mStatus.textContent = 'Saved PNG'; }
     catch (e) { mStatus.textContent = 'Save failed: ' + e.message; }
   });
   $('mPdf').addEventListener('click', async () => {
@@ -1429,7 +1730,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
       const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'px', format: [c.width, c.height], hotfixes: ['px_scaling'] });
       pdf.addImage(c.toDataURL('image/png'), 'PNG', 0, 0, c.width, c.height);
       pdf.save(fileBase(r) + '.pdf');
-      mStatus.textContent = 'Saved PDF ✓';
+      mStatus.textContent = 'Saved PDF';
     } catch (e) { mStatus.textContent = 'PDF failed: ' + e.message; }
   });
 
@@ -1949,66 +2250,134 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
   }
   #teacherIdInput{color:var(--maroon-deep);font-weight:700;cursor:not-allowed;}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style id="theme">
+:root{--paper:#f3efe6;--paper-line:#e4dece;--ink:#0d1636;--ink-soft:#5b6485;--maroon:#b4423a;--maroon-deep:#8c2f29;--gold:#b4423a;--ok:#1f7a4d;--card:#ffffff;--shadow:none;
+  --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+body{font-family:var(--body);padding:36px 24px 70px;background:var(--paper)}
+body::before{display:none}
+.sheet{max-width:700px;margin:0 auto;padding:0;border:0;border-radius:0;overflow:visible;box-shadow:none;background:var(--paper)}
+.sheet::before{display:none}
+.hd{display:block;padding:28px;color:#fff;background:#0b1745;border-radius:4px;position:static;overflow:visible}
+.hd::after{display:none}
+.hd-ico{display:none}
+.eyebrow{margin:0 0 10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#e0b030;font-weight:500}
+h1{margin:0;font-family:var(--display);font-weight:500;font-size:clamp(30px,5vw,42px);color:#fff;line-height:1.04;letter-spacing:-.02em}
+.sub{margin:10px 0 0;padding:0;border:0;color:rgba(255,255,255,.74);font-size:14.5px;line-height:1.55;max-width:56ch}
+form{padding:26px 0 6px;gap:18px}
+.sec{display:flex;align-items:center;gap:12px;margin-top:14px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;color:var(--ink)}
+.sec i{display:none}
+.sec::after{content:"";flex:1;height:1px;background:var(--paper-line)}
+label{font-size:12px;font-weight:500;letter-spacing:.01em;text-transform:none;color:var(--ink-soft);margin-bottom:6px}
+label>i{display:inline-block;width:14px;margin-right:7px;text-align:center;font-size:12px;color:var(--maroon)}
+.req{color:var(--maroon)}
+.field{align-items:center;border:1px solid var(--paper-line);border-radius:4px;background:#fff;padding:0 4px 0 0;transition:none}
+.field::after{display:none}
+.field:focus-within{border-color:var(--maroon);outline:1px solid var(--maroon);box-shadow:none;background:#fff}
+input,select{font-family:var(--body);font-size:16px;font-weight:400;padding:11px 12px;color:var(--ink)}
+input::placeholder{font-family:var(--body);font-size:15px;font-weight:400;color:#a9a392}
+select{background-image:none;padding-right:34px}
+.field:has(select)::after{display:block;content:"\f078";font-family:"Font Awesome 6 Free";font-weight:900;font-size:10px;color:var(--ink-soft);position:absolute;left:auto;right:14px;top:50%;bottom:auto;width:auto;height:auto;background:none;transform:translateY(-50%);pointer-events:none}
+.field:has(select):focus-within::after{width:auto}
+.prefix{margin:0 0 0 1px;align-self:stretch;display:flex;align-items:center;border:0;border-right:1px solid var(--paper-line);border-radius:3px 0 0 3px;background:#ece6d7;color:var(--ink-soft);padding:0 12px;font-family:var(--mono);font-size:13px}
+.prefix i{font-size:12px}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:none;opacity:.55;cursor:pointer}
+.msel-btn{border:1px solid var(--paper-line);border-radius:4px;background:#fff;padding:11px 12px;font-family:var(--body);font-size:16px;transition:none}
+.msel-btn:hover,.msel-btn:active,.msel-btn:focus{background:#fff;box-shadow:none;transform:none;color:var(--ink)}
+.msel-btn:focus{border-color:var(--ink);outline:1px solid var(--ink)}
+#subjectBtnText{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px}
+#subjectBtnText.placeholder{font-family:var(--body);font-size:15px;font-weight:400;color:#a9a392}
+.msel-arrow{width:auto;height:auto;border:0;transform:none;margin:0;font-size:10px;color:var(--ink-soft);transition:transform .15s}
+.msel:has(.msel-panel.open) .msel-arrow{transform:rotate(180deg)}
+.msel-panel{border:1px solid var(--ink);border-radius:4px;padding:4px;box-shadow:none;background:#fff}
+.msel-opt{font-family:var(--body);font-size:14.5px;border-radius:3px;padding:9px 10px}
+.msel-opt:hover{background:#ece6d7}
+.chips{gap:6px;margin-top:10px}
+.chip{font-family:var(--body);font-size:13px;font-weight:500;border-radius:4px;padding:5px 6px 5px 10px;background:rgba(180,66,58,.1);border:0;color:var(--maroon-deep)}
+.chip button{display:grid;place-items:center;width:18px;height:18px;border-radius:3px;background:rgba(180,66,58,.15);color:var(--maroon-deep);font-size:10px}
+.chip button:hover{background:var(--maroon);color:#fff}
+.tid-card{border:1px solid var(--paper-line);border-left:4px solid var(--maroon);border-radius:0;padding:14px 16px 12px;background:#fff}
+.tid-card .field{background:#ece6d7;cursor:not-allowed}
+#teacherIdInput{font-family:var(--mono);font-weight:500;font-size:15px;letter-spacing:.02em;color:var(--ink)}
+#teacherNameNote{margin-top:8px;font-size:12.5px;color:var(--ink-soft)}
+.actions{margin-top:6px;gap:16px;padding-bottom:4px}
+#submitBtn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:var(--body);font-size:15px;font-weight:500;letter-spacing:0;text-transform:none;border:1px solid var(--maroon);border-radius:4px;padding:13px 24px;color:#fff;background:var(--maroon);box-shadow:none;transition:background .15s}
+#submitBtn:hover{background:var(--maroon-deep);transform:none;filter:none;box-shadow:none}
+#submitBtn:active{transform:none;box-shadow:none}
+#submitBtn:disabled{filter:none;transform:none;opacity:.6}
+.status{font-size:13px;font-weight:500}
+.status.ok::before,.status.err::before{font-family:"Font Awesome 6 Free";font-weight:900;margin-right:7px}
+.status.ok::before{content:"\f058"}.status.err::before{content:"\f06a"}
+.status.ok{color:var(--ok)}
+.foot{margin:22px 0 0;padding:16px 0 0;border-top:1px solid var(--paper-line);font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--ink-soft);background:none}
+.foot .partner{color:var(--ink)}
+form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
+@media (max-width:520px){
+  body{padding:22px 16px 30px}
+  .sheet{max-width:100%}
+  form{padding:20px 0 4px;gap:16px}
+  h1{font-size:30px}
+  .actions{align-items:stretch}#submitBtn{width:100%}
+}
+</style>
 </head>
 <body>
 
 <div class="sheet">
-  <div class="stamp-wrap">
-    <div class="stamp">Original</div>
-  </div>
-  <p class="eyebrow">Admission Register</p>
-  <h1>Student Enrollment Form</h1>
-  <p class="sub">Fill every field carefully. Entry syncs directly to the register sheet on submit and is recorded under your Teacher ID.</p>
+  <header class="hd">
+    <span class="hd-ico"><i class="fa-solid fa-user-plus"></i></span>
+    <div>
+      <p class="eyebrow">Admission Register</p>
+      <h1>Student Enrollment</h1>
+      <p class="sub">Fill every field carefully. Entry syncs directly to the register sheet and is recorded under your Teacher ID.</p>
+    </div>
+  </header>
 
   <form id="studentForm">
-    <div>
-      <label>Teacher ID <span class="req">*</span></label>
-      <div class="field has-prefix">
-        <span class="prefix">&#128274;</span>
-        <input type="text" name="Teacher ID" id="teacherIdInput" readonly required tabindex="-1" title="Locked to your login">
-      </div>
-      <div class="status" id="teacherNameNote"></div>
-    </div>
+    <div class="sec"><i class="fa-solid fa-user-graduate"></i>Student</div>
 
     <div>
-      <label>Student ID <span class="req">*</span></label>
+      <label><i class="fa-solid fa-id-card"></i>Student ID <span class="req">*</span></label>
       <div class="field has-prefix">
-        <span class="prefix" id="studentIdPrefix">ID</span>
+        <span class="prefix" id="studentIdPrefix"><i class="fa-solid fa-hashtag"></i></span>
         <input type="text" name="Student ID" id="studentIdInput" placeholder="PP 26 0001" pattern="PP\s?\d{2}\s?\d{4}" required>
       </div>
     </div>
 
     <div>
-      <label>Admission Date <span class="req">*</span></label>
+      <label><i class="fa-solid fa-calendar-check"></i>Admission Date <span class="req">*</span></label>
       <div class="field">
         <input type="date" name="Admission" required>
       </div>
     </div>
 
     <div>
-      <label>Student Name <span class="req">*</span></label>
+      <label><i class="fa-solid fa-user-graduate"></i>Student Name <span class="req">*</span></label>
       <div class="field">
         <input type="text" name="Name" placeholder="Full name" required>
       </div>
     </div>
 
     <div>
-      <label>Student Contact No</label>
+      <label><i class="fa-solid fa-mobile-screen"></i>Student Contact No</label>
       <div class="field has-prefix">
         <span class="prefix">+91</span>
         <input type="tel" name="Student Contact No" placeholder="98765 43210" pattern="[0-9\s]{10,15}">
       </div>
     </div>
 
+    <div class="sec"><i class="fa-solid fa-people-roof"></i>Guardian</div>
+
     <div class="row2">
       <div>
-        <label>Guardian Name <span class="req">*</span></label>
+        <label><i class="fa-solid fa-user-shield"></i>Guardian Name <span class="req">*</span></label>
         <div class="field">
           <input type="text" name="Parent" placeholder="Guardian's name" required>
         </div>
       </div>
       <div>
-        <label>Guardian Phone <span class="req">*</span></label>
+        <label><i class="fa-solid fa-phone"></i>Guardian Phone <span class="req">*</span></label>
         <div class="field has-prefix">
           <span class="prefix">+91</span>
           <input type="tel" name="Guardian Phone" placeholder="98765 43210" pattern="[0-9\s]{10,15}" required>
@@ -2017,16 +2386,18 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
     </div>
 
     <div>
-      <label>Optional secondary No.</label>
+      <label><i class="fa-solid fa-phone-volume"></i>Optional secondary No.</label>
       <div class="field has-prefix">
         <span class="prefix">+91</span>
         <input type="tel" name="Student Phone" placeholder="98765 43210 (optional)" pattern="[0-9\s]{10,15}">
       </div>
     </div>
 
+    <div class="sec"><i class="fa-solid fa-book-open-reader"></i>Course</div>
+
     <div class="row2">
       <div>
-        <label>Class <span class="req">*</span></label>
+        <label><i class="fa-solid fa-school"></i>Class <span class="req">*</span></label>
         <div class="field">
           <select name="Class" required>
             <option value="" disabled selected>Select class</option>
@@ -2039,7 +2410,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
         </div>
       </div>
       <div>
-        <label>Batch <span class="req">*</span></label>
+        <label><i class="fa-solid fa-clock"></i>Batch <span class="req">*</span></label>
         <div class="field">
           <select name="Batch" required>
             <option value="" disabled selected>Select batch</option>
@@ -2050,22 +2421,22 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
     </div>
 
     <div id="boardField">
-      <label>Board <span class="req">*</span></label>
+      <label><i class="fa-solid fa-building-columns"></i>Board <span class="req">*</span></label>
       <div class="field">
         <select name="Board" required>
           <option value="" disabled selected>Select board</option>
           <option>CBSE</option><option>ICSE/ISC</option>
-          <option>WBBSE/WBCHSE</option><option>Other State Board</option>
+          <option>WBBSE/WBCHSE</option>
         </select>
       </div>
     </div>
 
     <div>
-      <label>Subjects <span class="req">*</span></label>
+      <label><i class="fa-solid fa-book-open"></i>Subjects <span class="req">*</span></label>
       <div class="msel" id="subjectMsel">
         <button type="button" class="msel-btn" id="subjectBtn">
           <span id="subjectBtnText">Select subjects</span>
-          <span class="msel-arrow"></span>
+          <i class="fa-solid fa-chevron-down msel-arrow"></i>
         </button>
         <div class="msel-panel" id="subjectPanel">
         </div>
@@ -2075,15 +2446,26 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
     </div>
 
     <div>
-      <label>Monthly Fee (₹) <span class="req">*</span></label>
+      <label><i class="fa-solid fa-indian-rupee-sign"></i>Monthly Fee (₹) <span class="req">*</span></label>
       <div class="field has-prefix">
         <span class="prefix rupee">₹</span>
         <input type="number" name="Monthly Fee" placeholder="0" min="0" required>
       </div>
     </div>
 
+    <div class="sec"><i class="fa-solid fa-shield-halved"></i>Recorded by</div>
+
+    <div class="tid-card">
+      <label><i class="fa-solid fa-chalkboard-user"></i>Teacher ID <span class="req">*</span></label>
+      <div class="field has-prefix">
+        <span class="prefix"><i class="fa-solid fa-lock"></i></span>
+        <input type="text" name="Teacher ID" id="teacherIdInput" readonly required tabindex="-1" title="Locked to your login">
+      </div>
+      <div class="status" id="teacherNameNote"></div>
+    </div>
+
     <div class="actions">
-      <button type="submit" id="submitBtn"><span class="btn-label" id="submitBtnLabel">Enroll Student</span></button>
+      <button type="submit" id="submitBtn"><i class="fa-solid fa-user-plus"></i><span class="btn-label" id="submitBtnLabel">Enroll Student</span></button>
       <span class="status" id="status"></span>
     </div>
   </form>
@@ -2098,7 +2480,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
   document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
 
   const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbyiYCckDlSoJDjQAH9Ddl7hNc63RyAucqmJn-YdEuG49BRf5cQJWjJzaad82l5gAMgyIA/exec";
-  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycby4YuXl8tU4SrCbglViR7_FPMUJFtE2HFI5XjIrvPTbCcrK1Oe7tDf4zGqC4Q0mPauU/exec";
+  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbx6gR75p7HMWvUQL1UGEGNFQL6Je48UvVDW6u__N6oAtBib1Hhn97asoiYReQd-Js9n/exec";
 
   const form = document.getElementById('studentForm');
   const TCH = window.TEACHER || (window.parent && window.parent.TEACHER) || { id: '', name: '', token: '' };
@@ -2167,7 +2549,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
     subjects.forEach(s => {
       const chip = document.createElement('span');
       chip.className = 'chip';
-      chip.innerHTML = `${s} <button type="button" aria-label="remove">×</button>`;
+      chip.innerHTML = `${s} <button type="button" aria-label="remove"><i class="fa-solid fa-xmark"></i></button>`;
       chip.querySelector('button').addEventListener('click', () => {
         subjectChecks.forEach(c => { if (c.value === s) c.checked = false; });
         syncSubjects();
@@ -2340,7 +2722,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
     if (!force && (studentIdFocused || form.classList.contains('is-saving') || idFetchInFlight)) return;
 
     idFetchInFlight = true;
-    studentIdPrefix.innerHTML = '<span class="spinner dark"></span>';
+    studentIdPrefix.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
     studentIdInput.placeholder = 'Fetching…';
     try {
       const res = await fetchWithTimeout(`${STUDENT_DETAILS_URL}?action=nextId&t=${Date.now()}`, {}, 25000);
@@ -2357,11 +2739,11 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
     } catch (err) {
       console.error('Could not fetch next Student ID', err);
       if (force) {
-        status.textContent = '✗ ID fetch failed: ' + err.message;
+        status.textContent = 'ID fetch failed: ' + err.message;
         status.className = 'status err';
       }
     } finally {
-      studentIdPrefix.textContent = 'ID';
+      studentIdPrefix.innerHTML = '<i class="fa-solid fa-hashtag"></i>';
       studentIdInput.placeholder = 'PP 26 0001';
       idFetchInFlight = false;
     }
@@ -2373,19 +2755,19 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
     e.preventDefault();
 
     if (!subjects.length) {
-      status.textContent = '✗ Pick at least one subject';
+      status.textContent = 'Pick at least one subject';
       status.className = 'status err';
       return;
     }
 
     btn.disabled = true;
-    btnLabel.innerHTML = '<span class="spinner"></span>Saving';
+    btnLabel.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving';
     form.classList.add('is-saving');
     status.textContent = 'Saving…';
     status.className = 'status';
 
     const data = Object.fromEntries(new FormData(form).entries());
-    data['Teacher ID'] = TCH.id; data.token = TCH.token;
+    data['Teacher ID'] = TCH.id; data.token = TCH.token;   // saved to the teacher_id column by the Apps Script
     const studentId = data['Student ID'];
 
     try {
@@ -2397,7 +2779,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
       const result = await res.json();
 
       if (result.result === 'success') {
-        status.textContent = `✓ Saved as ${result.id || studentId}`;
+        status.textContent = `Saved as ${result.id || studentId}`;
         status.className = 'status ok';
         form.reset(); teacherIdInput.value = TCH.id;
         subjectChecks.forEach(c => c.checked = false);
@@ -2407,7 +2789,7 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
         throw new Error(result.error || 'Unknown error');
       }
     } catch (err) {
-      status.textContent = '✗ Failed — check connection';
+      status.textContent = 'Failed — check connection';
       status.className = 'status err';
       console.error(err);
     } finally {
@@ -2419,6 +2801,5 @@ try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.e
 <\/script>
 </body>
 </html></script>
-
 </body>
 </html>
