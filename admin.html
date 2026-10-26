@@ -416,6 +416,7 @@ button,a,.sc-main,.cls-tile{touch-action:manipulation}
 .sr-tile.on{background:var(--deep-2);border-color:var(--deep-2)}
 .sr-tile.on b{color:#fff}.sr-tile.on small{color:rgba(255,255,255,.7)}
 .sr-tile.on .sr-ic{background:var(--brass);color:var(--deep)}
+.sr-tile.none{opacity:.6}.sr-tile.none:hover,.sr-tile.none.on{opacity:1}
 .tmeta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px;font-family:var(--mono);font-size:12px;color:var(--muted)}
 .fchips.scroll{margin-bottom:12px}
 #teacherModal .sw-row{padding-left:0}
@@ -1309,6 +1310,18 @@ button:disabled{opacity:.55}
 .tag{border:1px solid currentColor;border-radius:3px;padding:1px 7px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;margin-left:10px;background:none}
 .tag.sent{background:none;color:var(--ok)}.tag.unsent{background:none;color:var(--stamp)}
 .tag i{margin-right:4px;font-size:9px}
+.h-btns{display:flex;gap:8px;align-items:flex-end}
+.h-btns .btn-sm{white-space:nowrap}
+.who-wrap{position:relative}
+.who-panel{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:min(320px,86vw);max-height:340px;overflow:auto;background:#fff;border:1px solid var(--ink);border-radius:6px;box-shadow:0 10px 28px rgba(16,32,27,.18)}
+.who-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--paper-2);background:transparent;padding:10px 12px;font-size:13.5px;color:var(--ink)}
+.who-item:last-child{border-bottom:0}
+.who-item:hover{background:var(--teal-pale)}
+.who-item.on{background:var(--teal-pale);font-weight:600}
+.who-item b{font-weight:600}.who-item small{display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted);font-weight:400}
+.who-item .n{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.who-item i{width:16px;text-align:center;color:var(--muted)}
+@media(max-width:720px){.h-btns{justify-content:space-between}.h-btns .btn-sm{flex:1;justify-content:center}.who-wrap{flex:1;display:flex}.who-panel{left:0;right:auto}}
 .modal{background:rgba(27,26,23,.55);backdrop-filter:none}
 .rcpt{border:1px solid var(--ink);border-radius:6px;box-shadow:none}
 .rc-head{background:none;border-bottom:1px solid var(--ink)}
@@ -1472,7 +1485,13 @@ footer i{color:var(--muted);margin-right:6px}
           <label for="histSearch"><i class="fa-solid fa-magnifying-glass"></i>Search receipts</label>
           <input type="text" id="histSearch" placeholder="name, student ID, receipt no, month…" autocomplete="off">
         </div>
-        <button type="button" class="btn-sm" id="histRefresh"><i class="fa-solid fa-rotate"></i>Refresh</button>
+        <div class="h-btns">
+          <div class="who-wrap">
+            <button type="button" class="btn-sm ghost" id="histWho" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-filter"></i><span id="histWhoTxt">My receipts</span><i class="fa-solid fa-chevron-down" style="font-size:10px"></i></button>
+            <div class="who-panel" id="histWhoPanel" hidden></div>
+          </div>
+          <button type="button" class="btn-sm" id="histRefresh"><i class="fa-solid fa-rotate"></i>Refresh</button>
+        </div>
       </div>
       <div class="hint" id="histNote"></div>
       <div class="hist-list" id="histList"></div>
@@ -1910,31 +1929,66 @@ footer i{color:var(--muted);margin-right:6px}
   function updateBadge() { let n; try { n = mergedHistory().length; } catch (e) { n = localHist.length; } $('histCount').textContent = n || ''; }
   updateBadge();
 
-  // ---- server history (all devices) — needs ?action=history in collector script; optional ----
-  let serverHist = [], serverHistAt = 0, serverHistOk = null;
+  // ---- server history (all devices) ----
+  // Two sources, merged: auth script action "myFees" and collector script "?action=history".
+  // Rows may come back camelCase or with the sheet's own column headers — both are understood.
+  let serverHist = [], serverHistAt = 0, serverHistOk = null, serverHistErr = '', serverHistBusy = false;
+  function fetchT(url, opt, ms) {
+    const c = new AbortController(), t = setTimeout(() => c.abort(), ms || 15000);
+    return fetch(url, Object.assign({}, opt, { signal: c.signal })).finally(() => clearTimeout(t));
+  }
+  function pick(o, keys) { for (const k of keys) { if (o[k] != null && o[k] !== '') return o[k]; } return ''; }
+  function normRow(r) {
+    r = r || {};
+    return {
+      receiptId: String(pick(r, ['receiptId', 'receipt_id', 'Receipt ID', 'Receipt Id', 'ReceiptID', 'receipt'])).trim(),
+      date: String(pick(r, ['date', 'Date'])),
+      teacherId: String(pick(r, ['teacherId', 'teacher_id', 'Teacher ID', 'Teacher_ID'])).trim(),
+      stuId: String(pick(r, ['stuId', 'studentId', 'Stu. ID', 'Stu ID', 'Student ID'])).trim(),
+      feesMonth: String(pick(r, ['feesMonth', 'month', 'Fees For(month)', 'Fees For (month)', 'Fees For'])),
+      amount: Number(String(pick(r, ['amount', 'Amm.', 'Amm', 'Amount'])).replace(/[^\d.\-]/g, '')) || 0,
+      subjects: String(pick(r, ['subjects', 'feesSubjects', 'Fees for Subjects', 'Fees For Subjects'])),
+      count: Number(pick(r, ['count', 'receiptCount', 'Receipt Count'])) || 0,
+      name: String(pick(r, ['name', 'studentName', 'Student Name'])).trim(),
+      phone: String(pick(r, ['phone', 'Phn NO', 'Phn No', 'Phone'])).trim()
+    };
+  }
+  function rowsOf(j) {
+    if (!j) return null;
+    if (Array.isArray(j)) return j;
+    const a = j.rows || j.data || j.fees || j.history || j.receipts;
+    return Array.isArray(a) ? a : null;
+  }
   async function loadServerHistory(force) {
-    if (!force && Date.now() - serverHistAt < 20000) return;
-    serverHistAt = Date.now();
-    try {
-      const res = await fetch(TCH.authUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'myFees', token: TCH.token, limit: 300 }) });
-      const j = await res.json();
-      if (j.status === 'ok' && Array.isArray(j.rows)) {
-        serverHist = j.rows.map(r => ({
-          receiptId: String(r.receiptId || '').trim(), date: String(r.date || ''), teacherId: String(r.teacherId || ''),
-          stuId: String(r.stuId || '').trim(), feesMonth: String(r.feesMonth || ''), amount: Number(r.amount) || 0,
-          subjects: String(r.subjects || ''), count: Number(r.count) || 0,
-          name: String(r.name || '').trim(), phone: String(r.phone || '').trim()
-        })).filter(r => r.receiptId);
-        serverHistOk = true;
-      } else serverHistOk = false;
-    } catch (e) { serverHistOk = false; }
+    if (serverHistBusy) return;
+    if (!force && serverHistOk && Date.now() - serverHistAt < 20000) return;
+    serverHistBusy = true; serverHistErr = '';
+    renderHistory();
+    const jobs = [];
+    if (TCH.authUrl) jobs.push(fetchT(TCH.authUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'myFees', token: TCH.token, limit: 300 }) }).then(r => r.json()));
+    jobs.push(fetchT(COLLECTOR_URL + '?action=history&teacherId=' + encodeURIComponent(TCH.id) + '&limit=300&_=' + Date.now()).then(r => r.json()));
+    const out = await Promise.allSettled(jobs);
+    const by = new Map();
+    let ok = false;
+    out.forEach(o => {
+      if (o.status !== 'fulfilled') { if (!serverHistErr && o.reason && o.reason.name !== 'AbortError') serverHistErr = String(o.reason.message || o.reason); return; }
+      const j = o.value, arr = rowsOf(j);
+      if (arr) { ok = true; arr.map(normRow).filter(r => r.receiptId).forEach(r => by.set(r.receiptId, Object.assign({}, by.get(r.receiptId) || {}, r))); }
+      else if (!serverHistErr && j && (j.message || j.error)) serverHistErr = String(j.message || j.error);
+    });
+    serverHist = Array.from(by.values());
+    serverHistOk = ok;
+    if (ok) { serverHistAt = Date.now(); serverHistErr = ''; }
+    serverHistBusy = false;
     updateBadge();
     renderHistory();
   }
 
   function recNum(id) { const m = String(id).match(/(\d+)$/); return m ? parseInt(m[1], 10) : -1; }
   function mergedHistory() {
-    const names = new Map(STUDENTS.map(s => [nid(s.id), s.name]));
+    let names = new Map();
+    try { names = new Map(STUDENTS.map(s => [nid(s.id), s.name])); } catch (e) {}
     const by = new Map();
     serverHist.forEach(r => by.set(r.receiptId, Object.assign({}, r, { name: r.name || names.get(nid(r.stuId)) || '' })));
     localHist.forEach(r => by.set(r.receiptId, Object.assign({}, by.get(r.receiptId) || {}, r)));
@@ -1943,22 +1997,72 @@ footer i{color:var(--muted);margin-right:6px}
   }
 
   function renderHistory() {
-    const q = $('histSearch').value.trim().toLowerCase();
-    let rows = mergedHistory();
-    if (q) rows = rows.filter(r => [r.receiptId, r.stuId, r.name, r.feesMonth, r.teacherId, r.subjects].join(' ').toLowerCase().includes(q));
-    const list = $('histList');
-    list.innerHTML = rows.length ? '' : '<div class="suggest-empty">No receipts found</div>';
-    rows.slice(0, 100).forEach(r => {
-      const tag = r.sent === true ? '<span class="tag sent"><i class="fa-solid fa-check"></i>SENT</span>' : (r.sent === false ? '<span class="tag unsent"><i class="fa-solid fa-clock"></i>NOT SENT</span>' : '');
-      const div = document.createElement('div');
-      div.className = 'h-row';
-      div.innerHTML = `<div class="h-id">${esc(r.receiptId)}${tag}</div><div class="h-amt">${money(r.amount)}</div>` +
-        `<div class="h-sub">${esc(r.name || '—')} · ${esc(r.stuId)} · ${esc(r.feesMonth)} · ${esc(fmtDate(r.date))}</div>`;
-      div.addEventListener('click', () => openReceipt(r));
-      list.appendChild(div);
-    });
-    $('histNote').textContent = serverHistOk === false ? 'Could not load your history from the server — showing receipts made on this device' : (rows.length > 100 ? 'Showing latest 100 · use search' : '');
+    const list = $('histList'), noteEl = $('histNote');
+    try {
+      const q = $('histSearch').value.trim().toLowerCase();
+      let rows = mergedHistory();
+      const who = histWho();
+      if (who !== 'ALL') rows = rows.filter(r => sameId_(r.teacherId || (sameId_(who, TCH.id) ? who : ''), who));
+      if (q) rows = rows.filter(r => [r.receiptId, r.stuId, r.name, r.phone, r.feesMonth, r.teacherId, r.subjects, r.amount].join(' ').toLowerCase().includes(q));
+      list.innerHTML = rows.length ? '' : '<div class="suggest-empty">' + (serverHistBusy ? 'Loading receipts…' : 'No receipts found') + '</div>';
+      rows.slice(0, 100).forEach(r => {
+        const tag = r.sent === true ? '<span class="tag sent"><i class="fa-solid fa-check"></i>SENT</span>' : (r.sent === false ? '<span class="tag unsent"><i class="fa-solid fa-clock"></i>NOT SENT</span>' : '');
+        const div = document.createElement('div');
+        div.className = 'h-row';
+        div.innerHTML = `<div class="h-id">${esc(r.receiptId)}${tag}</div><div class="h-amt">${money(r.amount)}</div>` +
+          `<div class="h-sub">${esc(r.name || '—')} · ${esc(r.stuId)} · ${esc(r.feesMonth)} · ${esc(fmtDate(r.date))}${r.teacherId ? ' · by ' + esc(r.teacherId) : ''}</div>`;
+        div.addEventListener('click', () => openReceipt(r));
+        list.appendChild(div);
+      });
+      let note = '';
+      if (serverHistBusy) note = 'Loading receipts…';
+      else if (serverHistOk === false) note = 'Could not load history from the server' + (serverHistErr ? ' (' + serverHistErr + ')' : '') + ' — showing receipts made on this device. Tap Refresh to retry.';
+      else if (rows.length > 100) note = 'Showing latest 100 · use search';
+      noteEl.textContent = note;
+    } catch (e) {
+      list.innerHTML = '<div class="suggest-empty">Could not show history — tap Refresh</div>';
+      noteEl.textContent = String(e && e.message || e);
+    }
   }
+  // ---- teacher filter: default = logged-in user; admin can pick another teacher or all ----
+  let histTid = null;                                   // null = my own receipts
+  const histWho = () => histTid === null ? TCH.id : histTid;
+  const teacherNm_ = id => { const t = allTeachers_().find(x => sameId_(x.Teacher_ID, id)); return t ? String(t.Name || '').trim() : ''; };
+  function paintWho() {
+    const w = histWho();
+    $('histWhoTxt').textContent = w === 'ALL' ? 'All teachers' : (sameId_(w, TCH.id) ? 'My receipts' : (teacherNm_(w) || w));
+  }
+  function buildWhoPanel() {
+    const rows = mergedHistory(), cnt = new Map();
+    rows.forEach(r => { const k = String(r.teacherId || '').trim().toUpperCase(); if (k) cnt.set(k, (cnt.get(k) || 0) + 1); });
+    const ids = new Map();                               // id -> name
+    allTeachers_().forEach(t => { const id = String(t.Teacher_ID || '').trim(); if (id) ids.set(id.toUpperCase(), { id, name: String(t.Name || '').trim() }); });
+    cnt.forEach((n, k) => { if (!ids.has(k)) ids.set(k, { id: k, name: '' }); });
+    const me = String(TCH.id || '').toUpperCase();
+    const others = [...ids.values()].filter(t => t.id.toUpperCase() !== me)
+      .sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id, undefined, { sensitivity: 'base' }));
+    const cur = String(histWho()).toUpperCase();
+    const item = (id, ico, title, sub, n) => `<button type="button" class="who-item${cur === String(id).toUpperCase() ? ' on' : ''}" data-id="${esc(id)}"><i class="fa-solid ${ico}"></i><span><b>${esc(title)}</b>${sub ? '<small>' + esc(sub) + '</small>' : ''}</span><span class="n">${n}</span></button>`;
+    $('histWhoPanel').innerHTML =
+      item(TCH.id, 'fa-user-check', 'My receipts', TCH.id + (TCH.name ? ' · ' + TCH.name : ''), cnt.get(me) || 0) +
+      item('ALL', 'fa-users', 'All teachers', '', rows.length) +
+      others.map(t => item(t.id, 'fa-user', t.name || t.id, t.name ? t.id : '', cnt.get(t.id.toUpperCase()) || 0)).join('');
+  }
+  function closeWho() { $('histWhoPanel').hidden = true; $('histWho').setAttribute('aria-expanded', 'false'); }
+  $('histWho').addEventListener('click', e => {
+    e.stopPropagation();
+    const p = $('histWhoPanel');
+    if (!p.hidden) { closeWho(); return; }
+    if (!allTeachers_().length) { try { window.parent.loadTeachers(true); } catch (x) {} }
+    buildWhoPanel(); p.hidden = false; $('histWho').setAttribute('aria-expanded', 'true');
+  });
+  $('histWhoPanel').addEventListener('click', e => {
+    const b = e.target.closest('.who-item'); if (!b) return;
+    histTid = sameId_(b.dataset.id, TCH.id) ? null : b.dataset.id;
+    closeWho(); paintWho(); renderHistory();
+  });
+  document.addEventListener('click', e => { if (!e.target.closest('.who-wrap')) closeWho(); });
+  paintWho();
   $('histSearch').addEventListener('input', renderHistory);
   $('histRefresh').addEventListener('click', () => loadServerHistory(true));
 
@@ -3511,11 +3615,34 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
   const cap_ = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
   function subjIcon_(s){
     s = norm_(s);
-    const map = [[/phys/, 'fa-atom'], [/chem/, 'fa-flask'], [/math|alg|geom|calc|stat/, 'fa-square-root-variable'], [/bio|life/, 'fa-dna'],
-      [/eng|lit/, 'fa-language'], [/hist|civic|polit/, 'fa-landmark'], [/geo/, 'fa-earth-asia'], [/comp|\bit\b|program|coding/, 'fa-laptop-code'],
-      [/beng|hindi|sans|urdu/, 'fa-pen-nib'], [/eco|account|commerce/, 'fa-chart-line']];
+    const map = [[/phys/, 'fa-atom'], [/chem/, 'fa-flask'], [/math|alg|geom|calc|stat|arith/, 'fa-square-root-variable'],
+      [/bio|botan|zoo|life/, 'fa-dna'], [/^cs$|comp|\bit\b|program|coding|informat/, 'fa-laptop-code'],
+      [/beng|bangla|hindi|sans|urdu|odia|assam/, 'fa-pen-nib'], [/eng|lit|gramm/, 'fa-language'],
+      [/hist|civic|polit/, 'fa-landmark'], [/geo/, 'fa-earth-asia'], [/eco|commerce|business/, 'fa-chart-line'],
+      [/account|book ?keep/, 'fa-calculator'], [/environ|evs|nature/, 'fa-seedling'], [/social|\bsst\b|sociol/, 'fa-people-group'],
+      [/sci/, 'fa-microscope'], [/art|draw|paint/, 'fa-palette'], [/music|song/, 'fa-music'], [/sport|\bpe\b|physical|game/, 'fa-futbol'],
+      [/reason|aptitude|\bgk\b|general/, 'fa-lightbulb']];
     const m = map.find(([re]) => re.test(s));
     return m ? m[1] : 'fa-book';
+  }
+  /* one key per subject: "Maths"/"Mathematics" -> math, "Biology - Botany" -> biology, "Computer" -> cs */
+  const SUBJ_ALIAS_ = {maths:'math', mathematics:'math', mathematic:'math', computer:'cs', computers:'cs', 'computer science':'cs', comp:'cs',
+    phy:'physics', chem:'chemistry', bio:'biology', eng:'english', bangla:'bengali'};
+  const SUBJ_BASE_ = ['Physics', 'Chemistry', 'Math', 'Biology', 'English', 'Cs'];
+  function subjKey_(x){
+    let k = norm_(x).replace(/\s+/g, ' ');
+    if(k.indexOf(' - ') > 0) k = k.split(' - ')[0].trim();
+    return SUBJ_ALIAS_[k] || k;
+  }
+  const subjKeys_ = t => { const seen = new Set(); tSubj_(t).split(', ').forEach(x => { const k = subjKey_(x); if(k) seen.add(k); }); return [...seen]; };
+  /* every subject the centre has: core list + subjects used by students + cached class/board lists + teacher subjects */
+  function allSubjects_(){
+    const set = new Set(SUBJ_BASE_.map(subjKey_));
+    const add = v => normSubjects_(v).split(', ').forEach(x => { const k = subjKey_(x); if(k) set.add(k); });
+    try{ (STUDENTS || []).forEach(st => add(st['Subjects'])); }catch(e){}
+    try{ Object.values(rg.cache || {}).forEach(c => (c && c.subjects || []).forEach(add)); }catch(e){}
+    try{ (TEACHERS || []).forEach(t => add(tSubj_(t))); }catch(e){}
+    return [...set];
   }
   function tchMsg_(html){
     const r = tchEl_('tchBody'); if(!r) return;
@@ -3523,7 +3650,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
   }
   const tchLoading_ = () => tchMsg_('<div class="stu-empty"><span class="spinner"></span></div>');
   const tchError_ = msg => tchMsg_('<div class="stu-empty error-msg"><i class="fa-solid fa-triangle-exclamation"></i> ' + msg + '</div>');
-  function tchReset_(){ Object.assign(TCH_UI, {status:'all', subj:'', sort:'name', html:'', tools:'', anim:true}); TCH_UI.open.clear(); tchLoading_(); }
+  function tchReset_(){ Object.assign(TCH_UI, {status:'all', subj:'', sort:'name', html:'', tools:'', anim:true, allSubj:false}); TCH_UI.open.clear(); tchLoading_(); }
 
   function tchCard_(t){
     const id = String(t.Teacher_ID || ''), name = String(t.Name || '').trim();
@@ -3581,11 +3708,11 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 
     const searched = q ? searchList_(TEACHERS, field, q, (k, v) => v) : TEACHERS;
     const cnt = {all:searched.length, active:0, off:0, admin:0};
-    const subs = new Map();
+    const subs = new Map(TCH_UI.allSubj ? allSubjects_().map(k => [k, 0]) : []);
     searched.forEach(t => {
       tActive_(t) ? cnt.active++ : cnt.off++;
       if(t.Role === 'Admin') cnt.admin++;
-      tSubj_(t).split(', ').filter(Boolean).forEach(s => { const k = s.toLowerCase(); subs.set(k, (subs.get(k) || 0) + 1); });
+      subjKeys_(t).forEach(k => subs.set(k, (subs.get(k) || 0) + 1));
     });
     if(TCH_UI.subj && !subs.has(TCH_UI.subj)) TCH_UI.subj = '';
 
@@ -3593,7 +3720,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
       if(TCH_UI.status === 'active' && !tActive_(t)) return false;
       if(TCH_UI.status === 'off' && tActive_(t)) return false;
       if(TCH_UI.status === 'admin' && t.Role !== 'Admin') return false;
-      if(TCH_UI.subj && !tSubj_(t).toLowerCase().split(', ').includes(TCH_UI.subj)) return false;
+      if(TCH_UI.subj && !subjKeys_(t).includes(TCH_UI.subj)) return false;
       return true;
     });
     hits = [...hits];
@@ -3609,8 +3736,10 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
       <div class="fchips scroll">
         ${chip('all', 'All', cnt.all)}${chip('active', 'Active', cnt.active, 'fa-circle-check')}${chip('off', 'Off', cnt.off, 'fa-ban')}${chip('admin', 'Admins', cnt.admin, 'fa-shield-halved')}
       </div>
-      ${subArr.length ? `<div class="srail">${subArr.map(([k, n]) => `
-        <button type="button" class="sr-tile${TCH_UI.subj === k ? ' on' : ''}" data-act="sub" data-v="${esc_(k)}">
+      ${(subArr.length || TCH_UI.allSubj) ? `<div class="srail"><button type="button" class="sr-tile sr-all${TCH_UI.allSubj ? ' on' : ''}" data-act="allsub" aria-pressed="${TCH_UI.allSubj ? 'true' : 'false'}">
+          <span class="sr-ic"><i class="fa-solid fa-layer-group"></i></span><b>All subjects</b><small>${TCH_UI.allSubj ? 'showing all' : 'tap to show all'}</small>
+        </button>${subArr.map(([k, n]) => `
+        <button type="button" class="sr-tile${TCH_UI.subj === k ? ' on' : ''}${n ? '' : ' none'}" data-act="sub" data-v="${esc_(k)}">
           <span class="sr-ic"><i class="fa-solid ${subjIcon_(k)}"></i></span><b>${esc_(cap_(k))}</b><small>${plural_(n, 'teacher')}</small>
         </button>`).join('')}</div>` : ''}
       <div class="tmeta"><span>${plural_(hits.length, 'teacher')}</span>
@@ -3732,6 +3861,11 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
         on ? TCH_UI.open.add(id) : TCH_UI.open.delete(id);
       }
       else if(act === 'st'){ TCH_UI.status = t.dataset.v; tchInput_(); }
+      else if(act === 'allsub'){
+        TCH_UI.allSubj = !TCH_UI.allSubj;
+        if(TCH_UI.allSubj){ try{ rgPrefetch_().then(() => renderTeachers_()).catch(() => {}); }catch(e){} }
+        tchInput_();
+      }
       else if(act === 'sub'){ TCH_UI.subj = TCH_UI.subj === t.dataset.v ? '' : t.dataset.v; tchInput_(); }
       else if(act === 'clear'){ tchEl_('teacherSearchInput').value = ''; tchInput_(); tchEl_('teacherSearchInput').focus(); }
       else if(act === 'edit' && card) openTeacherModal(card.dataset.id);
