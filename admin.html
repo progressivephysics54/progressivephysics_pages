@@ -562,10 +562,20 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
       </form>
 
       <form class="fm" id="sf" autocomplete="off" hidden>
-        <div><label for="sid">Admin ID</label><div class="inp"><i class="fa-solid fa-id-badge"></i><input id="sid" placeholder="Your admin ID" required autocapitalize="characters"></div></div>
-        <div><label for="spw">Create password (6+ characters)</label><div class="inp"><i class="fa-solid fa-key"></i><input id="spw" type="password" required minlength="6" autocomplete="new-password"><button type="button" class="eye" data-for="spw" aria-label="Show password"><i class="fa-solid fa-eye"></i></button></div></div>
-        <div><label for="spw2">Confirm password</label><div class="inp"><i class="fa-solid fa-shield-halved"></i><input id="spw2" type="password" required minlength="6" autocomplete="new-password"></div></div>
-        <button class="btn gold" id="sgo" type="submit"><i class="fa-solid fa-user-check"></i> Create account</button>
+        <div class="fseg" role="tablist" aria-label="Sign up using">
+          <button type="button" data-s="id" class="on"><i class="fa-solid fa-id-badge"></i>Admin ID</button>
+          <button type="button" data-s="email"><i class="fa-solid fa-envelope"></i>Email</button>
+        </div>
+        <div><label for="sid" id="slab">Admin ID</label><div class="inp"><i class="fa-solid fa-id-badge" id="sico"></i><input id="sid" placeholder="Your admin ID" required autocapitalize="characters"></div></div>
+        <div id="sstep2" class="fm" hidden>
+          <div><label for="sotp">Code from email</label><div class="inp"><i class="fa-solid fa-envelope-open-text"></i><input id="sotp" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div></div>
+          <a href="#" id="sresend" style="font-size:13px;text-align:center;color:var(--muted)">Resend code</a>
+        </div>
+        <div id="sstep3" class="fm" hidden>
+          <div><label for="spw">Create password (6+ characters)</label><div class="inp"><i class="fa-solid fa-key"></i><input id="spw" type="password" minlength="6" autocomplete="new-password"><button type="button" class="eye" data-for="spw" aria-label="Show password"><i class="fa-solid fa-eye"></i></button></div></div>
+          <div><label for="spw2">Confirm password</label><div class="inp"><i class="fa-solid fa-shield-halved"></i><input id="spw2" type="password" minlength="6" autocomplete="new-password"></div></div>
+        </div>
+        <button class="btn gold" id="sgo" type="submit"><i class="fa-solid fa-paper-plane"></i> Send code</button>
         <div class="msg" id="smsg" role="alert"></div>
       </form>
 
@@ -577,6 +587,9 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
         <div><label for="fid" id="flab">Admin ID</label><div class="inp"><i class="fa-solid fa-id-badge" id="fico"></i><input id="fid" placeholder="Your admin ID" required autocapitalize="characters"></div></div>
         <div id="fstep2" class="fm" hidden>
           <div><label for="fotp">Code from email</label><div class="inp"><i class="fa-solid fa-envelope-open-text"></i><input id="fotp" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div></div>
+          <a href="#" id="fresend" style="font-size:13px;text-align:center;color:var(--muted)">Resend code</a>
+        </div>
+        <div id="fstep3" class="fm" hidden>
           <div><label for="fpw">New password (6+ characters)</label><div class="inp"><i class="fa-solid fa-key"></i><input id="fpw" type="password" minlength="6" autocomplete="new-password"></div></div>
           <div><label for="fpw2">Confirm password</label><div class="inp"><i class="fa-solid fa-shield-halved"></i><input id="fpw2" type="password" minlength="6" autocomplete="new-password"></div></div>
         </div>
@@ -2441,7 +2454,7 @@ footer i{color:var(--muted);margin-right:6px}
 
 <script>
 /* ═════════ AUTH + SHELL (same Auth.gs web app as the teacher panel) ═════════ */
-const AUTH_URL = "https://script.google.com/macros/s/AKfycbwvoWrRNad9Tvz-DOJzqeiZqQ2ecZlIEGg14LVgo2FnU4-7pnRgSb_e0fFjDP_PL7ahgg/exec";
+const AUTH_URL = "https://script.google.com/macros/s/AKfycbzATaN38RYsDdG2sjQPEiJxLyKb5Ww1qkGo6FsIu_GmLm2xE3YvpzbHE5ZXP7iCuEWGRg/exec";
 const SESSION_KEY = 'ap';           // separate from the teacher panel's 'tp'
 const $ = id => document.getElementById(id);
 const $$ = s => document.querySelectorAll(s);
@@ -2458,6 +2471,10 @@ const LABEL = {
   lgo: '<i class="fa-solid fa-right-to-bracket"></i> Sign in',
   sgo: '<i class="fa-solid fa-user-check"></i> Create account'
 };
+const BTN_SEND = '<i class="fa-solid fa-paper-plane"></i> Send code';
+const BTN_VERIFY = '<i class="fa-solid fa-circle-check"></i> Verify code';
+let sStep = 1, sBy = 'id';                    // sign up: 1 ID -> 2 OTP -> 3 password
+let fStep = 1, fBy = 'id';        // forgot : 1 ID -> 2 OTP -> 3 new password
 const GI = body => '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + body + '</svg>';
 const ICONS = {
   sunrise: GI('<path d="M5.5 17a6.5 6.5 0 0 1 13 0"/><path d="M12 6.5V9M5 10l1.6 1.6M19 10l-1.6 1.6M2 17h20M7 21h10"/><path d="M9.5 6.2 12 3.7l2.5 2.5"/>'),
@@ -2589,6 +2606,7 @@ function mode(m) {
   $$('.seg button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
   $('msg').textContent = ''; $('smsg').textContent = ''; $('fmsg').textContent = '';
   if (m !== 'f') fReset_();
+  if (m !== 'up') sReset_();
 }
 $$('[data-m]').forEach(b => b.addEventListener('click', () => mode(b.dataset.m)));
 
@@ -2598,64 +2616,112 @@ $$('.eye').forEach(b => b.addEventListener('click', () => {
   b.innerHTML = '<i class="fa-solid ' + (show ? 'fa-eye-slash' : 'fa-eye') + '"></i>';
 }));
 
+const SBTN = () => [BTN_SEND, BTN_VERIFY, LABEL.sgo][sStep - 1];
+function setSBy_(by) {
+  sBy = by;
+  $$('#sf .fseg button').forEach(b => b.classList.toggle('on', b.dataset.s === by));
+  const em = by === 'email', i = $('sid');
+  $('slab').textContent = em ? 'Email' : 'Admin ID';
+  $('sico').className = 'fa-solid ' + (em ? 'fa-envelope' : 'fa-id-badge');
+  i.type = em ? 'email' : 'text'; i.placeholder = em ? 'Your registered email' : 'Your admin ID';
+  i.autocapitalize = em ? 'none' : 'characters'; i.value = '';
+}
+$$('#sf .fseg button').forEach(b => b.addEventListener('click', () => { if (sStep === 1) setSBy_(b.dataset.s); }));
+function sReset_() {
+  $$('#sf .fseg button').forEach(b => b.disabled = false);
+  sStep = 1; $('sstep2').hidden = true; $('sstep3').hidden = true; $('sid').readOnly = false;
+  $('sotp').required = $('spw').required = $('spw2').required = false;
+  $('sotp').value = $('spw').value = $('spw2').value = ''; $('sgo').innerHTML = BTN_SEND;
+}
+$('sresend').addEventListener('click', async e => {
+  e.preventDefault(); const m = $('smsg'); m.textContent = '';
+  try {
+    const r = await post({ action: 'signupOtp', by: sBy, id: $('sid').value.trim() });
+    if (r.status === 'ok') toast('New code sent to email'); else m.textContent = r.message || 'Could not resend code';
+  } catch (err) { m.textContent = 'Cannot reach the server. Check AUTH_URL and your connection.'; }
+});
 $('sf').addEventListener('submit', async e => {
   e.preventDefault();
   const b = $('sgo'), m = $('smsg'); m.textContent = '';
-  if ($('spw').value !== $('spw2').value) { m.textContent = 'Passwords do not match'; return; }
-  b.disabled = true; b.innerHTML = spin('Creating…');
+  if (sStep === 3 && $('spw').value !== $('spw2').value) { m.textContent = 'Passwords do not match'; return; }
+  b.disabled = true; b.innerHTML = spin(['Sending…', 'Verifying…', 'Creating…'][sStep - 1]);
+  const id = $('sid').value.trim(), otp = $('sotp').value.trim();
   try {
-    const r = await post({ action: 'signup', id: $('sid').value.trim(), password: $('spw').value });
+    const r = sStep === 1 ? await post({ action: 'signupOtp', by: sBy, id })
+            : sStep === 2 ? await post({ action: 'verifyOtp', purpose: 'signup', by: sBy, id, otp })
+            : await post({ action: 'signup', by: sBy, id, password: $('spw').value, otp });
+    if (r.status === 'ok' && sStep === 1) {
+      sStep = 2; $('sstep2').hidden = false; $('sid').readOnly = true; $$('#sf .fseg button').forEach(x => x.disabled = true); $('sotp').required = true;
+      toast('Code sent to your registered email'); b.disabled = false; b.innerHTML = SBTN(); return;
+    }
+    if (r.status === 'ok' && sStep === 2) {
+      sStep = 3; $('sstep2').hidden = true; $('sstep3').hidden = false;
+      $('spw').required = $('spw2').required = true; $('sotp').required = false;
+      toast('Code verified. Set your password'); b.disabled = false; b.innerHTML = SBTN(); return;
+    }
     if (r.status === 'ok') {
-      $('spw').value = $('spw2').value = '';
-      if (isAdmin(r)) { enter(r); toast('Account created'); }
-      else m.textContent = 'Account created, but this console is for administrators only.';
-    } else m.textContent = r.message || 'Sign-up failed';
+      if (isAdmin(r)) { enter(r); toast('Account created'); sReset_(); }
+      else { m.textContent = 'Account created, but this console is for administrators only.'; sReset_(); }
+    } else m.textContent = r.message || (sStep === 1 ? 'Could not send code' : sStep === 2 ? 'Wrong or expired code' : 'Sign-up failed');
   } catch (err) { m.textContent = 'Cannot reach the server. Check AUTH_URL and your connection.'; }
-  b.disabled = false; b.innerHTML = LABEL.sgo;
+  b.disabled = false; b.innerHTML = SBTN();
 });
 
-let fStep = 1, fBy = 'id';
 function setFBy_(by) {
   fBy = by;
-  $$('.fseg button').forEach(b => b.classList.toggle('on', b.dataset.f === by));
+  $$('#ff .fseg button').forEach(b => b.classList.toggle('on', b.dataset.f === by));
   const em = by === 'email', i = $('fid');
   $('flab').textContent = em ? 'Email' : 'Admin ID';
   $('fico').className = 'fa-solid ' + (em ? 'fa-envelope' : 'fa-id-badge');
   i.type = em ? 'email' : 'text'; i.placeholder = em ? 'Your registered email' : 'Your admin ID';
   i.autocapitalize = em ? 'none' : 'characters'; i.value = '';
 }
-$$('.fseg button').forEach(b => b.addEventListener('click', () => { if (fStep === 1) setFBy_(b.dataset.f); }));
-const F1 = '<i class="fa-solid fa-paper-plane"></i> Send code';
-const F2 = '<i class="fa-solid fa-rotate-left"></i> Reset password';
+$$('#ff .fseg button').forEach(b => b.addEventListener('click', () => { if (fStep === 1) setFBy_(b.dataset.f); }));
+const F3 = '<i class="fa-solid fa-rotate-left"></i> Reset password';
+const FBTN = () => [BTN_SEND, BTN_VERIFY, F3][fStep - 1];
 function fReset_() {
-  fStep = 1; $('fstep2').hidden = true; $('fid').readOnly = false;
-  $$('.fseg button').forEach(b => b.disabled = false);
+  fStep = 1; $('fstep2').hidden = true; $('fstep3').hidden = true; $('fid').readOnly = false;
+  $$('#ff .fseg button').forEach(b => b.disabled = false);
   $('fotp').required = $('fpw').required = $('fpw2').required = false;
-  $('fotp').value = $('fpw').value = $('fpw2').value = ''; $('ffgo').innerHTML = F1;
+  $('fotp').value = $('fpw').value = $('fpw2').value = ''; $('ffgo').innerHTML = BTN_SEND;
 }
+$('fresend').addEventListener('click', async e => {
+  e.preventDefault(); const m = $('fmsg'); m.textContent = '';
+  try {
+    const r = await post({ action: 'forgot', by: fBy, id: $('fid').value.trim() });
+    if (r.status === 'ok') toast('If ID is valid, new code sent to email'); else m.textContent = r.message || 'Could not resend code';
+  } catch (err) { m.textContent = 'Cannot reach the server. Check AUTH_URL and your connection.'; }
+});
 $('fgo').addEventListener('click', e => { e.preventDefault(); const v = $('lid').value; mode('f'); setFBy_('id'); $('fid').value = v; });
 $('fback').addEventListener('click', e => { e.preventDefault(); mode('in'); });
 $('ff').addEventListener('submit', async e => {
   e.preventDefault();
   const b = $('ffgo'), m = $('fmsg'); m.textContent = '';
-  if (fStep === 2 && $('fpw').value !== $('fpw2').value) { m.textContent = 'Passwords do not match'; return; }
-  b.disabled = true; b.innerHTML = spin(fStep === 1 ? 'Sending…' : 'Resetting…');
+  if (fStep === 3 && $('fpw').value !== $('fpw2').value) { m.textContent = 'Passwords do not match'; return; }
+  b.disabled = true; b.innerHTML = spin(['Sending…', 'Verifying…', 'Resetting…'][fStep - 1]);
+  const id = $('fid').value.trim(), otp = $('fotp').value.trim();
   try {
-    const r = fStep === 1
-      ? await post({ action: 'forgot', by: fBy, id: $('fid').value.trim() })
-      : await post({ action: 'resetPassword', by: fBy, id: $('fid').value.trim(), otp: $('fotp').value.trim(), newPassword: $('fpw').value });
+    const r = fStep === 1 ? await post({ action: 'forgot', by: fBy, id })
+            : fStep === 2 ? await post({ action: 'verifyOtp', purpose: 'reset', by: fBy, id, otp })
+            : await post({ action: 'resetPassword', by: fBy, id, otp, newPassword: $('fpw').value });
     if (r.status === 'ok' && fStep === 1) {
-      fStep = 2; $('fstep2').hidden = false; $('fid').readOnly = true; $$('.fseg button').forEach(b => b.disabled = true);
-      $('fotp').required = $('fpw').required = $('fpw2').required = true;
+      fStep = 2; $('fstep2').hidden = false; $('fid').readOnly = true; $$('#ff .fseg button').forEach(x => x.disabled = true);
+      $('fotp').required = true;
       toast('If ID is valid, code sent to email');
-      b.disabled = false; b.innerHTML = F2; return;
+      b.disabled = false; b.innerHTML = FBTN(); return;
+    }
+    if (r.status === 'ok' && fStep === 2) {
+      fStep = 3; $('fstep2').hidden = true; $('fstep3').hidden = false;
+      $('fotp').required = false; $('fpw').required = $('fpw2').required = true;
+      toast('Code verified. Set new password');
+      b.disabled = false; b.innerHTML = FBTN(); return;
     }
     if (r.status === 'ok') {
       if (isAdmin(r)) { enter(r); toast('Password reset'); fReset_(); }
-      else m.textContent = 'Reset done, but this console is for administrators only.';
-    } else m.textContent = r.message || 'Failed';
+      else { m.textContent = 'Reset done, but this console is for administrators only.'; fReset_(); }
+    } else m.textContent = r.message || (fStep === 2 ? 'Wrong or expired code' : 'Failed');
   } catch (err) { m.textContent = 'Cannot reach the server. Check AUTH_URL and your connection.'; }
-  b.disabled = false; b.innerHTML = fStep === 1 ? F1 : F2;
+  b.disabled = false; b.innerHTML = FBTN();
 });
 
 $('lf').addEventListener('submit', async e => {
