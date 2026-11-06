@@ -518,6 +518,55 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
 #regModal .rchip button{border:0;background:none;color:var(--muted);cursor:pointer;padding:0}
 #regModal .lockd input{background:var(--bg);color:var(--muted)}
 #regModal.saving form{opacity:.7;pointer-events:none}
+#regModal .feerows{display:grid;gap:8px}
+#regModal .feerows-empty{font-size:13px;color:var(--muted);padding:2px 0}
+#regModal .feerow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px 8px 12px;border:1px solid var(--line);border-radius:4px;background:#fff;font-size:14px;font-weight:500}
+#regModal .feerow>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#regModal .feein{flex:none;width:132px;display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:4px;background:var(--bg);padding:0 8px}
+#regModal .feein:focus-within{outline:1px solid var(--ink);border-color:var(--ink)}
+#regModal .feein b{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500}
+#regModal .feein input{border:0;background:transparent;padding:8px 0;min-width:0;width:100%;font-size:15px;text-align:right;outline:0!important}
+#regModal .totalfee input{background:var(--bg);color:var(--ink);font-family:var(--mono);font-weight:500}
+#regModal .addbar{grid-column:1/-1;display:flex;align-items:flex-start;gap:12px;padding:12px 14px;margin-bottom:6px;border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--bg);font-size:13.5px;line-height:1.5}
+#regModal .addbar[hidden]{display:none}
+#regModal .addbar i.lead{color:var(--accent);margin-top:3px}
+#regModal .addbar .tx{flex:1;min-width:0}
+#regModal .addbar small{display:block;color:var(--muted);font-size:12.5px}
+#regModal .addbar button{flex:none;border:1px solid var(--line);background:#fff;border-radius:4px;padding:6px 10px;font-size:12.5px;color:var(--muted);cursor:pointer}
+#regModal .msel-opt.taken{opacity:.45;cursor:not-allowed}
+#regModal .msel-opt.taken:hover{background:transparent}
+#regModal .rg-tabs{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--ink);border-radius:4px;overflow:hidden;background:#fff}
+#regModal .rg-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 8px;border:0;background:transparent;font:500 13.5px/1.25 var(--body);color:var(--muted);cursor:pointer;text-align:center}
+#regModal .rg-tabs button+button{border-left:1px solid var(--ink)}
+#regModal .rg-tabs button.on{background:var(--accent);color:#fff}
+#regModal .rg-tabs button:not(.on):hover{background:var(--bg);color:var(--accent-d)}
+#regModal .rg-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+#regModal .rg-search{grid-column:1/-1;display:grid;gap:6px}
+#regModal .rg-search[hidden]{display:none}
+#regModal .rg-search .field{position:relative}
+#regModal .rg-sugg{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:6;background:#fff;border:1px solid var(--ink);border-radius:4px;max-height:260px;overflow:auto;box-shadow:0 8px 24px rgba(16,32,27,.12)}
+#regModal .rg-sugg.show{display:block}
+#regModal .rg-sugg .it{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line)}
+#regModal .rg-sugg .it:last-child{border-bottom:0}
+#regModal .rg-sugg .it:hover{background:var(--bg)}
+#regModal .rg-sugg .it b{display:block;font-weight:600;font-size:14.5px}
+#regModal .rg-sugg .it small{display:block;margin-top:2px;color:var(--muted);font-size:12.5px}
+#regModal .rg-sugg .none{padding:12px;color:var(--muted);font-size:13.5px}
+#regModal .rg-sstat{font-size:12.5px;color:var(--muted)}
+#regModal .rg-sstat:empty{display:none}
+#regModal .rg-sstat.err{color:var(--err)}
+#regModal.mode-add .new-only{display:none}
+#regModal.await-pick .after-pick{display:none}
+#regModal select#rgTid{width:100%}
+#regModal .tid-note{font-size:12px;color:var(--muted);font-weight:400}
+#rgId[readonly]{background:var(--bg);color:var(--muted)}
+#dupModal{max-width:440px}
+#dupModal .dup-body{margin:0;font-size:14.5px;line-height:1.55}
+#dupModal .dup-info{display:grid;gap:6px;padding:12px 14px;background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--accent);font-size:13.5px}
+#dupModal .dup-info div{display:flex;justify-content:space-between;gap:12px}
+#dupModal .dup-info span{color:var(--muted)}
+#dupModal .dup-info b{font-weight:500;text-align:right}
+#dupModal .modal-actions{flex-wrap:wrap}
 @media(max-width:900px){
   #regModal{margin:auto 0 0;width:100%;max-width:none;border-radius:16px 16px 0 0;border-bottom:0}
   #regModal[open]{animation:sheet .26s cubic-bezier(.2,.8,.2,1)}
@@ -782,53 +831,81 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
 <dialog id="regModal">
   <form class="modal" id="regForm" method="dialog" autocomplete="off">
     <h2><i class="fa-solid fa-user-plus" style="font-size:15px;color:var(--accent)"></i><span>Register a student</span></h2>
+    <nav class="rg-tabs" id="rgTabs" role="tablist" aria-label="Register mode">
+      <button type="button" role="tab" class="on" data-mode="new" aria-selected="true"><i class="fa-solid fa-user-plus"></i>New student register</button>
+      <button type="button" role="tab" data-mode="add" aria-selected="false"><i class="fa-solid fa-circle-plus"></i>Add subject to existing student</button>
+    </nav>
     <div class="grid">
-      <div class="sec"><i class="fa-solid fa-user-graduate"></i>Student</div>
-      <div class="field"><label>Student ID <span class="req">*</span></label>
+      <div class="addbar" id="rgAddBar" hidden></div>
+      <div class="rg-search" id="rgSearch" hidden>
+        <div class="field"><label>Find student — ID or name</label>
+          <div class="pf"><span class="px" id="rgSrchPx"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input id="rgSrch" placeholder="Type PP 26 0001 or student name" autocomplete="off"></div>
+          <div class="rg-sugg" id="rgSugg"></div></div>
+        <div class="rg-sstat" id="rgSStat"></div>
+      </div>
+      <div class="sec new-only"><i class="fa-solid fa-user-graduate"></i>Student</div>
+      <div class="field new-only"><label>Student ID <span class="req">*</span></label>
         <div class="pf"><span class="px" id="rgIdPx"><i class="fa-solid fa-hashtag"></i></span>
           <input name="Student ID" id="rgId" placeholder="Enter student ID" pattern="PP\s?\d{2}\s?\d{4}" required>
           <button type="button" id="rgIdRef" title="Fetch next ID" aria-label="Fetch next ID"><i class="fa-solid fa-rotate"></i></button></div></div>
-      <div class="field"><label>Admission date <span class="req">*</span></label><input type="date" name="Admission" required></div>
-      <div class="field"><label>Student name <span class="req">*</span></label><input name="Name" placeholder="Full name" required></div>
-      <div class="field"><label>Student contact no.</label>
+      <div class="field new-only"><label>Admission date <span class="req">*</span></label><input type="date" name="Admission" required></div>
+      <div class="field new-only"><label>Student name <span class="req">*</span></label><input name="Name" placeholder="Full name" required></div>
+      <div class="field new-only"><label>Student contact no.</label>
         <div class="pf"><span class="px">+91</span><input type="tel" inputmode="tel" name="Student Contact No" placeholder="Enter Student Contact No" pattern="[0-9\s]{10,15}"></div></div>
 
-      <div class="sec"><i class="fa-solid fa-people-roof"></i>Guardian</div>
-      <div class="field"><label>Guardian name <span class="req">*</span></label><input name="Parent" placeholder="Guardian's name" required></div>
-      <div class="field"><label>Guardian phone <span class="req">*</span></label>
+      <div class="sec new-only"><i class="fa-solid fa-people-roof"></i>Guardian</div>
+      <div class="field new-only"><label>Guardian name <span class="req">*</span></label><input name="Parent" placeholder="Guardian's name" required></div>
+      <div class="field new-only"><label>Guardian phone <span class="req">*</span></label>
         <div class="pf"><span class="px">+91</span><input type="tel" inputmode="tel" name="Guardian Phone" placeholder="Enter Guardian Phone" pattern="[0-9\s]{10,15}" required></div></div>
-      <div class="field full"><label>Optional secondary Phone no.</label>
+      <div class="field full new-only"><label>Optional secondary Phone no.</label>
         <div class="pf"><span class="px">+91</span><input type="tel" inputmode="tel" name="Student Phone" placeholder="optional no." pattern="[0-9\s]{10,15}"></div></div>
 
-      <div class="sec"><i class="fa-solid fa-book-open-reader"></i>Course</div>
-      <div class="field"><label>Class <span class="req">*</span></label>
+      <div class="sec after-pick"><i class="fa-solid fa-book-open-reader"></i>Course</div>
+      <div class="field after-pick"><label>Class <span class="req">*</span></label>
         <select name="Class" id="rgClass" required><option value="" disabled selected>Select class</option>
           <option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option>
           <option>Class 11 - Science</option><option>Class 12 - Science</option><option>JEE</option><option>NEET</option></select></div>
-      <div class="field"><label>Batch <span class="req">*</span></label>
+      <div class="field new-only after-pick"><label>Batch <span class="req">*</span></label>
         <select name="Batch" required><option value="" disabled selected>Select batch</option>
           <option>Morning</option><option>Afternoon</option><option>Evening</option><option>Weekend</option></select></div>
-      <div class="field" id="rgBoardF"><label>Board <span class="req">*</span></label>
+      <div class="field after-pick" id="rgBoardF"><label>Board <span class="req">*</span></label>
         <select name="Board" id="rgBoard" required><option value="" disabled selected>Select board</option>
           <option>CBSE</option><option>ICSE/ISC</option><option>WBBSE/WBCHSE</option></select></div>
-      <div class="field"><label>Monthly fee (₹) <span class="req">*</span></label>
-        <div class="pf"><span class="px">₹</span><input type="number" name="Monthly Fee" min="0" placeholder="0" required></div></div>
-      <div class="field full"><label>Subjects <span class="req">*</span></label>
+      <div class="field totalfee after-pick"><label>Total monthly fee (₹)</label>
+        <div class="pf"><span class="px">₹</span><input type="number" name="Monthly Fee" id="rgTotal" placeholder="0" readonly tabindex="-1" title="Sum of the subject fees"></div></div>
+      <div class="field full after-pick"><label>Subjects <span class="req">*</span></label>
         <div class="msel" id="rgMsel">
           <button type="button" class="msel-btn" id="rgSubBtn"><span id="rgSubTxt" class="ph">Select subjects</span><i class="fa-solid fa-chevron-down"></i></button>
           <div class="msel-panel" id="rgSubPanel"></div>
         </div>
         <div class="chips" id="rgChips"></div>
         <input type="hidden" name="Subjects" id="rgSubHidden"></div>
+      <div class="field full after-pick"><label>Fee per subject (₹) <span class="req">*</span></label>
+        <div class="feerows" id="rgFeeRows"><div class="feerows-empty">Select subjects to set fees</div></div>
+        <input type="hidden" name="Fees Structure" id="rgFeesHidden"></div>
 
-      <div class="sec"><i class="fa-solid fa-shield-halved"></i>Recorded by</div>
-      <div class="field full lockd"><label>Teacher ID (locked to your login)</label>
-        <div class="pf"><span class="px"><i class="fa-solid fa-lock"></i></span><input name="Teacher ID" id="rgTid" readonly tabindex="-1"></div></div>
+      <div class="sec after-pick"><i class="fa-solid fa-shield-halved"></i>Recorded by</div>
+      <div class="field full after-pick"><label>Teacher <span class="req">*</span> <span class="tid-note">· defaults to you, admin can change</span></label>
+        <select name="Teacher ID" id="rgTid" required></select></div>
     </div>
     <div class="msg" id="rgMsg"></div>
     <div class="modal-actions">
       <button class="btn ghost" type="button" onclick="document.getElementById('regModal').close()"><i class="fa-solid fa-xmark"></i> Cancel</button>
-      <button class="btn" type="submit" id="rgSave"><i class="fa-solid fa-user-plus"></i> <span id="rgSaveLbl">Enroll student</span></button>
+      <button class="btn after-pick" type="submit" id="rgSave"><i class="fa-solid fa-user-plus"></i> <span id="rgSaveLbl">Enroll student</span></button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dupModal">
+  <form class="modal" method="dialog" onsubmit="return false">
+    <h2><i class="fa-solid fa-user-check" style="font-size:15px;color:var(--accent)"></i><span>Student already exists</span></h2>
+    <p class="dup-body" id="dupBody"></p>
+    <div class="dup-info" id="dupInfo"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" type="button" id="dupCancel">Cancel</button>
+      <button class="btn ghost" type="button" id="dupNew">Save as new student</button>
+      <button class="btn" type="button" id="dupAdd"><i class="fa-solid fa-plus"></i> Add another subject</button>
     </div>
   </form>
 </dialog>
@@ -1430,6 +1507,7 @@ footer i{color:var(--muted);margin-right:6px}
             <span><i class="fa-solid fa-indian-rupee-sign"></i></span>
             <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
           </div>
+          <div class="hint" id="amountHint">Auto-fills from subject fees · editable</div>
         </div>
         <div class="field">
           <label for="stuPhone"><i class="fa-solid fa-phone"></i>Student Phone</label>
@@ -1527,10 +1605,10 @@ footer i{color:var(--muted);margin-right:6px}
 
 <script>
   // Collector Web App URL — saves fee entries, tracks last Receipt ID
-  const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbzlBbdu2Mca6vF7q2uY2nhMOUeLJLRIr0CmEcwAVMm4DFFRgZAZlyZtWGNjs-nQXEvUCA/exec";
+  const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbwD1aqFLzL3xA_5LUsu4t81uRGA0ik8JRwCVlmh4Fc63aS2tuBjk9mOWtPhCVZx_hQC/exec";
 
   // Student Details Web App URL — looks up name/phone/subjects from student_details sheet
-  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwg8hiahikFMpHHS1BPwOl6sgmEAsmeMhatJXdAnWDonYW7-yzQDMw5J0Zq4vzAAbZK/exec";
+  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwLasirfCGCC7e-4rtp94rTWoEIyrfoQ8khTXQ7OTeZkJYtqpPANjC1muRPalo2lN-v/exec";
 
   const form = document.getElementById('feeForm');
   const statusEl = document.getElementById('status');
@@ -1605,6 +1683,7 @@ footer i{color:var(--muted);margin-right:6px}
   const receiptCountInput = document.getElementById('receiptCount');
 
   let pickSeq = 0;
+  let feeMap = {}, stuTotal = 0, stuSubCount = 0, amountAuto = false;   // per-subject fees of the picked student
   function setStuLoading(on) {
     // no skeleton / blur: fields stay plain while details load
     if (on) { subjectsBox.innerHTML = ''; subjectsBox.classList.add('empty'); }
@@ -1617,6 +1696,9 @@ footer i{color:var(--muted);margin-right:6px}
     subjectsBox.classList.add('empty');
     feesSubjectsHidden.value = '';
     receiptCountInput.value = '';
+    feeMap = {}; stuTotal = 0; stuSubCount = 0;
+    if (amountAuto) document.getElementById('amount').value = '';
+    amountAuto = false;
     stuStatus.textContent = msg || '';
     stuStatus.className = 'stu-status';
   }
@@ -1662,7 +1744,27 @@ footer i{color:var(--muted);margin-right:6px}
     const checked = Array.from(subjectsBox.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
     feesSubjectsHidden.value = checked.join(', ');
     receiptCountInput.value = checked.length;
+    autoFillAmount(checked);
   }
+
+  // Amount = sum of the ticked subjects' fees (from the Fees structure column). Stays editable.
+  const amountEl = document.getElementById('amount');
+  const amountHint = document.getElementById('amountHint');
+  const AMT_HINT = 'Auto-fills from subject fees · editable';
+  function autoFillAmount(picked) {
+    if (!picked.length) {
+      if (amountAuto) amountEl.value = '';
+      amountAuto = false; amountHint.textContent = AMT_HINT; return;
+    }
+    let sum = 0, known = 0;
+    picked.forEach(v => { const f = feeMap[subjKey(v)]; if (f != null && isFinite(f)) { sum += f; known++; } });
+    if (!known && stuTotal > 0 && picked.length === stuSubCount) { sum = stuTotal; known = 1; }   // old row, no split saved
+    if (!known) { amountHint.textContent = 'No fee saved for this subject · enter the amount'; return; }
+    sum = Math.round(sum * 100) / 100;
+    amountEl.value = sum; amountAuto = true;
+    amountHint.textContent = 'Auto from subject fees (₹' + sum.toLocaleString('en-IN') + ') · editable';
+  }
+  amountEl.addEventListener('input', () => { amountAuto = false; amountHint.textContent = 'Edited by hand · tick a subject again to reset'; });
 
   function selectStudent(s) {
     stuIdInput.value = s.id || '';
@@ -1670,6 +1772,8 @@ footer i{color:var(--muted);margin-right:6px}
     stuPhoneInput.value = s.phone || '';
     stuStatus.textContent = '· selected';
     stuStatus.className = 'stu-status ok';
+    feeMap = {}; stuTotal = Number(s.total) || 0; stuSubCount = (s.subjects || []).length;
+    (s.subjects || []).forEach((x, i) => { const f = s.fees && s.fees[i]; if (f != null && f !== '') feeMap[subjKey(x)] = Number(f); });
     renderSubjects(s.subjects || []);
     hideSuggest(suggestBoxId);
     hideSuggest(suggestBoxName);
@@ -1706,14 +1810,15 @@ footer i{color:var(--muted);margin-right:6px}
   }
 
   // ---- Fast search: cached id+name index (localStorage) + client-side filter ----
-  const IDX_KEY = 'fr_stu_index_v2', IDX_TTL = 6 * 3600e3;
+  const IDX_KEY = 'fr_stu_index_v3', IDX_TTL = 2 * 60e3;   // short cache: new students show up within 2 min
   let STUDENTS = [], INDEX_READY = false;
   const detailCache = new Map();
 
   function buildIndex(list) {
     STUDENTS = list.map(s => ({
       id: String(s.id || ''), name: String(s.name || ''), phone: String(s.phone || ''),
-      _k: (String(s.id || '') + ' ' + String(s.name || '')).toLowerCase()
+      _k: (String(s.id || '') + ' ' + String(s.name || '')).toLowerCase(),
+      _c: (String(s.id || '') + String(s.name || '')).toLowerCase().replace(/\s+/g, '')
     }));
     INDEX_READY = true;
   }
@@ -1740,7 +1845,8 @@ footer i{color:var(--muted);margin-right:6px}
   function localSearch(q) {
     const ql = q.toLowerCase();
     const terms = ql.split(/\s+/).filter(Boolean);
-    const hits = STUDENTS.filter(s => terms.every(t => s._k.includes(t)));
+    const qc = ql.replace(/\s+/g, '');
+    const hits = STUDENTS.filter(s => terms.every(t => s._k.includes(t)) || (qc && s._c.includes(qc)));
     const pre = s => (s.id.toLowerCase().startsWith(ql) ? 2 : 0) + (s.name.toLowerCase().startsWith(ql) ? 1 : 0);
     hits.sort((a, b) => pre(b) - pre(a));
     return hits.slice(0, 15);
@@ -1782,10 +1888,14 @@ footer i{color:var(--muted);margin-right:6px}
   async function searchStudents(query, box, spinner) {
     if (INDEX_READY) { // instant local path
       const hits = localSearch(query);
-      renderSuggestions(box, hits);
-      stuStatus.textContent = '· ' + hits.length + ' match(es)';
-      stuStatus.className = 'stu-status';
-      return;
+      if (hits.length) {
+        renderSuggestions(box, hits);
+        stuStatus.textContent = '· ' + hits.length + ' match(es)';
+        stuStatus.className = 'stu-status';
+        return;
+      }
+      // no local hit: list may be stale (new student) -> refresh it in background and ask the server directly
+      if (Date.now() - (window.__idxForce || 0) > 15000) { window.__idxForce = Date.now(); loadIndex(true); }
     }
     if (!STUDENT_URL || STUDENT_URL.startsWith('PASTE_')) {
       stuStatus.textContent = '· Set STUDENT_URL first';
@@ -2454,7 +2564,7 @@ footer i{color:var(--muted);margin-right:6px}
 
 <script>
 /* ═════════ AUTH + SHELL (same Auth.gs web app as the teacher panel) ═════════ */
-const AUTH_URL = "https://script.google.com/macros/s/AKfycbzATaN38RYsDdG2sjQPEiJxLyKb5Ww1qkGo6FsIu_GmLm2xE3YvpzbHE5ZXP7iCuEWGRg/exec";
+const AUTH_URL = "https://script.google.com/macros/s/AKfycbze4eCLhRlJpITvJzSP7Em1zxGHjIW2VB-ah9Xq_7czcwhOLULXLL5HuoEM0ZUkjb7Vmw/exec";
 const SESSION_KEY = 'ap';           // separate from the teacher panel's 'tp'
 const $ = id => document.getElementById(id);
 const $$ = s => document.querySelectorAll(s);
@@ -2756,7 +2866,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 
 /* ═════════ ADMIN LOGIC (students + teachers) ═════════ */
 
-  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbyqIYNC04_sjYMQ1rAXXXrBRuRDWpRLTV80UU8z4eYd0tgGlokVbxMtOaF-urv7AB2D/exec';
+  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbwLasirfCGCC7e-4rtp94rTWoEIyrfoQ8khTXQ7OTeZkJYtqpPANjC1muRPalo2lN-v/exec';
   const TEACHER_API_URL = 'https://script.google.com/macros/s/AKfycbxIe7QVlhDVkufRs_aND-J8Y_eZvDACZTm4ObN2HXsc9B_tVujVhYltuxSfOt-dybbb/exec';
  
 
@@ -2778,11 +2888,11 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 
   /* ═════ Register student (dialog; ported from teacher panel admission form) ═════ */
   const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbyiYCckDlSoJDjQAH9Ddl7hNc63RyAucqmJn-YdEuG49BRf5cQJWjJzaad82l5gAMgyIA/exec";
-  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbx6gR75p7HMWvUQL1UGEGNFQL6Je48UvVDW6u__N6oAtBib1Hhn97asoiYReQd-Js9n/exec";
+  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbwLasirfCGCC7e-4rtp94rTWoEIyrfoQ8khTXQ7OTeZkJYtqpPANjC1muRPalo2lN-v/exec";
   const NO_BOARD_ = ['JEE','NEET'];
   const DEFAULT_SUBJECTS_ = ['Physics','Chemistry','Biology - Botany','Biology - Zoology','Mathematics','English'];
   const SUBJ_CACHE_KEY_ = 'pp_subjects_cache_v1', SUBJ_TTL_ = 24*60*60*1000;
-  const rg = {form:null, subjects:[], checks:[], cache:{}, tok:0, lastId:'', idBusy:false, idFocus:false, saving:false, timer:null, pre:false};
+  const rg = {form:null, subjects:[], checks:[], cache:{}, tok:0, lastId:'', idBusy:false, idFocus:false, saving:false, sq:0, st:null, timer:null, pre:false, fees:{}, add:null, last:[], dup:null, force:false, mode:'new'};
 
   function rgFetch_(url, opt={}, ms=8000){
     const c = new AbortController(), t = setTimeout(()=>c.abort(), ms);
@@ -2794,12 +2904,15 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
   function rgEsc_(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
   function rgBuild_(list){
+    rg.last = list;
     const prev = new Set(rg.subjects), panel = $('rgSubPanel');
     panel.innerHTML = '';
     list.forEach(s=>{
       const l = document.createElement('label'); l.className='msel-opt';
-      l.innerHTML = `<input type="checkbox" value="${rgEsc_(s)}"><span>${rgEsc_(s)}</span>`;
-      const cb = l.querySelector('input'); if(prev.has(s)) cb.checked = true;
+      const taken = !!(rg.add && rg.add.keys.has(rgSKey_(s)));
+      l.innerHTML = `<input type="checkbox" value="${rgEsc_(s)}"><span>${rgEsc_(s)}${taken ? ' (already added)' : ''}</span>`;
+      const cb = l.querySelector('input');
+      if(taken){ cb.disabled = true; l.classList.add('taken'); } else if(prev.has(s)) cb.checked = true;
       cb.addEventListener('change', rgSync_); panel.appendChild(l);
     });
     rg.checks = [...panel.querySelectorAll('input')];
@@ -2817,6 +2930,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
       c.querySelector('button').onclick = ()=>{ rg.checks.forEach(x=>{ if(x.value===s) x.checked=false; }); rgSync_(); };
       ch.appendChild(c);
     });
+    rgFeeRows_();
   }
   async function rgRemote_(cls, board, tries=3){
     let last;
@@ -2871,6 +2985,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
     }
   }
   async function rgNextId_(force){
+    if(rg.add) return;   // ID locked to the existing student
     if(!force && (rg.idFocus || rg.saving || rg.idBusy || !$('regModal').open)) return;
     rg.idBusy = true;
     const inp = $('rgId'), px = $('rgIdPx');
@@ -2885,10 +3000,185 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
     finally{ px.innerHTML='<i class="fa-solid fa-hashtag"></i>'; $('rgIdRef').classList.remove('spin'); $('regModal').classList.remove('idload'); inp.placeholder='Enter student ID'; rg.idBusy=false; }
   }
 
+  /* ═════ Multi-subject: per-subject fees, duplicate alert, add-another-subject ═════ */
+  function rgSKey_(x){
+    const k = String(x||'').toLowerCase().replace(/[^a-z]/g,'');
+    return ({maths:'math',mathematics:'math',computerscience:'cs',computer:'cs',computers:'cs',comp:'cs',phy:'physics',chem:'chemistry',bio:'biology'})[k] || k;
+  }
+  function rgFeeRows_(){
+    const box = $('rgFeeRows'); box.innerHTML = '';
+    if(!rg.subjects.length){
+      box.innerHTML = '<div class="feerows-empty">Select subjects to set fees</div>';
+      rgTotal_(); return;
+    }
+    rg.subjects.forEach(s=>{
+      const row = document.createElement('div'); row.className = 'feerow';
+      const nm = document.createElement('span'); nm.textContent = s;
+      const w = document.createElement('span'); w.className = 'feein'; w.innerHTML = '<b>₹</b>';
+      const i = document.createElement('input');
+      i.type = 'number'; i.min = '0'; i.step = 'any'; i.placeholder = '0'; i.required = true;
+      i.setAttribute('inputmode','decimal'); i.setAttribute('aria-label','Fee for ' + s);
+      i.value = rg.fees[s] != null ? rg.fees[s] : '';
+      i.addEventListener('input', ()=>{ rg.fees[s] = i.value; rgTotal_(); });
+      w.appendChild(i); row.appendChild(nm); row.appendChild(w); box.appendChild(row);
+    });
+    rgTotal_();
+  }
+  function rgTotal_(){
+    $('rgFeesHidden').value = rg.subjects.map(s => (rg.fees[s]==null || rg.fees[s]==='') ? '' : String(Number(rg.fees[s]))).join(', ');
+    $('rgTotal').value = rg.subjects.length ? rg.subjects.reduce((t,s)=> t + (Number(rg.fees[s])||0), 0) : '';
+  }
+  function rgShowDup_(m){
+    rg.dup = m;
+    const row = (k,v)=>'<div><span>' + k + '</span><b>' + rgEsc_(v || '—') + '</b></div>';
+    const tch = [...new Set((m.teachers||[]).filter(Boolean))].join(', ');
+    $('dupBody').innerHTML = '<b>' + rgEsc_(m.name) + '</b> (' + rgEsc_(m.id) + ') is already registered. Do you want to add another subject?';
+    $('dupInfo').innerHTML = row('Class', m.class) + row('Current subjects', (m.subjects||[]).join(', ')) +
+      row('Monthly fee', '₹' + (m.total || 0)) + (tch ? row('Teacher', tch) : '');
+    $('dupModal').showModal();
+  }
+  function rgEnterAdd_(m){
+    rg.add = {id:m.id, name:m.name, keys:new Set((m.subjects||[]).map(rgSKey_))};
+    const inp = $('rgId'); inp.value = m.id; inp.readOnly = true; $('rgIdRef').disabled = true;
+    rg.checks.forEach(c=>{ if(rg.add.keys.has(rgSKey_(c.value))) c.checked = false; });
+    rgSync_(); rgBuild_(rg.last);
+    const bar = $('rgAddBar');
+    bar.innerHTML = '<i class="fa-solid fa-circle-plus lead"></i><div class="tx"><b>Adding a subject to ' + rgEsc_(m.name) + '</b> · ' + rgEsc_(m.id) +
+      '<small>Already has: ' + rgEsc_((m.subjects||[]).join(', ') || '—') + '. Pick the new subject and set its fee.</small></div>' +
+      '<button type="button" id="rgAddExit">Change student</button>';
+    bar.hidden = false;
+    $('rgAddExit').addEventListener('click', ()=>rgExitAdd_(true));
+    $('rgSaveLbl').textContent = 'Add subject'; rgMsg_('');
+    rgApplyMode_();
+    $('regModal').scrollTop = 0;
+  }
+  function rgExitAdd_(rebuild){
+    rg.add = null;
+    const inp = $('rgId'); inp.readOnly = false; $('rgIdRef').disabled = false;
+    const bar = $('rgAddBar'); bar.hidden = true; bar.innerHTML = '';
+    $('rgSaveLbl').textContent = rg.mode === 'add' ? 'Add subject' : 'Enroll student';
+    if(rebuild){ rgBuild_(rg.last); if(rg.mode !== 'add') rgNextId_(true); }
+    if(rg.mode === 'add' && rebuild) rgResetAdd_();      // back to the search box
+  }
+
+  /* ═════ Mode tabs (New student | Add subject to existing) + student search ═════ */
+  function rgApplyMode_(){
+    const m = $('regModal'), add = rg.mode === 'add';
+    m.classList.toggle('mode-add', add);
+    m.classList.toggle('await-pick', add && !rg.add);
+    $('rgTabs').querySelectorAll('button').forEach(b=>{
+      const on = b.dataset.mode === rg.mode;
+      b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    // fields only a brand-new student needs lose `required` while adding a subject
+    m.querySelectorAll('.new-only [required], .new-only [data-rq]').forEach(el=>{
+      if(!el.hasAttribute('data-rq') && el.required) el.setAttribute('data-rq','1');
+      el.required = !add && el.hasAttribute('data-rq');
+    });
+    $('rgSearch').hidden = !add || !!rg.add;
+    if(!rg.add) $('rgSaveLbl').textContent = add ? 'Add subject' : 'Enroll student';
+  }
+  function rgHideSugg_(){ const b = $('rgSugg'); b.classList.remove('show'); b.innerHTML = ''; }
+  function rgResetAdd_(){
+    $('rgSrch').value = ''; rgHideSugg_();
+    const st = $('rgSStat'); st.textContent = ''; st.className = 'rg-sstat';
+    rg.checks.forEach(c=>c.checked = false); rg.fees = {}; rgSync_();
+    rgApplyMode_();
+    setTimeout(()=>{ try{ $('rgSrch').focus(); }catch(e){} }, 60);
+  }
+  function rgSetMode_(mode, keep){
+    if(rg.mode === mode) return;
+    rg.mode = mode;
+    rgMsg_(''); try{ $('dupModal').close(); }catch(e){}
+    if(!keep){ rg.checks.forEach(c=>c.checked = false); rg.fees = {}; rgSync_(); }
+    if(mode === 'new'){
+      rgHideSugg_();
+      if(rg.add) rgExitAdd_(true); else rgNextId_(true);
+      rgApplyMode_();
+    } else {
+      rgApplyMode_();
+      if(!rg.add && !keep) rgResetAdd_();
+    }
+  }
+  function rgRenderSugg_(list){
+    const box = $('rgSugg'); box.innerHTML = '';
+    if(!list.length) box.innerHTML = '<div class="none">No matching students</div>';
+    list.forEach(s=>{
+      const it = document.createElement('div'); it.className = 'it';
+      const meta = [s.class, (s.subjects||[]).join(', ')].filter(Boolean).join(' · ');
+      it.innerHTML = '<b>' + rgEsc_(s.id) + ' — ' + rgEsc_(s.name) + '</b><small>' + rgEsc_(meta || '—') + '</small>';
+      it.addEventListener('mousedown', ev=>{ ev.preventDefault(); rgPick_(s); });
+      box.appendChild(it);
+    });
+    box.classList.add('show');
+  }
+  async function rgSearch_(q){
+    const my = ++rg.sq, st = $('rgSStat'), px = $('rgSrchPx');
+    px.innerHTML = '<span class="rg-ring"></span>';
+    st.textContent = 'Searching…'; st.className = 'rg-sstat';
+    try{
+      const r = await rgFetch_(`${STUDENT_DETAILS_URL}?action=searchStudents&q=${encodeURIComponent(q)}`, {}, 15000);
+      const j = await r.json();
+      if(my !== rg.sq) return;
+      if(j.status === 'ok'){ const l = j.students || []; rgRenderSugg_(l); st.textContent = l.length + ' match' + (l.length === 1 ? '' : 'es'); }
+      else { rgHideSugg_(); st.textContent = j.message || 'No matches'; st.className = 'rg-sstat err'; }
+    }catch(e){
+      if(my !== rg.sq) return;
+      rgHideSugg_(); st.textContent = 'Search failed — check connection'; st.className = 'rg-sstat err';
+    }finally{ if(my === rg.sq) px.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>'; }
+  }
+  function rgPrefill_(d){
+    const setSel = (sel, v)=>{
+      v = String(v||'').trim().toLowerCase(); if(!v || !sel) return;
+      const o = [...sel.options].find(x=> x.value.trim().toLowerCase() === v); if(o) sel.value = o.value;
+    };
+    const f = n => rg.form.querySelector('[name="' + n + '"]');
+    if(d.name && f('Name')) f('Name').value = d.name;
+    setSel(f('Batch'), d.batch); setSel($('rgClass'), d.class);
+    rgBoardVis_(); setSel($('rgBoard'), d.board);
+    rgLoadSubjects_();
+  }
+  async function rgPick_(s){
+    rgHideSugg_();
+    $('rgSrch').value = (s.id || '') + ' — ' + (s.name || '');
+    const st = $('rgSStat'); st.textContent = 'Loading student…'; st.className = 'rg-sstat';
+    let d = s;
+    try{
+      const r = await rgFetch_(`${STUDENT_DETAILS_URL}?action=getStudent&id=${encodeURIComponent(s.id)}`, {}, 15000);
+      const j = await r.json();
+      if(j && j.status === 'ok') d = Object.assign({}, s, j);
+    }catch(e){ /* fall back to the search row */ }
+    st.textContent = '';
+    rgEnterAdd_({id: d.id || s.id, name: d.name || s.name, subjects: d.subjects || s.subjects || []});
+    rgPrefill_(d);
+  }
+
+  /* ═════ Teacher dropdown (admin can pick who the entry is recorded under) ═════ */
+  function rgFillTeachers_(want){
+    const el = $('rgTid'), me = (S && S.id) || '';
+    const same = (a,b)=> String(a==null?'':a).trim().toUpperCase() === String(b==null?'':b).trim().toUpperCase();
+    const on = t => t.Status === true || /^(true|yes|1|active)$/i.test(String(t.Status));
+    const keep = want || el.value || me;
+    let list = [];
+    try{ list = (TEACHERS || []).filter(t => t && t.Teacher_ID && (on(t) || same(t.Teacher_ID, keep) || same(t.Teacher_ID, me))); }catch(e){}
+    if(!list.some(t=>same(t.Teacher_ID, me))) list.unshift({Teacher_ID: me, Name: (S && S.name) || 'You'});
+    list.sort((a,b)=> String(a.Name||a.Teacher_ID).localeCompare(String(b.Name||b.Teacher_ID)));
+    el.innerHTML = '';
+    list.forEach(t=>{
+      const o = document.createElement('option'); o.value = t.Teacher_ID;
+      o.textContent = (String(t.Name||'').trim() || t.Teacher_ID) + ' — ' + t.Teacher_ID + (same(t.Teacher_ID, me) ? ' (you)' : '');
+      el.appendChild(o);
+    });
+    const hit = list.find(t=>same(t.Teacher_ID, keep));
+    el.value = hit ? hit.Teacher_ID : me;
+  }
+
   function openRegisterStudentPage(){
     const f = rg.form, d = $('regModal');
-    f.reset(); rg.subjects = []; rg.checks = [];
-    $('rgTid').value = S.id || '';
+    f.reset(); rg.subjects = []; rg.checks = []; rg.fees = {};
+    rg.mode = 'new'; rgExitAdd_(false); rgApplyMode_(); rgHideSugg_(); $('rgSrch').value = '';
+    rgFillTeachers_(S.id || '');
+    try{ if(!(TEACHERS||[]).length) Promise.resolve(loadTeachers(true)).then(()=>rgFillTeachers_()).catch(()=>{}); }catch(e){}
     rgBoardVis_(); rgBuild_(DEFAULT_SUBJECTS_); rgMsg_('');
     $('rgSaveLbl').textContent = 'Enroll student'; $('rgSave').disabled = false;
     d.showModal();
@@ -2911,25 +3201,57 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
       await rgNextId_(true); rb.disabled = false;
     });
     window.addEventListener('online', rgPrefetch_);
+    $('rgTabs').addEventListener('click', e=>{ const b = e.target.closest('button[data-mode]'); if(b) rgSetMode_(b.dataset.mode); });
+    $('rgSrch').addEventListener('input', ()=>{
+      clearTimeout(rg.st); const q = $('rgSrch').value.trim();
+      if(!q){ rgHideSugg_(); $('rgSStat').textContent = ''; return; }
+      rg.st = setTimeout(()=>rgSearch_(q), 300);
+    });
+    $('rgSrch').addEventListener('keydown', e=>{
+      if(e.key === 'Enter'){ e.preventDefault(); const first = $('rgSugg').querySelector('.it'); if(first) first.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,cancelable:true})); }
+      else if(e.key === 'Escape'){ e.stopPropagation(); rgHideSugg_(); }
+    });
+    $('regModal').addEventListener('click', e=>{ if(!$('rgSearch').contains(e.target)) rgHideSugg_(); });
+    // click on the dimmed area outside the popup closes the form
+    (function(){
+      const d = $('regModal'); let downOut = false;
+      const outside = e => { const r = d.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; };
+      d.addEventListener('pointerdown', e=>{ downOut = (e.target === d) && outside(e); });
+      d.addEventListener('click', e=>{ if(downOut && e.target === d && outside(e) && !rg.saving) d.close(); downOut = false; });
+    })();
+    rgApplyMode_();
+    $('dupAdd').addEventListener('click', ()=>{ $('dupModal').close(); rgSetMode_('add', true); rgEnterAdd_(rg.dup); });
+    $('dupNew').addEventListener('click', ()=>{ $('dupModal').close(); rg.force = true; rg.form.requestSubmit(); });
+    $('dupCancel').addEventListener('click', ()=> $('dupModal').close());
     rg.form.addEventListener('submit', async e=>{
       e.preventDefault();
       if(!rg.subjects.length){ rgMsg_('Pick at least one subject'); return; }
+      const noFee = rg.subjects.find(s => rg.fees[s]==null || rg.fees[s]==='' || !(Number(rg.fees[s]) >= 0));
+      if(noFee){ rgMsg_('Enter the fee for ' + noFee); return; }
       const sv = $('rgSave'), lbl = $('rgSaveLbl');
       sv.disabled = true; rg.saving = true; $('regModal').classList.add('saving');
       lbl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving'; rgMsg_('');
+      rgTotal_();
       const data = Object.fromEntries(new FormData(rg.form).entries());
-      data['Teacher ID'] = S.id; data.token = S.token;
+      data['Teacher ID'] = $('rgTid').value || S.id; data.token = S.token;
+      data['Fees Structure'] = $('rgFeesHidden').value;     // "500, 400" same order as Subjects
+      data['Monthly Fee'] = $('rgTotal').value;
+      const adding = !!rg.add;
+      if(adding){ data.action = 'addSubject'; data['Student ID'] = rg.add.id; }
+      else if(rg.force) data['Force New'] = '1';
+      rg.force = false;
       try{
         const r = await rgFetch_(STUDENT_DETAILS_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(data)}, 30000);
         const j = await r.json();
+        if(j.result === 'exists' && j.matches && j.matches.length){ rgShowDup_(j.matches[0]); return; }
         if(j.result!=='success') throw new Error(j.error||'Unknown error');
         $('regModal').close();
-        toast('Saved as ' + (j.id || data['Student ID']));
+        toast(adding ? 'Subject added to ' + data['Student ID'] : 'Saved as ' + (j.id || data['Student ID']));
         try{ loadStudents(false); }catch(e){}
       }catch(err){
         rgMsg_(err && err.message && err.message!=='Failed to fetch' ? 'Failed — ' + err.message : 'Failed — check connection');
       }finally{
-        sv.disabled = false; rg.saving = false; $('regModal').classList.remove('saving'); lbl.textContent = 'Enroll student';
+        sv.disabled = false; rg.saving = false; $('regModal').classList.remove('saving'); lbl.textContent = (rg.add || rg.mode === 'add') ? 'Add subject' : 'Enroll student';
       }
     });
   })();
@@ -3209,6 +3531,12 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
     stuLoading_();
   }
 
+  function feeSplit_(s){
+    const subs = String(s['Subjects'] || '').split(',').map(x => x.trim()).filter(Boolean);
+    const fe = String(s['Fees Structure'] || '').split(',').map(x => x.trim());
+    if(!subs.length || !fe.some(x => /^\d/.test(x))) return '';
+    return subs.map((x, i) => /^\d/.test(fe[i] || '') ? x + ' ₹' + fe[i] : x).join(' · ');
+  }
   function stuCard_(s, showCls){
     const id = String(s['Student ID'] || '');
     const phone = String(s['Student Contact No'] || '').trim();
@@ -3239,6 +3567,8 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
           ${f('fa-indian-rupee-sign', 'Monthly fee', fee === '\u2014' ? '' : String(s['Monthly Fee']))}
           ${f('fa-layer-group', 'Batch', s['Batch'])}
           ${f('fa-building-columns', 'Board', s['Board'])}
+          ${f('fa-chalkboard-user', 'Teacher ID', s['Teacher ID'])}
+          ${f('fa-coins', 'Fee split', feeSplit_(s))}
         </div>
         ${normSubjects_(s['Subjects']) ? `<div class="sd-subj"><span><i class="fa-solid fa-book"></i>Subjects</span><div>${subjChips_(s['Subjects'])}</div></div>` : ''}
         <div class="sc-act">
