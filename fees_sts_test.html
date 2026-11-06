@@ -86,6 +86,14 @@ main{max-width:1100px;margin:-44px auto 40px;padding:0 16px}
 .sr.ok{color:#15803d}.sr.no{color:#b91c1c}.sr.soon{color:#854d0e}
 .sr .r{font-size:.82rem;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
 .sr .tot{font-weight:700}
+.tsec{margin-top:22px}
+.thead{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 14px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-radius:12px;padding:11px 16px}
+.thead .tn{font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:9px}
+.thead .tn small{font-weight:500;opacity:.8;font-size:.78rem}
+.tsum{display:flex;gap:6px;flex-wrap:wrap}
+.tsum span{font-size:.74rem;font-weight:700;padding:3px 10px;border-radius:999px;background:#fff}
+.tsum .g{color:#15803d}.tsum .o{color:#c2410c}.tsum .r{color:#b91c1c}
+.tgrid{margin-top:12px}
 @media(max-width:420px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -108,6 +116,10 @@ main{max-width:1100px;margin:-44px auto 40px;padding:0 16px}
         <input id="q" placeholder="Search Student ID or name…" autocomplete="off">
       </div>
       <div class="sel">
+        <select id="grp"><option value="teacher">By teacher</option><option value="student">By student</option></select>
+        <i class="fa-solid fa-chevron-down"></i>
+      </div>
+      <div class="sel">
         <select id="month"></select>
         <i class="fa-solid fa-chevron-down"></i>
       </div>
@@ -128,8 +140,8 @@ main{max-width:1100px;margin:-44px auto 40px;padding:0 16px}
 
 <script>
 /* ====== CONFIG ====== */
-const API_URL = 'https://script.google.com/macros/s/AKfycbwZlJEXCEIzF_-JCyUfPURvSguNhLILjnfCW0VW35ED8dBz2RSohf9zUtSaqNCHr-ZQ/exec';   // Apps Script /exec URL
-const CACHE_KEY = 'fee_status_cache_v2';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzL42flzqbJgs9sPKJB0L87KQtjj5PQa3Rv76XgGS3p3Fi8qZHXObc2bveydZEYHy2B/exec';   // Apps Script /exec URL
+const CACHE_KEY = 'fee_status_cache_v4';
 /* ==================== */
 
 const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -142,7 +154,7 @@ const FILTERS = [
   {k:'paid', t:'Paid'}
 ];
 
-let students = [], filter = 'all', query = '', month = -1;
+let students = [], filter = 'all', query = '', month = -1, groupBy = 'teacher';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -163,12 +175,44 @@ function initMonth(){
   sel.onchange = () => { month = Number(sel.value); sel.classList.toggle('on', month >= 0); render(); };
 }
 
-function renderChips(){
+function renderChips(all){
   $('chips').innerHTML = FILTERS.map(f => {
-    const n = students.filter(s => matches(s, f.k)).length;
+    const n = all.filter(s => matches(s, f.k)).length;
     return `<button class="chip ${filter===f.k?'on':''}" data-k="${f.k}">${f.t}<span class="n">${n}</span></button>`;
   }).join('');
   $('chips').querySelectorAll('.chip').forEach(b => b.onclick = () => { filter = b.dataset.k; render(); });
+}
+
+/* teacher view: one row per (student, teacher), only that teacher's subjects */
+function derive(s, t, names){
+  const set = new Set(names);
+  const sub = s.subList.filter(x => set.has(x.n));
+  const detail = s.detail.map(d => d.filter(x => set.has(x.n)));
+  const months = s.months.map((st,i) => {
+    const d = detail[i];
+    if (!d.length) return 'na';
+    if (d.every(x => x.paid)) return 'paid';
+    return st === 'paid' ? 'pending' : st;
+  });
+  const c = k => months.filter(x => x === k).length;
+  return Object.assign({}, s, {
+    teacher: t, detail, months,
+    subjects: names.join(', '),
+    totalFees: sub.map(x => x.fee).filter(Boolean).join(', '),
+    pending: c('pending'), due: c('due'), upcoming: c('upcoming'), paid: c('paid')
+  });
+}
+
+function buildRows(){
+  if (groupBy !== 'teacher') return students.map(s => Object.assign({}, s, {teacher:''}));
+  const out = [];
+  students.forEach(s => {
+    if (!s.subList || !s.subList.length){ out.push(Object.assign({}, s, {teacher:'Unassigned'})); return; }
+    const by = {};
+    s.subList.forEach(x => { const k = x.t || 'Unassigned'; (by[k] = by[k] || []).push(x.n); });
+    Object.keys(by).forEach(t => out.push(derive(s, t, by[t])));
+  });
+  return out;
 }
 
 function card(s){
@@ -214,14 +258,37 @@ function card(s){
 }
 
 function render(){
-  renderChips();
+  const all = buildRows();
+  renderChips(all);
   const q = query.trim().toLowerCase().replace(/\s+/g,'');
-  const rows = students
+  const rows = all
     .filter(s => matches(s, filter))
-    .filter(s => !q || s.id.toLowerCase().replace(/\s+/g,'').includes(q) || s.name.toLowerCase().replace(/\s+/g,'').includes(q))
+    .filter(s => !q || s.id.toLowerCase().replace(/\s+/g,'').includes(q) || s.name.toLowerCase().replace(/\s+/g,'').includes(q) || (s.teacher||'').toLowerCase().replace(/\s+/g,'').includes(q))
     .sort((a,b) => month >= 0 ? a.id.localeCompare(b.id) : (b.pending - a.pending) || (b.due - a.due) || a.id.localeCompare(b.id));
-  $('list').innerHTML = rows.length ? rows.map(card).join('')
-    : `<div class="state" style="grid-column:1/-1"><i class="fa-regular fa-face-meh"></i>No student found</div>`;
+  const empty = `<div class="state" style="grid-column:1/-1"><i class="fa-regular fa-face-meh"></i>No student found</div>`;
+  if (groupBy !== 'teacher'){
+    $('list').className = 'grid';
+    $('list').innerHTML = rows.length ? rows.map(card).join('') : empty;
+    return;
+  }
+  $('list').className = '';
+  if (!rows.length){ $('list').innerHTML = `<div class="grid">${empty}</div>`; return; }
+  const groups = {};
+  rows.forEach(r => (groups[r.teacher] = groups[r.teacher] || []).push(r));
+  const keys = Object.keys(groups).sort((a,b) => a==='Unassigned' ? 1 : b==='Unassigned' ? -1 : a.localeCompare(b));
+  $('list').innerHTML = keys.map(k => {
+    const g = groups[k];
+    let sum = '';
+    if (month >= 0){
+      let f=0,p=0,n=0;
+      g.forEach(r => { const d = r.detail[month] || []; if(!d.length) return; const pn = d.filter(x=>x.paid).length; pn===d.length ? f++ : pn ? p++ : n++; });
+      sum = `<div class="tsum">${f?`<span class="g">${f} full paid</span>`:''}${p?`<span class="o">${p} partial</span>`:''}${n?`<span class="r">${n} not paid</span>`:''}</div>`;
+    } else {
+      const pc = g.filter(r => r.pending > 0).length;
+      sum = pc ? `<div class="tsum"><span class="r">${pc} with pending</span></div>` : '';
+    }
+    return `<section class="tsec"><div class="thead"><div class="tn"><i class="fa-solid fa-chalkboard-user"></i>${k==='Unassigned' ? 'Unassigned' : esc(k)}<small>${g.length} student${g.length>1?'s':''}</small></div>${sum}</div><div class="grid tgrid">${g.map(card).join('')}</div></section>`;
+  }).join('');
 }
 
 function setBusy(b){ $('refresh').classList.toggle('spin', b); }
@@ -254,6 +321,7 @@ try{
 }catch(e){}
 
 initMonth();
+$('grp').onchange = e => { groupBy = e.target.value; render(); };
 $('q').addEventListener('input', e => { query = e.target.value; render(); });
 $('refresh').onclick = load;
 render();
