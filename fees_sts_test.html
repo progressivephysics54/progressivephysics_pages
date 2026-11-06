@@ -72,6 +72,8 @@ main{max-width:1100px;margin:-44px auto 40px;padding:0 16px}
 .err{color:#b91c1c}
 .stamp{font-size:.74rem;color:var(--muted);text-align:right;margin-top:10px}
 .mbox{border-radius:12px;padding:12px;margin-top:2px;border:1.5px solid var(--line);background:#fafcfd}
+.mbox.none{border-color:var(--red);background:#fef2f2}
+.mbox.part{border-color:var(--orange);background:#fff7ed}
 .mbox.pending{border-color:var(--red);background:#fef2f2}
 .mbox.due{border-color:var(--orange);background:#fff7ed}
 .mbox.upcoming{border-color:var(--yellow);background:#fefce8}
@@ -170,7 +172,7 @@ function renderChips(){
 }
 
 function card(s){
-  const cls = s.pending ? 'has-pending' : s.due ? 'has-due' : (s.paid && !s.upcoming) ? 'all-paid' : '';
+  let cls = s.pending ? 'has-pending' : s.due ? 'has-due' : (s.paid && !s.upcoming) ? 'all-paid' : '';
   let badge = s.pending ? `<span class="badge b-pending">${s.pending} pending</span>`
               : s.due     ? `<span class="badge b-due">Due now</span>`
               : s.paid && !s.upcoming ? `<span class="badge b-paid">All clear</span>`
@@ -183,11 +185,13 @@ function card(s){
     if (det.length){
       const pn = det.filter(x => x.paid).length;
       const full = pn === det.length;
-      const bc = full ? 'b-paid' : pn ? 'b-due' : (st==='pending'?'b-pending':st==='due'?'b-due':'b-up');
-      badge = `<span class="badge ${bc}">${MN[month]}: ${full ? 'Full paid' : pn ? pn+'/'+det.length+' paid' : LBL[st]}</span>`;
+      const lvl = full ? 'paid' : pn ? 'part' : st==='upcoming' ? 'upcoming' : 'none';
+      const bc = {paid:'b-paid', part:'b-due', upcoming:'b-up', none:'b-pending'}[lvl];
+      cls = {paid:'all-paid', part:'has-due', upcoming:'', none:'has-pending'}[lvl];
+      badge = `<span class="badge ${bc}">${MN[month]}: ${full ? 'Full paid' : pn ? pn+'/'+det.length+' paid' : st==='upcoming' ? 'Upcoming' : 'Not paid'}</span>`;
       const due = det.filter(x => !x.paid).reduce((a,x) => a + (Number(x.fee)||0), 0);
       const nc = st==='upcoming' ? 'soon' : 'no';
-      subs = `<div class="mbox ${st}"><div class="mhead"><span>${FULL[month]}</span><small>${pn} of ${det.length} paid</small></div><div class="subs">` + det.map(x => x.paid
+      subs = `<div class="mbox ${lvl}"><div class="mhead"><span>${FULL[month]}</span><small>${pn} of ${det.length} paid</small></div><div class="subs">` + det.map(x => x.paid
         ? `<div class="sr ok"><span class="l"><i class="fa-solid fa-circle-check"></i>${esc(x.n)}</span><span class="r">${esc(x.rc) || 'paid'}${x.fee ? ' · ₹'+esc(x.fee) : ''}</span></div>`
         : `<div class="sr ${nc}"><span class="l"><i class="fa-solid fa-circle-xmark"></i>${esc(x.n)}</span><span class="r">${st==='upcoming'?'upcoming':'not paid'}${x.fee ? ' · ₹'+esc(x.fee) : ''}</span></div>`).join('')
         + (due ? `<div class="sr tot"><span>Due amount</span><span>₹${due}</span></div>` : '') + `</div></div>`;
