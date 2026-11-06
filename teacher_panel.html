@@ -333,7 +333,7 @@ dialog h3 i{font-size:15px;color:var(--accent)}
 </form></dialog>
 
 <script>
-const AUTH_URL = "https://script.google.com/macros/s/AKfycbzw8MFxQ02cZt7vufQ0pKfW1WvdPcIcZfd5z52XdDH41D8UFIOtXRTVquhEQKQQOqQX/exec";   // Apps Script login web app (Auth.gs)
+const AUTH_URL = "https://script.google.com/macros/s/AKfycbyt5A6RzCpt8M4mrs_QC-Mhy0AEEzsQC5kP7R7Z_nvkJoKhnGNOauBidvI89k1AfyOL/exec";   // Apps Script login web app (Auth.gs)
 const DOCS = { fee: 'doc-fee', adm: 'doc-adm' };
 const $ = id => document.getElementById(id);
 const $$ = s => document.querySelectorAll(s);
@@ -1154,6 +1154,7 @@ footer i{color:var(--muted);margin-right:6px}
             <span><i class="fa-solid fa-indian-rupee-sign"></i></span>
             <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
           </div>
+          <div class="hint" id="amountHint">Auto-fills from subject fees · editable</div>
         </div>
         <div class="field">
           <label for="stuPhone"><i class="fa-solid fa-phone"></i>Student Phone</label>
@@ -1245,10 +1246,10 @@ footer i{color:var(--muted);margin-right:6px}
 
 <script>
   // Collector Web App URL — saves fee entries, tracks last Receipt ID
-  const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbzlBbdu2Mca6vF7q2uY2nhMOUeLJLRIr0CmEcwAVMm4DFFRgZAZlyZtWGNjs-nQXEvUCA/exec";
+  const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbwD1aqFLzL3xA_5LUsu4t81uRGA0ik8JRwCVlmh4Fc63aS2tuBjk9mOWtPhCVZx_hQC/exec";
 
   // Student Details Web App URL — looks up name/phone/subjects from student_details sheet
-  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwg8hiahikFMpHHS1BPwOl6sgmEAsmeMhatJXdAnWDonYW7-yzQDMw5J0Zq4vzAAbZK/exec";
+  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwLasirfCGCC7e-4rtp94rTWoEIyrfoQ8khTXQ7OTeZkJYtqpPANjC1muRPalo2lN-v/exec";
 
   const form = document.getElementById('feeForm');
   const statusEl = document.getElementById('status');
@@ -1323,6 +1324,7 @@ footer i{color:var(--muted);margin-right:6px}
   const receiptCountInput = document.getElementById('receiptCount');
 
   let pickSeq = 0;
+  let feeMap = {}, stuTotal = 0, stuSubCount = 0, amountAuto = false;   // per-subject fees of the picked student
   function setStuLoading(on) {
     // no skeleton / blur: fields stay plain while details load
     if (on) { subjectsBox.innerHTML = ''; subjectsBox.classList.add('empty'); }
@@ -1335,6 +1337,10 @@ footer i{color:var(--muted);margin-right:6px}
     subjectsBox.classList.add('empty');
     feesSubjectsHidden.value = '';
     receiptCountInput.value = '';
+    feeMap = {}; stuTotal = 0; stuSubCount = 0;
+    if (amountAuto) document.getElementById('amount').value = '';
+    amountAuto = false;
+    { const ah = document.getElementById('amountHint'); if (ah) ah.textContent = 'Auto-fills from subject fees · editable'; }
     stuStatus.textContent = msg || '';
     stuStatus.className = 'stu-status';
   }
@@ -1367,7 +1373,7 @@ footer i{color:var(--muted);margin-right:6px}
       const id = 'subj_' + i;
       const label = document.createElement('label');
       label.className = 'subj-chip';
-      label.innerHTML = `<input type="checkbox" id="${id}" value="${subj}"> ${subj}`;
+      label.innerHTML = `<input type="checkbox" id="${id}" value="${subj}" checked> ${subj}`;
       subjectsBox.appendChild(label);
     });
     subjectsBox.querySelectorAll('input[type=checkbox]').forEach(cb => {
@@ -1380,7 +1386,27 @@ footer i{color:var(--muted);margin-right:6px}
     const checked = Array.from(subjectsBox.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
     feesSubjectsHidden.value = checked.join(', ');
     receiptCountInput.value = checked.length;
+    autoFillAmount(checked);
   }
+
+  // Amount = sum of the ticked subjects' fees (from the Fees structure column). Stays editable.
+  const amountEl = document.getElementById('amount');
+  const amountHint = document.getElementById('amountHint');
+  const AMT_HINT = 'Auto-fills from subject fees · editable';
+  function autoFillAmount(picked) {
+    if (!picked.length) {
+      if (amountAuto) amountEl.value = '';
+      amountAuto = false; amountHint.textContent = AMT_HINT; return;
+    }
+    let sum = 0, known = 0;
+    picked.forEach(v => { const f = feeMap[subjKey(v)]; if (f != null && isFinite(f)) { sum += f; known++; } });
+    if (!known && stuTotal > 0 && picked.length === stuSubCount) { sum = stuTotal; known = 1; }   // old row, no split saved
+    if (!known) { amountHint.textContent = 'No fee saved for this subject · enter the amount'; return; }
+    sum = Math.round(sum * 100) / 100;
+    amountEl.value = sum; amountAuto = true;
+    amountHint.textContent = 'Auto from subject fees (₹' + sum.toLocaleString('en-IN') + ') · editable';
+  }
+  amountEl.addEventListener('input', () => { amountAuto = false; amountHint.textContent = 'Edited by hand · tick a subject again to reset'; });
 
   function selectStudent(s) {
     stuIdInput.value = s.id || '';
@@ -1388,6 +1414,8 @@ footer i{color:var(--muted);margin-right:6px}
     stuPhoneInput.value = s.phone || '';
     stuStatus.textContent = '· selected';
     stuStatus.className = 'stu-status ok';
+    feeMap = {}; stuTotal = Number(s.total) || 0; stuSubCount = (s.subjects || []).length;
+    (s.subjects || []).forEach((x, i) => { const f = s.fees && s.fees[i]; if (f != null && f !== '') feeMap[subjKey(x)] = Number(f); });
     renderSubjects(s.subjects || []);
     hideSuggest(suggestBoxId);
     hideSuggest(suggestBoxName);
@@ -1424,14 +1452,15 @@ footer i{color:var(--muted);margin-right:6px}
   }
 
   // ---- Fast search: cached id+name index (localStorage) + client-side filter ----
-  const IDX_KEY = 'fr_stu_index_v2', IDX_TTL = 6 * 3600e3;
+  const IDX_KEY = 'fr_stu_index_v3', IDX_TTL = 2 * 60e3;   // short cache: new students show up within 2 min
   let STUDENTS = [], INDEX_READY = false;
   const detailCache = new Map();
 
   function buildIndex(list) {
     STUDENTS = list.map(s => ({
       id: String(s.id || ''), name: String(s.name || ''), phone: String(s.phone || ''),
-      _k: (String(s.id || '') + ' ' + String(s.name || '')).toLowerCase()
+      _k: (String(s.id || '') + ' ' + String(s.name || '')).toLowerCase(),
+      _c: (String(s.id || '') + String(s.name || '')).toLowerCase().replace(/\s+/g, '')
     }));
     INDEX_READY = true;
   }
@@ -1458,7 +1487,8 @@ footer i{color:var(--muted);margin-right:6px}
   function localSearch(q) {
     const ql = q.toLowerCase();
     const terms = ql.split(/\s+/).filter(Boolean);
-    const hits = STUDENTS.filter(s => terms.every(t => s._k.includes(t)));
+    const qc = ql.replace(/\s+/g, '');
+    const hits = STUDENTS.filter(s => terms.every(t => s._k.includes(t)) || (qc && s._c.includes(qc)));
     const pre = s => (s.id.toLowerCase().startsWith(ql) ? 2 : 0) + (s.name.toLowerCase().startsWith(ql) ? 1 : 0);
     hits.sort((a, b) => pre(b) - pre(a));
     return hits.slice(0, 15);
@@ -1500,10 +1530,14 @@ footer i{color:var(--muted);margin-right:6px}
   async function searchStudents(query, box, spinner) {
     if (INDEX_READY) { // instant local path
       const hits = localSearch(query);
-      renderSuggestions(box, hits);
-      stuStatus.textContent = '· ' + hits.length + ' match(es)';
-      stuStatus.className = 'stu-status';
-      return;
+      if (hits.length) {
+        renderSuggestions(box, hits);
+        stuStatus.textContent = '· ' + hits.length + ' match(es)';
+        stuStatus.className = 'stu-status';
+        return;
+      }
+      // no local hit: list may be stale (new student) -> refresh it in background and ask the server directly
+      if (Date.now() - (window.__idxForce || 0) > 15000) { window.__idxForce = Date.now(); loadIndex(true); }
     }
     if (!STUDENT_URL || STUDENT_URL.startsWith('PASTE_')) {
       stuStatus.textContent = '· Set STUDENT_URL first';
@@ -2514,6 +2548,63 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
   h1{font-size:30px}
   .actions{align-items:stretch}#submitBtn{width:100%}
 }
+.feerows{display:grid;gap:8px}
+.feerows-empty{font-size:13px;color:#a9a392;padding:2px 0}
+.feerow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px 8px 12px;border:1px solid var(--paper-line);border-radius:4px;background:#fff;color:var(--ink);font-size:14px;font-weight:500}
+.feerow>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feein{flex:none;width:132px;display:flex;align-items:center;gap:6px;border:1px solid var(--paper-line);border-radius:4px;background:var(--paper);padding:0 8px}
+.feein:focus-within{border-color:var(--maroon);outline:1px solid var(--maroon)}
+.feein b{font-family:var(--mono);font-size:13px;color:var(--ink-soft);font-weight:500}
+.feein input{border:0;background:transparent;padding:8px 0;min-width:0;width:100%;font-size:15px;text-align:right;outline:0}
+#totalFeeInput{font-family:var(--mono);font-weight:500;background:#ece6d7;cursor:not-allowed}
+.addbar{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1px solid var(--paper-line);border-left:4px solid var(--maroon);background:#fff;font-size:13.5px;line-height:1.5;color:var(--ink)}
+.addbar[hidden]{display:none}
+.addbar i.lead{color:var(--maroon);margin-top:3px}
+.addbar .tx{flex:1;min-width:0}
+.addbar small{display:block;color:var(--ink-soft);font-size:12.5px}
+.addbar button{flex:none;border:1px solid var(--paper-line);background:#fff;border-radius:4px;padding:6px 10px;font-size:12.5px;color:var(--ink-soft);cursor:pointer}
+.addbar button:hover{color:var(--maroon-deep);border-color:var(--maroon)}
+.msel-opt.taken{opacity:.45;cursor:not-allowed}
+.msel-opt.taken:hover{background:transparent}
+#studentIdInput[readonly]{background:#ece6d7;cursor:not-allowed}
+.dup-ov{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:rgba(13,22,54,.55)}
+.dup-ov[hidden]{display:none}
+.dup-card{width:min(440px,100%);background:var(--paper);border:1px solid var(--ink);border-radius:4px;padding:24px 22px 20px}
+.dup-card h2{margin:0 0 8px;font-family:var(--display);font-weight:500;font-size:24px;color:var(--ink);display:flex;align-items:center;gap:10px}
+.dup-card h2 i{color:var(--maroon);font-size:18px}
+.dup-card p{margin:0 0 14px;font-size:14.5px;line-height:1.55;color:var(--ink)}
+.dup-info{display:grid;gap:6px;padding:12px 14px;margin-bottom:18px;background:#fff;border:1px solid var(--paper-line);border-left:4px solid var(--maroon);font-size:13.5px}
+.dup-info div{display:flex;justify-content:space-between;gap:12px}
+.dup-info span{color:var(--ink-soft)}
+.dup-info b{font-weight:500;text-align:right}
+.dup-act{display:grid;gap:8px}
+.dup-act button{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--body);font-size:15px;font-weight:500;padding:12px 18px;border-radius:4px;cursor:pointer;border:1px solid var(--maroon)}
+.dup-pri{background:var(--maroon);color:#fff}
+.dup-pri:hover{background:var(--maroon-deep)}
+.dup-sec{background:#fff;color:var(--maroon-deep)}
+.dup-ghost{background:transparent;color:var(--ink-soft);border-color:var(--paper-line)!important}
+.modetabs{display:grid;grid-template-columns:1fr 1fr;margin:18px 0 0;border:1px solid var(--ink);border-radius:4px;overflow:hidden;background:#fff}
+.modetabs button{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 10px;border:0;background:transparent;font-family:var(--body);font-size:14px;font-weight:500;line-height:1.25;text-align:center;color:var(--ink-soft);cursor:pointer;box-shadow:none;transform:none}
+.modetabs button+button{border-left:1px solid var(--ink)}
+.modetabs button.on{background:var(--maroon);color:#fff}
+.modetabs button:not(.on):hover{background:var(--paper);color:var(--maroon-deep)}
+.modetabs button:focus-visible{outline:2px solid var(--maroon);outline-offset:-3px}
+.modetabs button i{font-size:13px}
+.addsearch{position:relative}
+.addsearch[hidden]{display:none}
+.addsearch .field{position:relative}
+.sugg{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;background:#fff;border:1px solid var(--ink);border-radius:4px;max-height:280px;overflow:auto;box-shadow:0 8px 22px rgba(13,22,54,.14)}
+.sugg.show{display:block}
+.sugg .it{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--paper-line)}
+.sugg .it:last-child{border-bottom:0}
+.sugg .it:hover{background:var(--paper)}
+.sugg .it b{display:block;font-weight:500;font-size:14.5px;color:var(--ink)}
+.sugg .it small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink-soft)}
+.sugg .none{padding:12px;font-size:13.5px;color:var(--ink-soft)}
+.wrap-c{display:contents}
+form.mode-add .new-only{display:none}
+form.await-pick .after-pick{display:none}
+@media(max-width:560px){.modetabs button{font-size:13px;padding:12px 8px}}
 </style>
 </head>
 <body>
@@ -2528,7 +2619,26 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
     </div>
   </header>
 
+  <nav class="modetabs" id="modeTabs" role="tablist" aria-label="Register mode">
+    <button type="button" role="tab" class="on" data-mode="new" aria-selected="true"><i class="fa-solid fa-user-plus"></i>New student register</button>
+    <button type="button" role="tab" data-mode="add" aria-selected="false"><i class="fa-solid fa-circle-plus"></i>Add subject to existing student</button>
+  </nav>
+
   <form id="studentForm">
+    <div class="addbar" id="addBar" hidden></div>
+
+    <div class="addsearch" id="addSearch" hidden>
+      <div class="sec"><i class="fa-solid fa-magnifying-glass"></i>Find existing student</div>
+      <label for="addSearchInput" style="margin-top:14px"><i class="fa-solid fa-id-card"></i>Student ID or name</label>
+      <div class="field has-prefix">
+        <span class="prefix" id="addSearchPx"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" id="addSearchInput" placeholder="Type PP 26 0001 or student name" autocomplete="off">
+        <div class="sugg" id="addSugg"></div>
+      </div>
+      <div class="status" id="addSearchStatus" style="margin-top:8px"></div>
+    </div>
+
+    <div class="wrap-c new-only">
     <div class="sec"><i class="fa-solid fa-user-graduate"></i>Student</div>
 
     <div>
@@ -2588,6 +2698,8 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
       </div>
     </div>
 
+    </div>
+    <div class="wrap-c after-pick">
     <div class="sec"><i class="fa-solid fa-book-open-reader"></i>Course</div>
 
     <div class="row2">
@@ -2604,7 +2716,7 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
           </select>
         </div>
       </div>
-      <div>
+      <div class="new-only">
         <label><i class="fa-solid fa-clock"></i>Batch <span class="req">*</span></label>
         <div class="field">
           <select name="Batch" required>
@@ -2641,10 +2753,16 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
     </div>
 
     <div>
-      <label><i class="fa-solid fa-indian-rupee-sign"></i>Monthly Fee (₹) <span class="req">*</span></label>
+      <label><i class="fa-solid fa-indian-rupee-sign"></i>Fee per subject (₹) <span class="req">*</span></label>
+      <div class="feerows" id="feeRows"><div class="feerows-empty">Select subjects to set fees</div></div>
+      <input type="hidden" name="Fees Structure" id="feesStructureHidden">
+    </div>
+
+    <div>
+      <label><i class="fa-solid fa-calculator"></i>Total Monthly Fee (₹)</label>
       <div class="field has-prefix">
         <span class="prefix rupee">₹</span>
-        <input type="number" name="Monthly Fee" placeholder="0" min="0" required>
+        <input type="number" name="Monthly Fee" id="totalFeeInput" placeholder="0" readonly tabindex="-1" title="Sum of the subject fees">
       </div>
     </div>
 
@@ -2663,6 +2781,7 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
       <button type="submit" id="submitBtn"><i class="fa-solid fa-user-plus"></i><span class="btn-label" id="submitBtnLabel">Enroll Student</span></button>
       <span class="status" id="status"></span>
     </div>
+    </div>
   </form>
 
   <div class="foot">
@@ -2671,11 +2790,24 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
   </div>
 </div>
 
+<div class="dup-ov" id="dupOv" hidden>
+  <div class="dup-card" role="alertdialog" aria-modal="true" aria-labelledby="dupTitle">
+    <h2 id="dupTitle"><i class="fa-solid fa-user-check"></i>Student already exists</h2>
+    <p id="dupBody"></p>
+    <div class="dup-info" id="dupInfo"></div>
+    <div class="dup-act">
+      <button type="button" class="dup-pri" id="dupAdd"><i class="fa-solid fa-plus"></i>Add another subject</button>
+      <button type="button" class="dup-sec" id="dupNew">Save as new student</button>
+      <button type="button" class="dup-ghost" id="dupCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
   document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
 
   const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbyiYCckDlSoJDjQAH9Ddl7hNc63RyAucqmJn-YdEuG49BRf5cQJWjJzaad82l5gAMgyIA/exec";
-  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbx6gR75p7HMWvUQL1UGEGNFQL6Je48UvVDW6u__N6oAtBib1Hhn97asoiYReQd-Js9n/exec";
+  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbwLasirfCGCC7e-4rtp94rTWoEIyrfoQ8khTXQ7OTeZkJYtqpPANjC1muRPalo2lN-v/exec";
 
   const form = document.getElementById('studentForm');
   const TCH = window.TEACHER || (window.parent && window.parent.TEACHER) || { id: '', name: '', token: '' };
@@ -2707,6 +2839,40 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
   const boardField = document.getElementById('boardField');
   let subjects = [];
   let subjectChecks = [];
+  let addMode = null;            // {id, name, keys:Set} while adding a subject to an existing student
+  let lastSubjectList = [];
+  let feeVals = {};              // subject -> fee typed (survives re-render)
+  const feeRows = document.getElementById('feeRows');
+  const totalFeeInput = document.getElementById('totalFeeInput');
+  const feesStructureHidden = document.getElementById('feesStructureHidden');
+  const sKey = x => {
+    const k = String(x || '').toLowerCase().replace(/[^a-z]/g, '');
+    return ({ maths: 'math', mathematics: 'math', computerscience: 'cs', computer: 'cs', computers: 'cs', comp: 'cs', phy: 'physics', chem: 'chemistry', bio: 'biology' })[k] || k;
+  };
+
+  function renderFeeRows(){
+    feeRows.innerHTML = '';
+    if (!subjects.length){
+      feeRows.innerHTML = '<div class="feerows-empty">Select subjects to set fees</div>';
+      updateTotal(); return;
+    }
+    subjects.forEach(s => {
+      const row = document.createElement('div'); row.className = 'feerow';
+      const nm = document.createElement('span'); nm.textContent = s;
+      const w = document.createElement('span'); w.className = 'feein'; w.innerHTML = '<b>₹</b>';
+      const inp = document.createElement('input');
+      inp.type = 'number'; inp.min = '0'; inp.step = 'any'; inp.placeholder = '0'; inp.required = true;
+      inp.setAttribute('inputmode', 'decimal'); inp.setAttribute('aria-label', 'Fee for ' + s);
+      inp.value = feeVals[s] != null ? feeVals[s] : '';
+      inp.addEventListener('input', () => { feeVals[s] = inp.value; updateTotal(); });
+      w.appendChild(inp); row.appendChild(nm); row.appendChild(w); feeRows.appendChild(row);
+    });
+    updateTotal();
+  }
+  function updateTotal(){
+    feesStructureHidden.value = subjects.map(s => (feeVals[s] == null || feeVals[s] === '') ? '' : String(Number(feeVals[s]))).join(', ');
+    totalFeeInput.value = subjects.length ? subjects.reduce((t, s) => t + (Number(feeVals[s]) || 0), 0) : '';
+  }
 
   const NO_BOARD_CLASSES = ['JEE', 'NEET'];
 
@@ -2720,14 +2886,17 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
   const DEFAULT_SUBJECTS = ['Physics','Chemistry','Biology - Botany','Biology - Zoology','Mathematics','English'];
 
   function buildSubjectPanel(list){
+    lastSubjectList = list;
     const prevChecked = new Set(subjects);
     subjectPanel.innerHTML = '';
     list.forEach(s => {
       const label = document.createElement('label');
       label.className = 'msel-opt';
+      const taken = !!(addMode && addMode.keys.has(sKey(s)));
       label.innerHTML = `<input type="checkbox" value="${s}"><span>${s}</span>`;
       const cb = label.querySelector('input');
-      if (prevChecked.has(s)) cb.checked = true;
+      if (taken) { cb.disabled = true; label.classList.add('taken'); label.querySelector('span').textContent = s + ' (already added)'; }
+      else if (prevChecked.has(s)) cb.checked = true;
       cb.addEventListener('change', syncSubjects);
       subjectPanel.appendChild(label);
     });
@@ -2751,6 +2920,7 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
       });
       subjectChips.appendChild(chip);
     });
+    renderFeeRows();
   }
 
   function showSubjectSkeleton(){
@@ -2916,6 +3086,7 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
     
     if (!force && (studentIdFocused || form.classList.contains('is-saving') || idFetchInFlight)) return;
 
+    if (addMode) return;   // ID is locked to the existing student
     idFetchInFlight = true;
     studentIdPrefix.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
     studentIdInput.placeholder = 'Fetching…';
@@ -2953,11 +3124,208 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
   });
   setInterval(() => fetchNextId(false), 10000); 
 
+  // ===== Duplicate alert + add-another-subject =====
+  const escH = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const dupOv = document.getElementById('dupOv');
+  const dupBody = document.getElementById('dupBody');
+  const dupInfo = document.getElementById('dupInfo');
+  const addBar = document.getElementById('addBar');
+  let dupMatch = null, forceNew = false;
+
+  function showDup(m){
+    dupMatch = m;
+    const row = (k, v) => '<div><span>' + k + '</span><b>' + escH(v || '—') + '</b></div>';
+    const tch = Array.from(new Set((m.teachers || []).filter(Boolean))).join(', ');
+    dupBody.innerHTML = '<b>' + escH(m.name) + '</b> (' + escH(m.id) + ') is already registered. Do you want to add another subject?';
+    dupInfo.innerHTML = row('Class', m.class) + row('Current subjects', (m.subjects || []).join(', ')) +
+      row('Monthly fee', '₹' + (m.total || 0)) + (tch ? row('Teacher', tch) : '');
+    dupOv.hidden = false;
+    document.getElementById('dupAdd').focus();
+  }
+  function hideDup(){ dupOv.hidden = true; }
+
+  function enterAddMode(m){
+    addMode = { id: m.id, name: m.name, keys: new Set((m.subjects || []).map(sKey)) };
+    studentIdInput.value = m.id;
+    studentIdInput.readOnly = true;
+    stuIdRefreshBtn.disabled = true;
+    subjectChecks.forEach(c => { if (addMode.keys.has(sKey(c.value))) c.checked = false; });
+    syncSubjects();
+    buildSubjectPanel(lastSubjectList);
+    addBar.innerHTML = '<i class="fa-solid fa-circle-plus lead"></i><div class="tx"><b>Adding a subject to ' + escH(m.name) + '</b> · ' + escH(m.id) +
+      '<small>Already has: ' + escH((m.subjects || []).join(', ') || '—') + '. Pick the new subject and set its fee.</small></div>' +
+      '<button type="button" id="addExit">Change student</button>';
+    addBar.hidden = false;
+    document.getElementById('addExit').addEventListener('click', () => exitAddMode(true));
+    btnLabel.textContent = 'Add Subject';
+    status.textContent = ''; status.className = 'status';
+    form.classList.remove('await-pick');
+    addSearch.hidden = true;
+    addBar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function exitAddMode(restoreId){
+    if (!addMode) return;
+    addMode = null;
+    studentIdInput.readOnly = false;
+    stuIdRefreshBtn.disabled = false;
+    addBar.hidden = true; addBar.innerHTML = '';
+    btnLabel.textContent = (mode === 'add') ? 'Add Subject' : 'Enroll Student';
+    buildSubjectPanel(lastSubjectList);
+    if (mode === 'add') resetAddFlow();          // back to the search box
+    else if (restoreId) fetchNextId(true);
+  }
+
+  document.getElementById('dupAdd').addEventListener('click', () => { hideDup(); setMode('add', true); enterAddMode(dupMatch); });
+  document.getElementById('dupNew').addEventListener('click', () => {
+    hideDup(); forceNew = true;
+    if (form.requestSubmit) form.requestSubmit(); else btn.click();
+  });
+  document.getElementById('dupCancel').addEventListener('click', hideDup);
+  dupOv.addEventListener('click', e => { if (e.target === dupOv) hideDup(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !dupOv.hidden) hideDup(); });
+
+  // ===== Mode tabs: New student register | Add subject to existing student =====
+  const modeTabs = document.getElementById('modeTabs');
+  const addSearch = document.getElementById('addSearch');
+  const addSearchInput = document.getElementById('addSearchInput');
+  const addSearchPx = document.getElementById('addSearchPx');
+  const addSearchStatus = document.getElementById('addSearchStatus');
+  const addSugg = document.getElementById('addSugg');
+  let mode = 'new';
+
+  // fields only needed for a brand-new student: drop `required` while adding a subject
+  function relaxRequired(on){
+    form.querySelectorAll('.new-only [required], .new-only [data-rq]').forEach(el => {
+      if (!el.hasAttribute('data-rq') && el.required) el.setAttribute('data-rq', '1');
+      el.required = !on && el.hasAttribute('data-rq');
+    });
+  }
+  relaxRequired(false);
+
+  function hideSugg(){ addSugg.classList.remove('show'); addSugg.innerHTML = ''; }
+  function resetAddFlow(){
+    form.classList.add('await-pick');
+    addSearch.hidden = false;
+    addSearchInput.value = ''; hideSugg();
+    addSearchStatus.textContent = ''; addSearchStatus.className = 'status';
+    subjectChecks.forEach(c => c.checked = false); feeVals = {}; syncSubjects();
+    setTimeout(() => { try { addSearchInput.focus(); } catch (e) {} }, 60);
+  }
+  function setMode(m, keep){
+    if (m === mode) return;
+    mode = m;
+    modeTabs.querySelectorAll('button').forEach(b => {
+      const on = b.dataset.mode === m;
+      b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    form.classList.toggle('mode-add', m === 'add');
+    relaxRequired(m === 'add');
+    hideDup(); status.textContent = ''; status.className = 'status';
+    if (!keep){ subjectChecks.forEach(c => c.checked = false); feeVals = {}; syncSubjects(); }
+    if (m === 'add'){
+      btnLabel.textContent = 'Add Subject';
+      if (!addMode){ if (keep){ form.classList.add('await-pick'); addSearch.hidden = false; } else resetAddFlow(); }
+      else addSearch.hidden = true;
+    } else {
+      form.classList.remove('await-pick');
+      addSearch.hidden = true; hideSugg();
+      btnLabel.textContent = 'Enroll Student';
+      if (addMode) exitAddMode(true); else fetchNextId(true);
+    }
+  }
+  modeTabs.addEventListener('click', e => { const b = e.target.closest('button[data-mode]'); if (b) setMode(b.dataset.mode); });
+
+  // ---- search existing student by ID or name ----
+  let addTimer = null, addSeq = 0;
+  function renderSugg(list){
+    addSugg.innerHTML = '';
+    if (!list.length) addSugg.innerHTML = '<div class="none">No matching students</div>';
+    list.forEach(s => {
+      const it = document.createElement('div'); it.className = 'it';
+      const meta = [s.class, (s.subjects || []).join(', ')].filter(Boolean).join(' · ');
+      it.innerHTML = '<b>' + escH(s.id) + ' — ' + escH(s.name) + '</b><small>' + escH(meta || '—') + '</small>';
+      it.addEventListener('mousedown', ev => { ev.preventDefault(); pickExisting(s); });
+      addSugg.appendChild(it);
+    });
+    addSugg.classList.add('show');
+  }
+  async function runAddSearch(q){
+    const my = ++addSeq;
+    addSearchPx.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+    addSearchStatus.textContent = 'Searching…'; addSearchStatus.className = 'status';
+    try {
+      const res = await fetchWithTimeout(`${STUDENT_DETAILS_URL}?action=searchStudents&q=${encodeURIComponent(q)}`, {}, 15000);
+      const j = await res.json();
+      if (my !== addSeq) return;
+      if (j.status === 'ok'){
+        const l = j.students || [];
+        renderSugg(l);
+        addSearchStatus.textContent = l.length + ' match' + (l.length === 1 ? '' : 'es');
+      } else {
+        hideSugg(); addSearchStatus.textContent = j.message || 'No matches'; addSearchStatus.className = 'status err';
+      }
+    } catch (err){
+      if (my !== addSeq) return;
+      hideSugg(); addSearchStatus.textContent = 'Search failed — check connection'; addSearchStatus.className = 'status err';
+    } finally {
+      if (my === addSeq) addSearchPx.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>';
+    }
+  }
+  addSearchInput.addEventListener('input', () => {
+    clearTimeout(addTimer);
+    const q = addSearchInput.value.trim();
+    if (!q){ hideSugg(); addSearchStatus.textContent = ''; return; }
+    addTimer = setTimeout(() => runAddSearch(q), 300);
+  });
+  addSearchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      const first = addSugg.querySelector('.it');
+      if (first) first.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    } else if (e.key === 'Escape') hideSugg();
+  });
+  document.addEventListener('click', e => { if (!addSearch.contains(e.target)) hideSugg(); });
+
+  function prefillFromRecord(d){
+    const setSel = (sel, v) => {
+      v = String(v || '').trim().toLowerCase(); if (!v) return;
+      const o = Array.from(sel.options).find(x => x.value.trim().toLowerCase() === v);
+      if (o) sel.value = o.value;
+    };
+    const nm = form.querySelector('[name="Name"]'); if (nm && d.name) nm.value = d.name;
+    setSel(form.querySelector('select[name="Batch"]'), d.batch);
+    setSel(classSelect, d.class);
+    updateBoardVisibility();
+    setSel(boardSelect, d.board);
+    loadSubjectsForSelection();
+  }
+  async function pickExisting(s){
+    hideSugg();
+    addSearchInput.value = (s.id || '') + ' — ' + (s.name || '');
+    addSearchStatus.textContent = 'Loading student…'; addSearchStatus.className = 'status';
+    let d = s;
+    try {
+      const res = await fetchWithTimeout(`${STUDENT_DETAILS_URL}?action=getStudent&id=${encodeURIComponent(s.id)}`, {}, 15000);
+      const j = await res.json();
+      if (j && j.status === 'ok') d = Object.assign({}, s, j);
+    } catch (e) { /* fall back to the search row */ }
+    addSearchStatus.textContent = '';
+    enterAddMode({ id: d.id || s.id, name: d.name || s.name, subjects: d.subjects || s.subjects || [],
+                   class: d.class, total: d.total, teachers: d.teachers });
+    prefillFromRecord(d);
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     if (!subjects.length) {
       status.textContent = 'Pick at least one subject';
+      status.className = 'status err';
+      return;
+    }
+    const noFee = subjects.find(s => feeVals[s] == null || feeVals[s] === '' || !(Number(feeVals[s]) >= 0));
+    if (noFee) {
+      status.textContent = 'Enter the fee for ' + noFee;
       status.className = 'status err';
       return;
     }
@@ -2968,8 +3336,15 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
     status.textContent = 'Saving…';
     status.className = 'status';
 
+    updateTotal();
     const data = Object.fromEntries(new FormData(form).entries());
     data['Teacher ID'] = TCH.id; data.token = TCH.token;   // saved to the teacher_id column by the Apps Script
+    data['Fees Structure'] = feesStructureHidden.value;     // "500, 400" same order as Subjects
+    data['Monthly Fee'] = totalFeeInput.value;
+    const adding = !!addMode;
+    if (adding) { data.action = 'addSubject'; data['Student ID'] = addMode.id; }
+    else if (forceNew) data['Force New'] = '1';
+    forceNew = false;
     const studentId = data['Student ID'];
 
     try {
@@ -2981,22 +3356,27 @@ form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
       const result = await res.json();
 
       if (result.result === 'success') {
-        status.textContent = `Saved as ${result.id || studentId}`;
+        status.textContent = adding ? `Subject added to ${studentId}` : `Saved as ${result.id || studentId}`;
         status.className = 'status ok';
         form.reset(); teacherIdInput.value = TCH.id;
         subjectChecks.forEach(c => c.checked = false);
+        feeVals = {};
         syncSubjects();
-        fetchNextId(true);
+        exitAddMode(false);
+        if (mode === 'new') fetchNextId(true);
+      } else if (result.result === 'exists' && result.matches && result.matches.length) {
+        status.textContent = ''; status.className = 'status';
+        showDup(result.matches[0]);
       } else {
         throw new Error(result.error || 'Unknown error');
       }
     } catch (err) {
-      status.textContent = 'Failed — check connection';
+      status.textContent = 'Failed — ' + (err && err.message && err.message !== 'Failed to fetch' ? err.message : 'check connection');
       status.className = 'status err';
       console.error(err);
     } finally {
       btn.disabled = false;
-      btnLabel.textContent = 'Enroll Student';
+      btnLabel.textContent = (addMode || mode === 'add') ? 'Add Subject' : 'Enroll Student';
       form.classList.remove('is-saving');
     }
   });
