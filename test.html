@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fee Status — Progressive Physics</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#f1f5f7; --card:#fff; --ink:#0f2a33; --muted:#64808a; --line:#dde6ea;
+  --brand:#0e4a5c; --brand2:#146b84;
+  --red:#dc2626; --yellow:#facc15; --green:#16a34a; --orange:#f97316; --grey:#cbd5db;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+header{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;padding:22px 16px 64px}
+.wrap{max-width:1100px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:1.25rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.sub{font-size:.8rem;opacity:.8;margin-top:4px}
+.btn-ref{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 14px;cursor:pointer;font-size:.85rem}
+.btn-ref:hover{background:rgba(255,255,255,.25)}
+.btn-ref.spin i{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{max-width:1100px;margin:-44px auto 40px;padding:0 16px}
+.panel{background:var(--card);border-radius:16px;box-shadow:0 6px 24px rgba(14,74,92,.12);padding:16px}
+.search{position:relative}
+.search i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{width:100%;padding:13px 14px 13px 40px;border:1.5px solid var(--line);border-radius:12px;font-size:1rem;outline:none;background:#fafcfd}
+.search input:focus{border-color:var(--brand2);background:#fff}
+.bar{display:flex;gap:10px;flex-wrap:wrap}
+.bar .search{flex:1;min-width:200px}
+.sel{position:relative}
+.sel select{appearance:none;-webkit-appearance:none;padding:13px 38px 13px 14px;border:1.5px solid var(--line);border-radius:12px;font-size:.95rem;background:#fafcfd;color:var(--ink);outline:none;cursor:pointer;height:100%}
+.sel select:focus,.sel select.on{border-color:var(--brand2);background:#fff}
+.sel i{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:.75rem}
+.m.sel-m{outline:3px solid var(--brand);outline-offset:1px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:7px;color:var(--ink)}
+.chip .n{background:var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip.on .n{background:rgba(255,255,255,.25)}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:14px 2px 4px;font-size:.78rem;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-top:16px}
+.stu{background:var(--card);border-radius:14px;padding:15px;box-shadow:0 2px 10px rgba(14,74,92,.08);border:1px solid var(--line);border-left:5px solid var(--grey)}
+.stu.has-pending{border-left-color:var(--red)}
+.stu.has-due{border-left-color:var(--orange)}
+.stu.all-paid{border-left-color:var(--green)}
+.row1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.name{font-weight:700;font-size:1rem}
+.sid{font-size:.78rem;color:var(--muted);margin-top:2px;font-family:ui-monospace,Menlo,monospace}
+.badge{font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.b-pending{background:#fee2e2;color:#b91c1c}
+.b-due{background:#ffedd5;color:#c2410c}
+.b-paid{background:#dcfce7;color:#15803d}
+.b-up{background:#fef9c3;color:#854d0e}
+.b-none{background:#eef2f4;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--muted);margin:10px 0 12px}
+.meta i{width:14px;text-align:center;margin-right:3px}
+.months{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.m{border-radius:8px;text-align:center;padding:7px 0 6px;font-size:.72rem;font-weight:700;line-height:1.15}
+.m small{display:block;font-size:.62rem;font-weight:600;opacity:.9;margin-top:2px}
+.m.pending{background:var(--red);color:#fff}
+.m.due{background:var(--orange);color:#fff}
+.m.upcoming{background:var(--yellow);color:#5a4500}
+.m.paid{background:var(--green);color:#fff}
+.m.na{background:#eef2f4;color:#a3b3ba}
+.state{text-align:center;padding:46px 10px;color:var(--muted)}
+.state i{font-size:1.8rem;margin-bottom:10px;display:block}
+.err{color:#b91c1c}
+.stamp{font-size:.74rem;color:var(--muted);text-align:right;margin-top:10px}
+.mbox{border-radius:12px;padding:12px;margin-top:2px;border:1.5px solid var(--line);background:#fafcfd}
+.mbox.pending{border-color:var(--red);background:#fef2f2}
+.mbox.due{border-color:var(--orange);background:#fff7ed}
+.mbox.upcoming{border-color:var(--yellow);background:#fefce8}
+.mbox.paid{border-color:var(--green);background:#f0fdf4}
+.mhead{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:1.05rem;margin-bottom:8px}
+.mhead small{font-size:.8rem;font-weight:600;color:var(--muted)}
+.subs{margin-top:0}
+.sr{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.98rem;padding:7px 0;border-top:1px solid rgba(0,0,0,.07)}
+.sr .l i{width:20px;text-align:center;margin-right:6px;font-size:1.05rem}
+.sr.ok{color:#15803d}.sr.no{color:#b91c1c}.sr.soon{color:#854d0e}
+.sr .r{font-size:.82rem;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+.sr .tot{font-weight:700}
+@media(max-width:420px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div>
+      <h1><i class="fa-solid fa-indian-rupee-sign"></i> Fee Status</h1>
+      <div class="sub" id="sub">Progressive Physics</div>
+    </div>
+    <button class="btn-ref" id="refresh"><i class="fa-solid fa-rotate"></i> Refresh</button>
+  </div>
+</header>
+
+<main>
+  <div class="panel">
+    <div class="bar">
+      <div class="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="q" placeholder="Search Student ID or name…" autocomplete="off">
+      </div>
+      <div class="sel">
+        <select id="month"></select>
+        <i class="fa-solid fa-chevron-down"></i>
+      </div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--red)"></i> Pending</span>
+      <span><i class="dot" style="background:var(--orange)"></i> Due (this month)</span>
+      <span><i class="dot" style="background:var(--yellow)"></i> Upcoming</span>
+      <span><i class="dot" style="background:var(--green)"></i> Paid</span>
+      <span><i class="dot" style="background:var(--grey)"></i> N/A</span>
+    </div>
+  </div>
+
+  <div id="list" class="grid"></div>
+  <div class="stamp" id="stamp"></div>
+</main>
+
+<script>
+/* ====== CONFIG ====== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbwZlJEXCEIzF_-JCyUfPURvSguNhLILjnfCW0VW35ED8dBz2RSohf9zUtSaqNCHr-ZQ/exec';   // Apps Script /exec URL
+const CACHE_KEY = 'fee_status_cache_v2';
+/* ==================== */
+
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const LBL = {pending:'Pending', due:'Due', upcoming:'Soon', paid:'Paid', na:'N/A'};
+const FILTERS = [
+  {k:'all', t:'All'},
+  {k:'pending', t:'Pending'},
+  {k:'due', t:'Due now'},
+  {k:'upcoming', t:'Upcoming'},
+  {k:'paid', t:'Paid'}
+];
+
+let students = [], filter = 'all', query = '', month = -1;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function matches(s, f){
+  if (month >= 0){
+    const st = s.months[month];
+    return f === 'all' ? st !== 'na' : st === f;
+  }
+  if (f === 'all') return true;
+  return s[f] > 0;
+}
+
+const FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function initMonth(){
+  const sel = $('month');
+  sel.innerHTML = '<option value="-1">All months</option>' + FULL.map((m,i) => `<option value="${i}">${m}</option>`).join('');
+  sel.onchange = () => { month = Number(sel.value); sel.classList.toggle('on', month >= 0); render(); };
+}
+
+function renderChips(){
+  $('chips').innerHTML = FILTERS.map(f => {
+    const n = students.filter(s => matches(s, f.k)).length;
+    return `<button class="chip ${filter===f.k?'on':''}" data-k="${f.k}">${f.t}<span class="n">${n}</span></button>`;
+  }).join('');
+  $('chips').querySelectorAll('.chip').forEach(b => b.onclick = () => { filter = b.dataset.k; render(); });
+}
+
+function card(s){
+  const cls = s.pending ? 'has-pending' : s.due ? 'has-due' : (s.paid && !s.upcoming) ? 'all-paid' : '';
+  let badge = s.pending ? `<span class="badge b-pending">${s.pending} pending</span>`
+              : s.due     ? `<span class="badge b-due">Due now</span>`
+              : s.paid && !s.upcoming ? `<span class="badge b-paid">All clear</span>`
+              : `<span class="badge b-none">No dues</span>`;
+  let subs = '';
+  if (month >= 0){
+    const st = s.months[month];
+    badge = `<span class="badge ${st==='pending'?'b-pending':st==='due'?'b-due':st==='paid'?'b-paid':st==='upcoming'?'b-up':'b-none'}">${MN[month]}: ${LBL[st]}</span>`;
+    const det = (s.detail && s.detail[month]) || [];
+    if (det.length){
+      const pn = det.filter(x => x.paid).length;
+      const full = pn === det.length;
+      const bc = full ? 'b-paid' : pn ? 'b-due' : (st==='pending'?'b-pending':st==='due'?'b-due':'b-up');
+      badge = `<span class="badge ${bc}">${MN[month]}: ${full ? 'Full paid' : pn ? pn+'/'+det.length+' paid' : LBL[st]}</span>`;
+      const due = det.filter(x => !x.paid).reduce((a,x) => a + (Number(x.fee)||0), 0);
+      const nc = st==='upcoming' ? 'soon' : 'no';
+      subs = `<div class="mbox ${st}"><div class="mhead"><span>${FULL[month]}</span><small>${pn} of ${det.length} paid</small></div><div class="subs">` + det.map(x => x.paid
+        ? `<div class="sr ok"><span class="l"><i class="fa-solid fa-circle-check"></i>${esc(x.n)}</span><span class="r">${esc(x.rc) || 'paid'}${x.fee ? ' · ₹'+esc(x.fee) : ''}</span></div>`
+        : `<div class="sr ${nc}"><span class="l"><i class="fa-solid fa-circle-xmark"></i>${esc(x.n)}</span><span class="r">${st==='upcoming'?'upcoming':'not paid'}${x.fee ? ' · ₹'+esc(x.fee) : ''}</span></div>`).join('')
+        + (due ? `<div class="sr tot"><span>Due amount</span><span>₹${due}</span></div>` : '') + `</div></div>`;
+    }
+  }
+  const months = s.months.map((st,i) =>
+    `<div class="m ${st}${i===month?' sel-m':''}">${MN[i]}<small>${LBL[st]}</small></div>`).join('');
+  return `<div class="stu ${cls}">
+    <div class="row1">
+      <div><div class="name">${esc(s.name) || '—'}</div><div class="sid">${esc(s.id)}</div></div>
+      ${badge}
+    </div>
+    <div class="meta">
+      <span><i class="fa-solid fa-book"></i>${esc(s.subjects) || '—'}</span>
+      <span><i class="fa-regular fa-calendar"></i>${esc(s.date) || '—'}</span>
+      ${s.totalFees ? `<span><i class="fa-solid fa-indian-rupee-sign"></i>${esc(s.totalFees)}</span>` : ''}
+    </div>
+    ${subs || `<div class="months">${months}</div>`}
+  </div>`;
+}
+
+function render(){
+  renderChips();
+  const q = query.trim().toLowerCase().replace(/\s+/g,'');
+  const rows = students
+    .filter(s => matches(s, filter))
+    .filter(s => !q || s.id.toLowerCase().replace(/\s+/g,'').includes(q) || s.name.toLowerCase().replace(/\s+/g,'').includes(q))
+    .sort((a,b) => month >= 0 ? a.id.localeCompare(b.id) : (b.pending - a.pending) || (b.due - a.due) || a.id.localeCompare(b.id));
+  $('list').innerHTML = rows.length ? rows.map(card).join('')
+    : `<div class="state" style="grid-column:1/-1"><i class="fa-regular fa-face-meh"></i>No student found</div>`;
+}
+
+function setBusy(b){ $('refresh').classList.toggle('spin', b); }
+
+async function load(){
+  setBusy(true);
+  try{
+    const res = await fetch(API_URL);
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || 'API error');
+    students = d.students;
+    const mi = d.now.month;
+    $('sub').textContent = `Progressive Physics · ${MN[mi]} ${d.now.year}`;
+    $('stamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(d)); }catch(e){}
+    render();
+  }catch(err){
+    if (!students.length){
+      $('list').innerHTML = `<div class="state err" style="grid-column:1/-1"><i class="fa-solid fa-triangle-exclamation"></i>${esc(err.message)}</div>`;
+    } else {
+      $('stamp').textContent = 'Offline — showing cached data';
+    }
+  }finally{ setBusy(false); }
+}
+
+/* instant paint from cache, then refresh */
+try{
+  const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+  if (c && c.students){ students = c.students; render(); }
+}catch(e){}
+
+initMonth();
+$('q').addEventListener('input', e => { query = e.target.value; render(); });
+$('refresh').onclick = load;
+render();
+load();
+</script>
+</body>
+</html>
