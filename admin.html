@@ -308,6 +308,9 @@ dialog h3 i{font-size:15px;color:var(--accent)}
 .sc-t small{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .sc-tags{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
 .tag{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:10px;background:var(--bg);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.ex{background:#fbe9e7;border-color:#f0c4be;color:#b4423a}
+.ab.off{color:#b4423a;border-color:#f0c4be}
+.ab.on-act{color:#1f7a4d;border-color:#bfe0cc}
 .tag.cls{background:#fbeede;border-color:#efd3ac;color:var(--accent-d);display:inline-flex;gap:5px;align-items:center}
 .sc-chev{color:var(--muted);font-size:12px;transition:transform .2s;flex:none}
 .sc.open .sc-chev{transform:rotate(180deg);color:var(--accent)}
@@ -732,6 +735,7 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
             <input id="studentSearchInput" type="search" placeholder="Search… (% = wildcard)" autocomplete="off" oninput="stuInput_()">
             <button class="s-clear" id="stuClear" type="button" data-act="clear" aria-label="Clear search" hidden><i class="fa-solid fa-xmark"></i></button>
           </div>
+          <label class="sortbox" style="margin-left:0"><i class="fa-solid fa-user-check"></i><select id="studentActiveFilter" onchange="stuInput_()" aria-label="Student status"><option value="all" selected>All</option><option value="active">Active</option><option value="ex">Ex-students</option></select></label>
           <span class="status" id="studentStatus"></span>
         </div>
         <div id="stuTools"></div>
@@ -1608,7 +1612,7 @@ footer i{color:var(--muted);margin-right:6px}
   const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbwD1aqFLzL3xA_5LUsu4t81uRGA0ik8JRwCVlmh4Fc63aS2tuBjk9mOWtPhCVZx_hQC/exec";
 
   // Student Details Web App URL — looks up name/phone/subjects from student_details sheet
-  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwLasirfCGCC7e-4rtp94rTWoEIyrfoQ8khTXQ7OTeZkJYtqpPANjC1muRPalo2lN-v/exec";
+  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec";
 
   const form = document.getElementById('feeForm');
   const statusEl = document.getElementById('status');
@@ -2866,7 +2870,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 
 /* ═════════ ADMIN LOGIC (students + teachers) ═════════ */
 
-  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbwLasirfCGCC7e-4rtp94rTWoEIyrfoQ8khTXQ7OTeZkJYtqpPANjC1muRPalo2lN-v/exec';
+  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec';
   const TEACHER_API_URL = 'https://script.google.com/macros/s/AKfycbxIe7QVlhDVkufRs_aND-J8Y_eZvDACZTm4ObN2HXsc9B_tVujVhYltuxSfOt-dybbb/exec';
  
 
@@ -2888,7 +2892,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 
   /* ═════ Register student (dialog; ported from teacher panel admission form) ═════ */
   const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbyiYCckDlSoJDjQAH9Ddl7hNc63RyAucqmJn-YdEuG49BRf5cQJWjJzaad82l5gAMgyIA/exec";
-  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbwLasirfCGCC7e-4rtp94rTWoEIyrfoQ8khTXQ7OTeZkJYtqpPANjC1muRPalo2lN-v/exec";
+  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec";
   const NO_BOARD_ = ['JEE','NEET'];
   const DEFAULT_SUBJECTS_ = ['Physics','Chemistry','Biology - Botany','Biology - Zoology','Mathematics','English'];
   const SUBJ_CACHE_KEY_ = 'pp_subjects_cache_v1', SUBJ_TTL_ = 24*60*60*1000;
@@ -3471,6 +3475,9 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
     }
   }
 
+  /* active_status: blank = active (old rows); only explicit false/no/0/ex = ex-student */
+  const isActive_ = s => { const v = s && s['Active Status']; return !(v === false || /^(false|no|n|0|inactive|ex|ex-student|left)$/i.test(String(v == null ? '' : v).trim())); };
+  const stuVisible_ = () => { const f = (document.getElementById('studentActiveFilter') || {}).value || 'all'; return f === 'all' ? STUDENTS : STUDENTS.filter(s => (f === 'active') === isActive_(s)); };
   const cell_ = v => esc_(v == null ? '' : v);
   /* subjects: sheet may hold "physics\nmath" or "physics, math" -> normalise to "physics, math" */
   const normSubjects_ = v => { const seen = {}; return String(v == null ? '' : v).split(/[,;\n\r\/|]+/).map(x => x.trim()).filter(x => { const k = x.toLowerCase(); if(!x || seen[k]) return false; seen[k] = 1; return true; }).join(', '); };
@@ -3503,7 +3510,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
   }
   function clsGroups_(){
     const map = new Map();
-    STUDENTS.forEach(s => {
+    stuVisible_().forEach(s => {
       const label = String(s['Class'] == null ? '' : s['Class']).trim() || 'Unassigned';
       const pure = clsPure_(label);
       const key = pure != null ? 'n' + pure : norm_(label);
@@ -3556,6 +3563,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
         <span class="sc-tags">
           ${showCls && s['Class'] ? `<span class="tag cls"><i class="fa-solid ${clsIcon_(clsPure_(s['Class']))}"></i>${cell_(s['Class'])}</span>` : ''}
           ${s['Board'] ? `<span class="tag">${cell_(s['Board'])}</span>` : ''}
+          ${isActive_(s) ? '' : '<span class="tag ex">Ex</span>'}
         </span>
         <i class="fa-solid fa-chevron-down sc-chev"></i>
       </button>
@@ -3569,11 +3577,13 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
           ${f('fa-building-columns', 'Board', s['Board'])}
           ${f('fa-chalkboard-user', 'Teacher ID', s['Teacher ID'])}
           ${f('fa-coins', 'Fee split', feeSplit_(s))}
+          ${f('fa-user-check', 'Status', isActive_(s) ? 'Active' : 'Ex-student')}
         </div>
         ${normSubjects_(s['Subjects']) ? `<div class="sd-subj"><span><i class="fa-solid fa-book"></i>Subjects</span><div>${subjChips_(s['Subjects'])}</div></div>` : ''}
         <div class="sc-act">
           ${digits ? `<a class="ab" href="tel:${esc_(phone.replace(/[^\d+]/g, ''))}"><i class="fa-solid fa-phone"></i>Call</a>
           <a class="ab wa" href="https://wa.me/${esc_(wa)}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>` : ''}
+          <button class="ab ${isActive_(s) ? 'off' : 'on-act'}" type="button" data-act="active" data-v="${isActive_(s) ? 0 : 1}"><i class="fa-solid ${isActive_(s) ? 'fa-user-slash' : 'fa-user-check'}"></i>${isActive_(s) ? 'Mark ex-student' : 'Mark active'}</button>
           <button class="ab" type="button" data-act="card"><i class="fa-solid fa-id-card"></i>ID card</button>
           <button class="ab" type="button" data-act="share"><i class="fa-solid fa-share-nodes"></i>Share</button>
         </div>
@@ -3595,6 +3605,11 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
       setStudentStatus('0 students'); return;
     }
 
+    if(!stuVisible_().length){
+      const fv = stuEl_('studentActiveFilter').value;
+      stuMsg_('<div class="stu-empty"><i class="fa-solid fa-user-graduate"></i> ' + (fv === 'ex' ? 'No ex-students.' : fv === 'active' ? 'No active students.' : 'No students.') + '</div>'); STU_UI.html = 'empty';
+      setStudentStatus('0 students'); return;
+    }
     const groups = clsGroups_();
     if(STU_UI.cls && STU_UI.cls !== '*' && !groups.some(g => g.key === STU_UI.cls)) STU_UI.cls = null;
     const grp = groups.find(g => g.key === STU_UI.cls);
@@ -3603,12 +3618,12 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 
     if(!listMode){
       /* ── CLASS GRID ── */
-      const totalFee = STUDENTS.reduce((t, s) => t + feeNum_(s['Monthly Fee']), 0);
+      const vis = stuVisible_(), totalFee = vis.reduce((t, s) => t + feeNum_(s['Monthly Fee']), 0);
       html = `<div class="cls-grid">
         <button class="cls-tile all" type="button" data-act="cls" data-k="*" style="--c:#0f2b24;--i:0">
           <span class="ct-ic"><i class="fa-solid fa-users"></i></span>
           <span class="ct-n txt">All students</span>
-          <span class="ct-meta"><b>${STUDENTS.length}</b> across ${groups.length} ${groups.length === 1 ? 'class' : 'classes'}${totalFee ? ' \u00B7 ' + money_(totalFee) + '/mo' : ''}</span>
+          <span class="ct-meta"><b>${vis.length}</b> across ${groups.length} ${groups.length === 1 ? 'class' : 'classes'}${totalFee ? ' \u00B7 ' + money_(totalFee) + '/mo' : ''}</span>
           <i class="fa-solid fa-arrow-right ct-go"></i>
         </button>
         ${groups.map((g, i) => {
@@ -3625,10 +3640,10 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
           </button>`;
         }).join('')}
       </div>`;
-      setStudentStatus(`${STUDENTS.length} students \u00B7 ${groups.length} classes`);
+      setStudentStatus(`${vis.length} students \u00B7 ${groups.length} classes`);
     } else {
       /* ── STUDENT LIST ── */
-      const scope = grp ? grp.list : STUDENTS;
+      const scope = grp ? grp.list : stuVisible_();
       let hits = q ? searchList_(scope, field, q, (k, v) => norm_(k) === 'admission date' ? fmtDate(v) : v) : scope;
       const batches = uniq_(hits.map(s => s['Batch'])), boards = uniq_(hits.map(s => s['Board']));
       const so = STU_UI.sort;
@@ -3720,6 +3735,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
         card.classList.toggle('open', on); t.setAttribute('aria-expanded', on);
         on ? STU_UI.open.add(id) : STU_UI.open.delete(id);
       }
+      else if(act === 'active' && card) setStudentActive_(card.dataset.id, t.dataset.v === '1');
       else if(act === 'card' && card) openIdCard(card.dataset.id);
       else if(act === 'share' && card) shareIdCard(card.dataset.id, t);
     });
@@ -3789,6 +3805,29 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
         cacheSave_('cache_students', STUDENTS);
         const row = rowFor_('studentRows', id);
         if(row) enterEditMode_(row);             // keep typed values, let user retry
+      }
+    });
+  }
+
+  function setStudentActive_(id, val){
+    const i = studentIdx_(id);
+    if(i < 0) return;
+    const before = STUDENTS[i], nm = before['Student Name'] || id;
+    if(!val && !confirm(`Mark ${nm} as ex-student? They will leave the active list (nothing is deleted).`)) return;
+    STUDENTS[i] = {...before, 'Active Status': val};
+    cacheSave_('cache_students', STUDENTS);
+    filterStudents();
+    runWrite_('student', {
+      label:'Saving…', post:{action:'setActive', 'Student ID': before['Student ID'], active: val, admin: true},
+      confirm: list => list.some(x => String(x['Student ID']) === String(id) && isActive_(x) === val),
+      okMsg: nm + (val ? ' is active again' : ' marked ex-student'),
+      unconfirmedMsg:'Sheet did not confirm the status change of ' + id + ' (check Apps Script).',
+      failMsg:'Status change failed (restored)',
+      rollback(){
+        const j = studentIdx_(id);
+        if(j >= 0) STUDENTS[j] = before;
+        cacheSave_('cache_students', STUDENTS);
+        filterStudents();
       }
     });
   }
