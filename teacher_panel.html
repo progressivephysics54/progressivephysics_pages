@@ -33,6 +33,9 @@ i.fa-solid,i.fa-regular,i.fa-brands{line-height:1}
 /* ── TOAST ── */
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:1000;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 32px);padding:12px 18px;border-radius:6px;background:var(--navy);color:#f3efe6;font-size:14px;font-weight:500;box-shadow:0 6px 20px rgba(11,23,69,.28);opacity:0;pointer-events:none;transition:opacity .22s,transform .22s}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+#toast[popover]{top:auto;right:auto;margin:0;border:0;overflow:visible}
+#toast.err{background:#8f2d26;color:#fff}
+#toast.err i{color:#ffd9d4}
 #toast i{color:var(--gold);font-size:14px}
 /* ── LOGIN ── */
 #login{min-height:100dvh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
@@ -108,28 +111,242 @@ form.fm{display:grid;gap:18px}
 #stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
 #home,#stuV{position:absolute;inset:0;overflow:auto;padding:48px 44px 60px;background:var(--bg)}
 #stuV[hidden]{display:none}
-.mh{font-family:var(--display);font-weight:500;font-size:34px;margin:0 0 4px;letter-spacing:-.01em}
-.mbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 18px}
-.mbar .inp{flex:1;min-width:200px}
-.mbar select,.mref{border:1px solid var(--line);background:#fff;border-radius:4px;padding:0 12px;font:inherit;font-size:14px;color:var(--ink);height:44px}
-.mref{width:44px;padding:0}
-.mc{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-bottom:10px;display:grid;gap:8px}
-.mc.ex{background:#faf6f3}
-.mc-h{display:flex;gap:12px;align-items:center}
-.mc-av{width:38px;height:38px;border-radius:50%;background:var(--navy);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-weight:600;flex:none}
-.mc.ex .mc-av{background:#9a8f86}
-.mc-t b{display:block;font-size:15.5px}
-.mc-t small{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
-.mc-tag{margin-left:auto;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid var(--line);white-space:nowrap}
-.mc-tag.ok{background:#e6f4ec;border-color:#bfe0cc;color:var(--ok)}
-.mc-tag.ex{background:#fbe9e7;border-color:#f0c4be;color:var(--adm)}
-.mc-r{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px}
-.mc-r b{color:var(--ink);font-weight:500}
-.mc-a{display:flex;flex-wrap:wrap;gap:8px}
-.mc-a a,.mc-a button{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:4px;padding:7px 12px;font:inherit;font-size:13px;font-weight:500;color:var(--ink);text-decoration:none;cursor:pointer}
-.mc-a .off{color:var(--adm);border-color:#f0c4be}
-.mc-a .on{color:var(--ok);border-color:#bfe0cc}
-.m-empty{padding:40px 10px;text-align:center;color:var(--muted)}
+#regModal,#dupModal{--deep:#0b1745;--deep-2:#16296f;--brass:#e0b030;--accent:#b8891a;--accent-d:#8f6a12;--bg:#f3efe6}
+#regModal,#dupModal{border:1px solid var(--ink);border-radius:6px;padding:0;color:var(--ink);font-family:var(--body);background:var(--card);width:92%}
+#regModal form,#dupModal form{display:grid;gap:16px;padding:24px}
+#regModal h2,#dupModal h2{margin:0;font-family:var(--display);font-weight:600;font-size:24px;display:flex;align-items:center;gap:10px}
+#regModal button,#dupModal button{font:inherit;cursor:pointer}
+#regModal label{font-size:12px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:.01em}
+#regModal .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 14px}
+#regModal .grid>*,#regModal .field{min-width:0}
+#regModal form{min-width:0;max-width:100%}
+#regModal .field input,#regModal .field select{width:100%;min-width:0;box-sizing:border-box}
+#regModal,#dupModal{box-sizing:border-box;overflow-x:hidden}
+#regModal *{box-sizing:border-box}
+#regModal .rg-tabs button{min-width:0;font-size:13px;line-height:1.25;text-align:center}
+#regModal .field{display:flex;flex-direction:column;margin-bottom:8px}
+#regModal .field.full{grid-column:1/-1}
+#regModal .field input,#regModal .field select{padding:11px 12px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);font:inherit;font-size:16px}
+#regModal .field input:focus,#regModal .field select:focus{outline:1px solid var(--ink);border-color:var(--ink)}
+#regModal .msg,#dupModal .msg{min-height:18px;font-size:13px;color:var(--err);font-weight:500;display:flex;gap:8px;align-items:center}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+.modal-actions .btn{display:inline-flex;padding:10px 16px;font-size:14px}
+#regModal .btn.ghost,#dupModal .btn.ghost{background:transparent;color:var(--deep-2)}
+#regModal .btn.ghost:hover,#dupModal .btn.ghost:hover{background:var(--deep);color:#fff}
+#regModal .rg-hd{display:flex;align-items:center;gap:12px}
+#regModal .rg-back{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:4px;padding:8px 12px;font-size:13.5px;font-weight:500;color:var(--deep-2)}
+#regModal .rg-back:hover{background:var(--deep);color:#fff;border-color:var(--deep)}
+#regModal .rg-hd h2{flex:1;min-width:0}
+#regModal .rg-hd h2 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes sheet{from{transform:translateY(40px);opacity:0}}
+#regModal{max-width:620px;width:94vw;max-height:92dvh;overflow:auto}
+#regModal .sec{grid-column:1/-1;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:8px;margin:10px 0 2px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+#regModal .sec:first-of-type{margin-top:0}
+#regModal .req{color:var(--err)}
+#regModal .pf{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:4px;background:#fff;overflow:hidden}
+#regModal .pf:focus-within{outline:1px solid var(--ink);border-color:var(--ink)}
+#regModal .pf>span.px{display:flex;align-items:center;padding:0 10px;background:var(--bg);color:var(--muted);font-family:var(--mono);font-size:13px;border-right:1px solid var(--line)}
+#regModal .pf input{border:0;flex:1;min-width:0;outline:0!important;padding:11px 12px;font-size:16px;background:transparent}
+#regModal .pf button{border:0;border-left:1px solid var(--line);background:var(--bg);color:var(--deep-2);padding:0 12px;cursor:pointer}
+#regModal .pf button.spin i{animation:rgspin .8s linear infinite}
+@keyframes rgspin{to{transform:rotate(360deg)}}
+#regModal .rg-ring{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:rgspin .7s linear infinite}
+#regModal.idload #rgId{background:linear-gradient(90deg,transparent 0,rgba(180,83,31,.10) 50%,transparent 100%) 0 0/200% 100% no-repeat;animation:rgshim 1.2s linear infinite}
+#regModal.idload #rgIdRef{color:var(--accent)}
+@keyframes rgshim{from{background-position:200% 0}to{background-position:-100% 0}}
+#regModal .pf input::placeholder{color:#8a948f}
+#regModal .msel{position:relative}
+#regModal .msel-btn{width:100%;text-align:left;padding:11px 12px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);font-size:16px;font-family:inherit;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
+#regModal .msel-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#regModal .msel-btn .ph{color:var(--muted)}
+#regModal .msel-panel{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;background:#fff;border:1px solid var(--ink);border-radius:4px;max-height:220px;overflow:auto;box-shadow:0 8px 24px rgba(16,32,27,.18)}
+#regModal .msel-panel.open{display:block}
+#regModal .msel-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:0;font-size:14.5px;color:var(--ink);cursor:pointer}
+#regModal .msel-opt:hover{background:var(--bg)}
+#regModal .msel-skel{height:16px;margin:12px;border-radius:3px;background:var(--line);opacity:.6}
+#regModal .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#regModal .chips:empty{display:none}
+#regModal .rchip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:var(--bg);font-size:12.5px}
+#regModal .rchip button{border:0;background:none;color:var(--muted);cursor:pointer;padding:0}
+#regModal .lockd input{background:var(--bg);color:var(--muted)}
+#regModal.saving form{opacity:.7;pointer-events:none}
+#regModal .feerows{display:grid;gap:8px}
+#regModal .feerows-empty{font-size:13px;color:var(--muted);padding:2px 0}
+#regModal .feerow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px 8px 12px;border:1px solid var(--line);border-radius:4px;background:#fff;font-size:14px;font-weight:500}
+#regModal .feerow>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#regModal .feein{flex:none;width:132px;display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:4px;background:var(--bg);padding:0 8px}
+#regModal .feein:focus-within{outline:1px solid var(--ink);border-color:var(--ink)}
+#regModal .feein b{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500}
+#regModal .feein input{border:0;background:transparent;padding:8px 0;min-width:0;width:100%;font-size:15px;text-align:right;outline:0!important}
+#regModal .totalfee input{background:var(--bg);color:var(--ink);font-family:var(--mono);font-weight:500}
+#regModal .addbar{grid-column:1/-1;display:flex;align-items:flex-start;gap:12px;padding:12px 14px;margin-bottom:6px;border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--bg);font-size:13.5px;line-height:1.5}
+#regModal .addbar[hidden]{display:none}
+#regModal .addbar i.lead{color:var(--accent);margin-top:3px}
+#regModal .addbar .tx{flex:1;min-width:0}
+#regModal .addbar small{display:block;color:var(--muted);font-size:12.5px}
+#regModal .addbar button{flex:none;border:1px solid var(--line);background:#fff;border-radius:4px;padding:6px 10px;font-size:12.5px;color:var(--muted);cursor:pointer}
+#regModal .msel-opt.taken{opacity:.45;cursor:not-allowed}
+#regModal .msel-opt.taken:hover{background:transparent}
+#regModal .rg-tabs{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--ink);border-radius:4px;overflow:hidden;background:#fff}
+#regModal .rg-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 8px;border:0;background:transparent;font:500 13.5px/1.25 var(--body);color:var(--muted);cursor:pointer;text-align:center}
+#regModal .rg-tabs button+button{border-left:1px solid var(--ink)}
+#regModal .rg-tabs button.on{background:var(--accent);color:#fff}
+#regModal .rg-tabs button:not(.on):hover{background:var(--bg);color:var(--accent-d)}
+#regModal .rg-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+#regModal .rg-search{grid-column:1/-1;display:grid;gap:6px}
+#regModal .rg-search[hidden]{display:none}
+#regModal .rg-search .field{position:relative}
+#regModal .rg-sugg{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:6;background:#fff;border:1px solid var(--ink);border-radius:4px;max-height:260px;overflow:auto;box-shadow:0 8px 24px rgba(16,32,27,.12)}
+#regModal .rg-sugg.show{display:block}
+#regModal .rg-sugg .it{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line)}
+#regModal .rg-sugg .it:last-child{border-bottom:0}
+#regModal .rg-sugg .it:hover{background:var(--bg)}
+#regModal .rg-sugg .it b{display:block;font-weight:600;font-size:14.5px}
+#regModal .rg-sugg .it small{display:block;margin-top:2px;color:var(--muted);font-size:12.5px}
+#regModal .rg-sugg .none{padding:12px;color:var(--muted);font-size:13.5px}
+#regModal .rg-sstat{font-size:12.5px;color:var(--muted)}
+#regModal .rg-sstat:empty{display:none}
+#regModal .rg-sstat.err{color:var(--err)}
+#regModal.mode-add .new-only{display:none}
+#regModal.await-pick .after-pick{display:none}
+#regModal select#rgTid{width:100%}
+#regModal .tid-note{font-size:12px;color:var(--muted);font-weight:400}
+#rgId[readonly]{background:var(--bg);color:var(--muted)}
+#dupModal{max-width:440px}
+#dupModal .dup-body{margin:0;font-size:14.5px;line-height:1.55}
+#dupModal .dup-info{display:grid;gap:6px;padding:12px 14px;background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--accent);font-size:13.5px}
+#dupModal .dup-info div{display:flex;justify-content:space-between;gap:12px}
+#dupModal .dup-info span{color:var(--muted)}
+#dupModal .dup-info b{font-weight:500;text-align:right}
+#dupModal .modal-actions{flex-wrap:wrap}
+#regModal{margin:auto 0 0;width:100%;max-width:none;border-radius:16px 16px 0 0;border-bottom:0}
+#regModal[open]{animation:sheet .26s cubic-bezier(.2,.8,.2,1)}
+#regModal form{padding:22px 18px calc(18px + env(safe-area-inset-bottom))}
+@media(max-width:900px){
+  #regModal{margin:auto 0 0;width:100%;max-width:none;border-radius:16px 16px 0 0;border-bottom:0}
+  #regModal[open]{animation:sheet .26s cubic-bezier(.2,.8,.2,1)}
+  #regModal form{padding:22px 18px calc(18px + env(safe-area-inset-bottom))}
+}
+#stuV .bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+#stuV .search{display:flex;align-items:center;gap:8px;flex:1 1 320px;max-width:560px;border:1px solid var(--line);border-radius:4px;background:#fff;padding:0 12px}
+#stuV .search:focus-within{border-color:var(--ink);outline:1px solid var(--ink)}
+#stuV .search select{border:0;background:transparent;color:var(--muted);outline:0;font-size:13.5px;padding:10px 4px 10px 0;border-right:1px solid var(--line);margin-right:4px;max-width:120px}
+#stuV .search>i{color:var(--muted);font-size:13px}
+#stuV .search input{flex:1;min-width:0;border:0;background:transparent;outline:0;padding:10px 0;font-size:15px;color:var(--ink)}
+#stuV .status{font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:auto}
+#stuV .subj-chip{display:inline-block;margin:1px 4px 1px 0;padding:1px 9px;border:1px solid var(--line);background:#f3f5ee;font-size:12.5px;line-height:1.55;border-radius:10px}
+#stuV .stu-empty{padding:56px 12px;text-align:center;color:var(--muted);font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:10px}
+#stuV .stu-empty.error-msg{color:var(--err);font-weight:500}
+#stuV .cls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:14px}
+#stuV .cls-tile{position:relative;text-align:left;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:18px 18px 16px;display:flex;flex-direction:column;gap:2px;min-height:178px;overflow:hidden;transition:transform .18s,box-shadow .18s,border-color .18s}
+#stuV .cls-tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+#stuV .cls-tile::after{content:"";position:absolute;right:-26px;top:-26px;width:96px;height:96px;border-radius:50%;background:var(--c);opacity:.07;transition:transform .3s,opacity .3s}
+#stuV .cls-tile:hover,#stuV .cls-tile:focus-visible{transform:translateY(-3px);box-shadow:0 12px 26px rgba(15,43,36,.13);border-color:var(--c);outline:0}
+#stuV .cls-tile:hover::after{transform:scale(1.7);opacity:.11}
+#stuV .cls-tile:active{transform:translateY(-1px) scale(.985)}
+#stuV .ct-ic{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:var(--c);color:#fff;font-size:18px;flex:none;margin-bottom:10px;box-shadow:0 4px 10px -3px var(--c)}
+#stuV .ct-ic.sm{width:38px;height:38px;font-size:16px;margin:0;background:var(--deep-2)}
+#stuV .ct-k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+#stuV .ct-n{font-family:var(--display);font-weight:600;font-size:46px;line-height:.95;letter-spacing:-.03em;color:var(--ink)}
+#stuV .ct-n.txt{font-size:25px;line-height:1.1;margin-top:auto;padding-top:6px;letter-spacing:-.01em;overflow-wrap:anywhere}
+#stuV .ct-meta{font-size:13px;color:var(--muted);margin-top:6px}
+#stuV .ct-meta b{font-family:var(--mono);font-weight:500;color:var(--c);font-size:14px}
+#stuV .ct-batches{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;padding-right:2px}
+#stuV .mini{font-family:var(--mono);font-size:10.5px;padding:1px 7px;border:1px solid var(--line);border-radius:10px;color:var(--muted);background:var(--bg);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#stuV .ct-go{position:absolute;right:16px;top:24px;font-size:13px;color:var(--c);opacity:0;transform:translateX(-6px);transition:.18s}
+#stuV .cls-tile:hover .ct-go,#stuV .cls-tile:focus-visible .ct-go{opacity:1;transform:none}
+#stuV .cls-tile.all{background:var(--deep);border-color:var(--deep);color:#f1efe4}
+#stuV .cls-tile.all .ct-ic{background:var(--brass);color:var(--deep);box-shadow:none}
+#stuV .cls-tile.all .ct-n{color:#fff}.cls-tile.all .ct-meta{color:rgba(241,239,228,.7)}.cls-tile.all .ct-meta b{color:var(--brass)}
+#stuV .cls-tile.all::before{background:var(--brass)}.cls-tile.all::after{background:#fff}
+#stuV .cls-tile.all .ct-go{color:var(--brass)}
+#stuV .anim .cls-tile,#stuV .anim .sc{animation:rise .42s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0)*45ms)}
+#stuV .anim .sc:nth-child(n+9){animation-delay:.36s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+#stuV .crumb{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+#stuV .back{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:4px;padding:9px 13px;font-weight:500;font-size:13.5px;color:var(--deep-2)}
+#stuV .back:hover{background:var(--deep);color:#fff;border-color:var(--deep)}
+#stuV .crumb-t{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+#stuV .crumb-t h2{margin:0;font-family:var(--display);font-weight:600;font-size:26px;line-height:1.05;letter-spacing:-.01em}
+#stuV .crumb-t small{font-family:var(--mono);font-size:12px;color:var(--muted)}
+#stuV .sortbox{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:4px;background:#fff;padding:0 6px 0 11px;margin-left:auto}
+#stuV .sortbox i{color:var(--muted);font-size:12px}
+#stuV .sortbox select{border:0;background:transparent;outline:0;padding:9px 4px;font-size:13.5px;color:var(--ink)}
+#stuV .fchips{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+#stuV .fl{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:inline-flex;gap:6px;align-items:center;margin-right:4px;min-width:62px}
+#stuV .fc{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 13px;font-size:13px;font-weight:500;color:var(--muted)}
+#stuV .fc:hover{border-color:var(--ink);color:var(--ink)}
+#stuV .fc.on{background:var(--deep-2);border-color:var(--deep-2);color:#fff}
+#stuV .stu-list{display:grid;gap:10px;margin-top:6px;grid-template-columns:repeat(auto-fill,minmax(min(100%,430px),1fr));align-items:start}
+#stuV .sc{border:1px solid var(--line);border-radius:8px;background:var(--card);overflow:hidden;transition:border-color .15s,box-shadow .15s}
+#stuV .sc:hover{border-color:#b9c3b0}
+#stuV .sc.open{border-color:var(--deep-2);box-shadow:0 8px 22px rgba(15,43,36,.1)}
+#stuV .sc-main{width:100%;display:flex;align-items:center;gap:12px;border:0;background:none;text-align:left;padding:12px 14px}
+#stuV .sc-av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--deep-2);color:var(--brass);font-family:var(--display);font-weight:600;font-size:17px}
+#stuV .sc.open .sc-av{background:var(--accent);color:#fff}
+#stuV .sc-t{flex:1;min-width:0;display:block}
+#stuV .sc-t b{display:block;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#stuV .sc-t small{font-family:var(--mono);font-size:12px;color:var(--muted)}
+#stuV .sc-tags{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+#stuV .tag{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:10px;background:var(--bg);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+#stuV .tag.ex{background:#fbe9e7;border-color:#f0c4be;color:#b4423a}
+#stuV .ab.off{color:#b4423a;border-color:#f0c4be}
+#stuV .ab.on-act{color:#1f7a4d;border-color:#bfe0cc}
+#stuV .tag.cls{background:#fbeede;border-color:#efd3ac;color:var(--accent-d);display:inline-flex;gap:5px;align-items:center}
+#stuV .sc-chev{color:var(--muted);font-size:12px;transition:transform .2s;flex:none}
+#stuV .sc.open .sc-chev{transform:rotate(180deg);color:var(--accent)}
+#stuV .sc-drawer{display:grid;grid-template-rows:0fr;transition:grid-template-rows .24s ease}
+#stuV .sc.open .sc-drawer{grid-template-rows:1fr}
+#stuV .sc-in{overflow:hidden;min-height:0}
+#stuV .sc.open .sc-in{border-top:1px dashed var(--line)}
+#stuV .sd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px 16px;padding:14px 14px 4px}
+#stuV .sd span,#stuV .sd-subj>span{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+#stuV .sd span i,#stuV .sd-subj>span i{color:var(--accent);width:12px;text-align:center}
+#stuV .sd b{font-weight:500;font-size:14px;overflow-wrap:anywhere}
+#stuV .sd-subj{padding:10px 14px 0}
+#stuV .sc-act{display:flex;gap:8px;flex-wrap:wrap;padding:14px}
+#stuV .crumb{position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0;margin-bottom:6px}
+#stuV .fc em{font-style:normal;font-family:var(--mono);font-size:11px;opacity:.7;margin-left:3px}
+#stuV .fc i{margin-right:6px;font-size:11px}
+#stuV .sc.off .sc-av{filter:grayscale(1);opacity:.55}
+#stuV .sc.off .sc-t b{color:var(--muted)}
+#stuV .ab{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:4px;padding:8px 13px;font-size:13px;font-weight:500;color:var(--deep-2);text-decoration:none}
+#stuV .ab:hover{background:var(--deep);border-color:var(--deep);color:#fff}
+#stuV .ab.wa:hover{background:#1f9d55;border-color:#1f9d55}
+#stuV .ab:disabled{opacity:.6}
+#stuV{--deep:#0b1745;--deep-2:#16296f;--brass:#e0b030;--accent:#b8891a;--accent-d:#8f6a12;--bg:#f3efe6}
+#stuV .wrap{max-width:1100px}
+#stuV button{font:inherit;cursor:pointer;color:inherit}
+#stuV h1{font-family:var(--display);font-weight:500;font-size:clamp(30px,4vw,44px);line-height:1.05;margin:0;letter-spacing:-.02em}
+#stuV .kick{font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--adm);display:flex;gap:8px;align-items:center;margin-bottom:6px}
+#stuV .vh-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid var(--ink);margin-bottom:20px}
+#stuV .sub{margin:6px 0 0;color:var(--muted);font-size:14.5px}
+#stuV .reg-btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--adm);color:#fff;border-radius:4px;padding:11px 18px;font-weight:600;font-size:14px}
+#stuV .reg-btn:hover{filter:brightness(.92)}
+#stuV .rf{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:4px;padding:10px 14px;font-weight:500;font-size:13.5px;color:var(--navy)}
+#stuV .rf:hover{border-color:var(--navy)}
+#stuV .tag.ex{background:#fbe9e7;border-color:#f0c4be;color:#b4423a}
+#stuV .ab.off{color:#b4423a;border-color:#f0c4be}
+#stuV .ab.on-act{color:#1f7a4d;border-color:#bfe0cc}
+#stuV .sc.exs{background:#e9e7e3;border-color:#d3cfc8}
+#stuV .sc.exs .sc-main:hover{background:#e2dfda}
+#stuV .sc.exs .sc-av{filter:grayscale(1);opacity:.55}
+#stuV .sc.exs .sc-t b,.sc.exs .sc-t small{color:#7d776f}
+#stuV .sc.exs .sd b{color:#6d675f}
+#stuV .sc.exs .sc-drawer{border-top-color:#d3cfc8}
+@media (max-width:900px){
+  #stuV .cls-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #stuV .cls-tile{min-height:158px;padding:15px 14px 13px}
+  #stuV .cls-tile.all{grid-column:1/-1;min-height:0;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px 14px}
+  #stuV .cls-tile.all .ct-ic{margin:0}#stuV .cls-tile.all .ct-n.txt{margin:0;padding:0;font-size:22px}
+  #stuV .cls-tile.all .ct-meta{flex-basis:100%;margin:0}
+  #stuV .ct-n{font-size:40px}#stuV .ct-go{opacity:1;transform:none}
+  #stuV .crumb{gap:10px;position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0}#stuV .crumb-t{order:3;flex-basis:100%}#stuV .sortbox{margin-left:auto}
+  #stuV .sc-tags .tag:not(.cls):not(.ex){display:none}
+  #stuV .sd-grid{grid-template-columns:1fr 1fr}
+  #stuV .search{flex-basis:100%;max-width:none}
+}
 .wrap{max-width:860px;margin:0 auto}
 .greet{padding:0 0 28px;border-bottom:1px solid var(--ink)}
 .kick{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 14px;text-transform:uppercase;letter-spacing:.08em}
@@ -293,10 +510,10 @@ dialog h3 i{font-size:15px;color:var(--accent)}
     <nav class="nav">
       <div class="cap">Workspace</div>
       <button class="nb on" data-v="home"><i class="fa-solid fa-house"></i>Home</button>
-      <button class="nb" data-v="adm"><i class="fa-solid fa-user-plus"></i>Admission</button>
-      <button class="nb" data-v="stu"><i class="fa-solid fa-user-graduate"></i>My students</button>
+      <button class="nb" data-v="stu"><i class="fa-solid fa-user-graduate"></i>Students</button>
       <button class="nb" data-v="receipt"><i class="fa-solid fa-receipt"></i>Fee receipt</button>
       <button class="nb" data-v="history"><i class="fa-solid fa-clock-rotate-left"></i>Fees history</button>
+      <button class="nb" data-v="status"><i class="fa-solid fa-chart-pie"></i>Fees status</button>
     </nav>
     <div class="me"><div class="av t-av"></div><div class="mi"><b class="t-name"></b><span class="t-id"></span></div></div>
     <div class="me-act">
@@ -326,33 +543,44 @@ dialog h3 i{font-size:15px;color:var(--accent)}
         </section>
         <div class="sec-t">Quick actions</div>
         <div class="tiles">
-          <button class="tile" data-v="adm" style="--c:#b4423a"><span class="no">01</span><span class="ti"><i class="fa-solid fa-user-plus"></i></span><h2>Student admission</h2><p>Enroll a new student into the register.</p><span class="go">Open form <i class="fa-solid fa-arrow-right"></i></span></button>
+          <button class="tile" data-v="stu" style="--c:#b4423a"><span class="no">01</span><span class="ti"><i class="fa-solid fa-user-graduate"></i></span><h2>Students</h2><p>Your students, new admissions and ex-students.</p><span class="go">Open students <i class="fa-solid fa-arrow-right"></i></span></button>
           <button class="tile" data-v="receipt" style="--c:#0e8a7c"><span class="no">02</span><span class="ti"><i class="fa-solid fa-receipt"></i></span><h2>Fees receipt</h2><p>Record a fee payment and issue the receipt.</p><span class="go">Collect fees <i class="fa-solid fa-arrow-right"></i></span></button>
-          <button class="tile" data-v="stu" style="--c:#7a5a12"><span class="no">04</span><span class="ti"><i class="fa-solid fa-user-graduate"></i></span><h2>My students</h2><p>Students you teach. Mark ex-students.</p><span class="go">View students <i class="fa-solid fa-arrow-right"></i></span></button>
           <button class="tile" data-v="history" style="--c:#2456c8"><span class="no">03</span><span class="ti"><i class="fa-solid fa-clock-rotate-left"></i></span><h2>Fees history</h2><p>Receipts you have collected, newest first.</p><span class="go">View history <i class="fa-solid fa-arrow-right"></i></span></button>
         </div>
       </div>
     </div>
     <div id="stuV" hidden>
       <div class="wrap">
-        <h1 class="mh">My students</h1>
-        <p class="sub" id="mStat">Loading…</p>
-        <div class="mbar">
-          <div class="inp"><i class="fa-solid fa-magnifying-glass"></i><input id="mQ" type="search" placeholder="Search name, ID, phone, class…" autocomplete="off"></div>
-          <select id="mF" aria-label="Status"><option value="all" selected>All</option><option value="active">Active</option><option value="ex">Ex-students</option></select>
-          <button class="mref" id="mRef" type="button" aria-label="Refresh"><i class="fa-solid fa-rotate"></i></button>
+        <header class="vh">
+          <div class="kick"><i class="fa-solid fa-user-graduate"></i>Registry</div>
+          <div class="vh-row">
+            <div><h1>My students</h1><p class="sub">Tap a class to see its students</p></div>
+            <button class="reg-btn" type="button" data-act="reg"><i class="fa-solid fa-user-plus"></i> Register student</button>
+          </div>
+        </header>
+        <div class="bar">
+          <button class="rf" id="mRef" type="button"><i class="fa-solid fa-rotate"></i> Refresh</button>
+          <div class="search">
+            <select id="mField" aria-label="Search field"><option value="*">All fields</option><option value="Student Name">Name</option><option value="Student ID">ID</option><option value="Student Contact No">Phone</option><option value="Guardian Name">Guardian</option><option value="Class">Class</option><option value="Batch">Batch</option><option value="Board">Board</option><option value="Subjects">Subjects</option></select>
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="mQ" type="search" placeholder="Search… (% = wildcard)" autocomplete="off">
+            <button class="s-clear" id="mClr" type="button" data-act="clear" aria-label="Clear search" hidden style="border:0;background:none;color:var(--muted)"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <label class="sortbox" style="margin-left:0"><i class="fa-solid fa-user-check"></i><select id="mF" aria-label="Student status"><option value="all" selected>All</option><option value="active">Active</option><option value="ex">Ex-students</option></select></label>
+          <span class="status" id="mStat"></span>
         </div>
-        <div id="mList"></div>
+        <div id="stuTools"></div>
+        <div id="stuBody"><div class="stu-empty"><i class="fa-solid fa-circle-notch fa-spin"></i></div></div>
       </div>
     </div>
   </main>
 
   <nav class="dock">
     <button class="nb on" data-v="home"><i class="fa-solid fa-house"></i>Home</button>
-    <button class="nb" data-v="adm"><i class="fa-solid fa-user-plus"></i>Admission</button>
     <button class="nb" data-v="stu"><i class="fa-solid fa-user-graduate"></i>Students</button>
     <button class="nb" data-v="receipt"><i class="fa-solid fa-receipt"></i>Receipt</button>
     <button class="nb" data-v="history"><i class="fa-solid fa-clock-rotate-left"></i>History</button>
+    <button class="nb" data-v="status"><i class="fa-solid fa-chart-pie"></i>Status</button>
   </nav>
 </section>
 
@@ -364,6 +592,88 @@ dialog h3 i{font-size:15px;color:var(--accent)}
   <div class="row"><button type="button" id="pwx"><i class="fa-solid fa-xmark"></i>Cancel</button><button class="btn" type="submit"><i class="fa-solid fa-floppy-disk"></i>Save</button></div>
 </form></dialog>
 
+<dialog id="regModal">
+  <form class="modal" id="regForm" method="dialog" autocomplete="off">
+    <div class="rg-hd"><button type="button" class="rg-back" id="rgBack" aria-label="Back"><i class="fa-solid fa-arrow-left"></i><span>Back</span></button><h2><i class="fa-solid fa-user-plus" style="font-size:15px;color:var(--accent)"></i><span>Register a student</span></h2></div>
+    <nav class="rg-tabs" id="rgTabs" role="tablist" aria-label="Register mode">
+      <button type="button" role="tab" class="on" data-mode="new" aria-selected="true"><i class="fa-solid fa-user-plus"></i>New student register</button>
+      <button type="button" role="tab" data-mode="add" aria-selected="false"><i class="fa-solid fa-circle-plus"></i>Add subject to existing student</button>
+    </nav>
+    <div class="grid">
+      <div class="addbar" id="rgAddBar" hidden></div>
+      <div class="rg-search" id="rgSearch" hidden>
+        <div class="field"><label>Find student — ID or name</label>
+          <div class="pf"><span class="px" id="rgSrchPx"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input id="rgSrch" placeholder="Type PP 26 0001 or student name" autocomplete="off"></div>
+          <div class="rg-sugg" id="rgSugg"></div></div>
+        <div class="rg-sstat" id="rgSStat"></div>
+      </div>
+      <div class="sec new-only"><i class="fa-solid fa-user-graduate"></i>Student</div>
+      <div class="field new-only"><label>Student ID <span class="req">*</span></label>
+        <div class="pf"><span class="px" id="rgIdPx"><i class="fa-solid fa-hashtag"></i></span>
+          <input name="Student ID" id="rgId" placeholder="Enter student ID" pattern="PP\s?\d{2}\s?\d{4}" required>
+          <button type="button" id="rgIdRef" title="Fetch next ID" aria-label="Fetch next ID"><i class="fa-solid fa-rotate"></i></button></div></div>
+      <div class="field new-only"><label>Admission date <span class="req">*</span></label><input type="date" name="Admission" required></div>
+      <div class="field new-only"><label>Student name <span class="req">*</span></label><input name="Name" placeholder="Full name" required></div>
+      <div class="field new-only"><label>Student contact no.</label>
+        <div class="pf"><span class="px">+91</span><input type="tel" inputmode="tel" name="Student Contact No" placeholder="Enter Student Contact No" pattern="[0-9\s]{10,15}"></div></div>
+
+      <div class="sec new-only"><i class="fa-solid fa-people-roof"></i>Guardian</div>
+      <div class="field new-only"><label>Guardian name <span class="req">*</span></label><input name="Parent" placeholder="Guardian's name" required></div>
+      <div class="field new-only"><label>Guardian phone <span class="req">*</span></label>
+        <div class="pf"><span class="px">+91</span><input type="tel" inputmode="tel" name="Guardian Phone" placeholder="Enter Guardian Phone" pattern="[0-9\s]{10,15}" required></div></div>
+      <div class="field full new-only"><label>Optional secondary Phone no.</label>
+        <div class="pf"><span class="px">+91</span><input type="tel" inputmode="tel" name="Student Phone" placeholder="optional no." pattern="[0-9\s]{10,15}"></div></div>
+
+      <div class="sec after-pick"><i class="fa-solid fa-book-open-reader"></i>Course</div>
+      <div class="field after-pick"><label>Class <span class="req">*</span></label>
+        <select name="Class" id="rgClass" required><option value="" disabled selected>Select class</option>
+          <option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option>
+          <option>Class 11 - Science</option><option>Class 12 - Science</option><option>JEE</option><option>NEET</option></select></div>
+      <div class="field new-only after-pick"><label>Batch <span class="req">*</span></label>
+        <select name="Batch" required><option value="" disabled selected>Select batch</option>
+          <option>Morning</option><option>Afternoon</option><option>Evening</option><option>Weekend</option></select></div>
+      <div class="field after-pick" id="rgBoardF"><label>Board <span class="req">*</span></label>
+        <select name="Board" id="rgBoard" required><option value="" disabled selected>Select board</option>
+          <option>CBSE</option><option>ICSE/ISC</option><option>WBBSE/WBCHSE</option></select></div>
+      <div class="field totalfee after-pick"><label>Total monthly fee (₹)</label>
+        <div class="pf"><span class="px">₹</span><input type="number" name="Monthly Fee" id="rgTotal" placeholder="0" readonly tabindex="-1" title="Sum of the subject fees"></div></div>
+      <div class="field full after-pick"><label>Subjects <span class="req">*</span></label>
+        <div class="msel" id="rgMsel">
+          <button type="button" class="msel-btn" id="rgSubBtn"><span id="rgSubTxt" class="ph">Select subjects</span><i class="fa-solid fa-chevron-down"></i></button>
+          <div class="msel-panel" id="rgSubPanel"></div>
+        </div>
+        <div class="chips" id="rgChips"></div>
+        <input type="hidden" name="Subjects" id="rgSubHidden"></div>
+      <div class="field full after-pick"><label>Fee per subject (₹) <span class="req">*</span></label>
+        <div class="feerows" id="rgFeeRows"><div class="feerows-empty">Select subjects to set fees</div></div>
+        <input type="hidden" name="Fees Structure" id="rgFeesHidden"></div>
+
+      <div class="sec after-pick"><i class="fa-solid fa-shield-halved"></i>Recorded by</div>
+      <div class="field full after-pick"><label>Teacher <span class="req">*</span> <span class="tid-note">· your login</span></label>
+        <select name="Teacher ID" id="rgTid" required style="background:var(--bg);color:var(--muted)"></select></div>
+    </div>
+    <div class="msg" id="rgMsg"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" type="button" onclick="document.getElementById('regModal').close()"><i class="fa-solid fa-xmark"></i> Cancel</button>
+      <button class="btn after-pick" type="submit" id="rgSave"><i class="fa-solid fa-user-plus"></i> <span id="rgSaveLbl">Enroll student</span></button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dupModal">
+  <form class="modal" method="dialog" onsubmit="return false">
+    <h2><i class="fa-solid fa-user-check" style="font-size:15px;color:var(--accent)"></i><span>Student already exists</span></h2>
+    <p class="dup-body" id="dupBody"></p>
+    <div class="dup-info" id="dupInfo"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" type="button" id="dupCancel">Cancel</button>
+      <button class="btn ghost" type="button" id="dupNew">Save as new student</button>
+      <button class="btn" type="button" id="dupAdd"><i class="fa-solid fa-plus"></i> Add another subject</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="lo"><form method="dialog">
   <h3><i class="fa-solid fa-right-from-bracket"></i>Log out?</h3>
   <p style="margin:0;color:var(--muted);font-size:14.5px">You will need to sign in again to continue.</p>
@@ -372,7 +682,7 @@ dialog h3 i{font-size:15px;color:var(--accent)}
 
 <script>
 const AUTH_URL = "https://script.google.com/macros/s/AKfycbyt5A6RzCpt8M4mrs_QC-Mhy0AEEzsQC5kP7R7Z_nvkJoKhnGNOauBidvI89k1AfyOL/exec";   // Apps Script login web app (Auth.gs)
-const DOCS = { fee: 'doc-fee', adm: 'doc-adm' };
+const DOCS = { fee: 'doc-fee', stat: 'doc-stat' };
 const $ = id => document.getElementById(id);
 const $$ = s => document.querySelectorAll(s);
 let S = null, frames = {};
@@ -425,40 +735,61 @@ function enter(s) {
   $('today').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   try { history.replaceState({ v: 'home' }, ''); } catch (e) {}
   curV = null; go('home', true);
+  setTimeout(() => { try { loadMine_(); } catch (e) {} }, 300);   // warm the students cache
 }
 let toastT;
 function toast(msg, icon) {
+  const t = $('toast'), err = /exclamation|xmark|ban/.test(icon || '');
   $('toastTxt').textContent = msg;
-  $('toast').querySelector('i').className = 'fa-solid ' + (icon || 'fa-circle-check');
-  $('toast').classList.add('show');
-  clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.remove('show'), 2600);
+  t.querySelector('i').className = 'fa-solid ' + (icon || 'fa-circle-check');
+  t.classList.toggle('err', err);
+  /* top layer: shows ABOVE open dialogs/modals instead of hiding behind them */
+  try { if (!t.hasAttribute('popover')) t.setAttribute('popover', 'manual'); if (!t.matches(':popover-open')) t.showPopover(); } catch (e) {}
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { t.classList.remove('show'); try { t.hidePopover(); } catch (e) {} }, err ? 4200 : 2600);
 }
 function leave(msg) {
   sessionStorage.removeItem('tp'); Object.values(frames).forEach(f => f.remove()); frames = {};
-  S = null; MINE = []; window.TEACHER = null; $('app').hidden = true; $('login').hidden = false;
+  try { localStorage.removeItem(mineKey_()); } catch (e) {} LAYERS.length = 0; $$('dialog[open]').forEach(d => { try { d.close(); } catch (e) {} }); S = null; MINE = []; mineAt = 0; window.TEACHER = null; $('app').hidden = true; $('login').hidden = false;
   $('lpw').value = ''; mode('in'); $('msg').textContent = msg || '';
 }
 function frame(key) {
   if (frames[key]) return frames[key];
   const raw = $(DOCS[key]).textContent.replace(/<\\\/script/gi, '<' + '/script').replace(/<\\!--/g, '<' + '!--');
-  const inj = '<scr' + 'ipt>window.TEACHER=' + JSON.stringify(window.TEACHER).replace(/</g, '\\u003c') + ';</scr' + 'ipt>';
+  const inj = '<scr' + 'ipt>window.TEACHER=' + JSON.stringify(window.TEACHER).replace(/</g, '\\u003c') + ';window.FEE_ADMIN=false;</scr' + 'ipt>';
   const f = document.createElement('iframe');
   f.title = key; f.srcdoc = raw.replace('<head>', '<head>' + inj);
   $('stage').appendChild(f);
   return frames[key] = f;
 }
+/* Back-button layers: dialogs and an open class each own one history entry, so the phone back button closes the top-most thing first. */
+const LAYERS = []; let SKIP_POP = 0;
+function layerPush(id, fn) {
+  if (LAYERS.some(l => l.id === id)) return;
+  LAYERS.push({ id, fn });
+  try { history.pushState({ L: id }, ''); } catch (e) {}
+}
+function layerDrop(id) {                       // closed from the UI, not by back
+  const i = LAYERS.findIndex(l => l.id === id);
+  if (i < 0) return;
+  const top = i === LAYERS.length - 1;
+  LAYERS.splice(i, 1);
+  if (top) { SKIP_POP++; try { history.back(); } catch (e) { SKIP_POP--; } }
+}
 let curV = null;
 function go(v, fromPop) {
   if (!fromPop && S && v !== curV) {
+    LAYERS.length = 0;                         // stale layers die with the screen
     // phone back button: each screen change = one history entry
     try { history.pushState({ v: v }, ''); } catch (e) {}
   }
   curV = v;
-  $$('.nb').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  $$('.nb').forEach(b => b.classList.toggle('on', b.dataset.v === (v === 'adm' ? 'stu' : v)));
   $('home').hidden = v !== 'home';
   $('stuV').hidden = v !== 'stu';
   if (v === 'stu') loadMine_();
-  const need = { adm: 'adm', receipt: 'fee', history: 'fee' }[v];
+  const need = { receipt: 'fee', history: 'fee', status: 'stat' }[v];
   Object.entries(frames).forEach(([k, f]) => f.hidden = k !== need);
   if (!need) return;
   const f = frame(need); f.hidden = false;
@@ -469,62 +800,527 @@ function go(v, fromPop) {
 }
 $$('[data-v]').forEach(b => b.addEventListener('click', () => go(b.dataset.v)));
 
-/* ---------- MY STUDENTS (only students whose teacher_id includes me) ---------- */
-const STU_API = "https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec";
+/* ---------- STUDENTS (class cards -> list; only students whose teacher_id includes me) ---------- */
+const STU_API = "https://script.google.com/macros/s/AKfycbx1T1vHcHRRqfTDvqGvF3_0GCFxeGfX7NGWEgusqW071W3GREAhU9i9JI_MSNbYyjuH/exec";
 let MINE = [], mineBusy = false;
+const MUI = { cls: null, sort: 'name', open: new Set(), anim: true, html: '', tools: '' };
+const MCOL = ['#b4423a', '#0e8a7c', '#2456c8', '#8f6a12', '#7a3b8f', '#1f7a4d'];
 const mEsc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const mActive = s => { const v = s['Active Status']; return !(v === false || /^(false|no|n|0|inactive|ex|ex-student|left)$/i.test(String(v == null ? '' : v).trim())); };
+const ROMAN_ = { i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9, x: 10, xi: 11, xii: 12 };
+const mNorm = v => String(v == null ? '' : v).toLowerCase().replace(/\s+/g, ' ').trim();
+function clsPure_(label) { const x = mNorm(label).replace(/^class\s*/, ''); if (/^\d{1,2}$/.test(x)) return +x; return ROMAN_[x] || null; }
+function clsIcon_(n) { if (n == null) return 'fa-school'; if (n <= 0) return 'fa-baby'; if (n <= 2) return 'fa-pencil'; if (n <= 4) return 'fa-book-open'; if (n <= 6) return 'fa-calculator'; if (n <= 8) return 'fa-flask'; if (n === 9) return 'fa-atom'; if (n === 10) return 'fa-award'; if (n === 11) return 'fa-microscope'; if (n === 12) return 'fa-graduation-cap'; return 'fa-user-graduate'; }
+const mInit = n => String(n || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || '?';
+const mUniq = arr => [...new Set(arr.map(x => String(x == null ? '' : x).trim()).filter(Boolean))];
+const mPlural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+const mFeeChips = s => { const sb = String(s['My Subjects'] || '').split(',').map(x => x.trim()).filter(Boolean), fe = String(s['My Fees'] == null ? '' : s['My Fees']).split(',').map(x => x.trim()); return sb.map((x, i) => '<span class="subj-chip">' + mEsc(x) + (fe[i] && /^\d/.test(fe[i]) ? ' \u00B7 <b>\u20B9' + Number(fe[i]).toLocaleString('en-IN') + '</b>' : '') + '</span>').join(''); };
+const mChips = v => String(v || '').split(',').map(x => x.trim()).filter(Boolean).map(x => '<span class="subj-chip">' + mEsc(x) + '</span>').join('');
+function mVisible() { const f = $('mF').value; return f === 'all' ? MINE : MINE.filter(s => (f === 'active') === mActive(s)); }
+function mGroups() {
+  const map = new Map();
+  mVisible().forEach(s => {
+    const label = String(s['Class'] == null ? '' : s['Class']).trim() || 'Unassigned', pure = clsPure_(label), key = pure != null ? 'n' + pure : mNorm(label);
+    if (!map.has(key)) map.set(key, { key, label, n: pure, list: [] });
+    map.get(key).list.push(s);
+  });
+  return [...map.values()].sort((a, b) => (a.n == null) - (b.n == null) || (a.n || 0) - (b.n || 0) || a.label.localeCompare(b.label));
+}
+function mSearch(list, field, q) {
+  const re = q.includes('%') ? new RegExp(q.split('%').map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*'), 'i') : null;
+  const keys = field === '*' ? ['Student Name', 'Student ID', 'Student Contact No', 'Guardian Name', 'Class', 'Batch', 'Board', 'Subjects', 'My Subjects'] : [field];
+  const lq = q.toLowerCase();
+  return list.filter(s => keys.some(k => { const v = String(s[k] == null ? '' : s[k]); return re ? re.test(v) : v.toLowerCase().includes(lq); }));
+}
+function mMsg(html) { $('stuTools').innerHTML = ''; $('stuBody').innerHTML = html; MUI.html = ''; MUI.tools = ''; }
+/* cache: show saved list instantly, refresh in background only when older than MINE_TTL (Refresh button always forces) */
+const MINE_TTL = 120000;
+let mineAt = 0;
+const mineKey_ = () => 'tp_mine2_' + (S ? S.id : '');
+function mineCacheLoad_() {
+  try { const o = JSON.parse(localStorage.getItem(mineKey_()) || 'null'); if (o && Array.isArray(o.s)) { MINE = o.s; mineAt = o.t || 0; return true; } } catch (e) {}
+  return false;
+}
+function mineCacheSave_() { try { localStorage.setItem(mineKey_(), JSON.stringify({ s: MINE, t: mineAt })); } catch (e) {} }
 async function loadMine_(force) {
   if (!S || mineBusy) return;
-  mineBusy = true; $('mStat').textContent = 'Loading…';
+  if (!MINE.length && mineCacheLoad_()) renderMine_();            // instant paint from cache
+  if (!force && MINE.length && Date.now() - mineAt < MINE_TTL) { renderMine_(); return; }   // fresh enough: no network
+  mineBusy = true;
+  const had = MINE.length > 0;
+  $('mStat').textContent = had ? 'Updating\u2026' : 'Loading\u2026';
   try {
     const r = await fetch(STU_API + '?action=myStudents&teacherId=' + encodeURIComponent(S.id) + '&_=' + Date.now());
     const j = await r.json();
     if (j.error) throw new Error(j.error);
-    MINE = j.students || [];
+    MINE = j.students || []; mineAt = Date.now(); mineCacheSave_();
     renderMine_();
   } catch (e) {
-    $('mStat').textContent = 'Could not load students';
-    $('mList').innerHTML = '<div class="m-empty">Check connection and tap refresh.</div>';
+    if (had) { renderMine_(); $('mStat').textContent = 'Offline \u00B7 showing saved list'; }
+    else { $('mStat').textContent = 'Refresh failed'; mMsg('<div class="stu-empty" style="color:var(--err)"><i class="fa-solid fa-triangle-exclamation"></i> Could not load students. Tap Refresh.</div>'); }
   } finally { mineBusy = false; }
 }
+function mCard(s, showCls) {
+  const id = String(s['Student ID'] || ''), phone = String(s['Student Contact No'] || '').trim(), dg = phone.replace(/\D/g, ''), wa = dg.length === 10 ? '91' + dg : dg;
+  const on = mActive(s), open = MUI.open.has(id) ? ' open' : '';
+  const f = (ic, k, v) => '<div class="sd"><span><i class="fa-solid ' + ic + '"></i>' + k + '</span><b>' + (v ? mEsc(v) : '\u2014') + '</b></div>';
+  return '<article class="sc' + open + (on ? '' : ' exs') + '" data-id="' + mEsc(id) + '">' +
+    '<button class="sc-main" type="button" data-act="toggle" aria-expanded="' + (open ? 'true' : 'false') + '"><span class="sc-av">' + mEsc(mInit(s['Student Name'])) + '</span>' +
+    '<span class="sc-t"><b>' + mEsc(s['Student Name'] || 'Unnamed') + '</b><small>' + mEsc(id) + (s['Batch'] ? ' \u00B7 ' + mEsc(s['Batch']) : '') + '</small></span>' +
+    '<span class="sc-tags">' + (showCls && s['Class'] ? '<span class="tag cls"><i class="fa-solid ' + clsIcon_(clsPure_(s['Class'])) + '"></i>' + mEsc(s['Class']) + '</span>' : '') +
+    (s['Board'] ? '<span class="tag">' + mEsc(s['Board']) + '</span>' : '') + (on ? '' : '<span class="tag ex">Ex</span>') + '</span><i class="fa-solid fa-chevron-down sc-chev"></i></button>' +
+    '<div class="sc-drawer"><div class="sc-in"><div class="sd-grid">' + f('fa-phone', 'Phone', phone) + f('fa-user-shield', 'Guardian', s['Guardian Name']) + f('fa-calendar-check', 'Admitted', String(s['Admission Date'] || '').slice(0, 10)) +
+    f('fa-layer-group', 'Batch', s['Batch']) + f('fa-building-columns', 'Board', s['Board']) + f('fa-user-check', 'Status', on ? 'Active' : 'Ex-student') + (on ? '' : f('fa-calendar-xmark', 'Deactivated', String(s['Deactive Date'] || '').slice(0, 10))) + (s['My Fee Total'] != null ? f('fa-coins', 'My monthly fee', '\u20B9' + Number(s['My Fee Total']).toLocaleString('en-IN')) : '') + '</div>' +
+    (s['My Subjects'] ? '<div class="sd-subj"><span><i class="fa-solid fa-book"></i>My subjects &amp; fees</span><div>' + mFeeChips(s) + '</div></div>' : '') +
+    '<div class="sc-act">' + (dg ? '<a class="ab" href="tel:' + mEsc(phone.replace(/[^\d+]/g, '')) + '"><i class="fa-solid fa-phone"></i>Call</a><a class="ab wa" href="https://wa.me/' + mEsc(wa) + '" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>' : '') +
+    '<button class="ab ' + (on ? 'off' : 'on-act') + '" type="button" data-act="active" data-v="' + (on ? 0 : 1) + '"><i class="fa-solid ' + (on ? 'fa-user-slash' : 'fa-user-check') + '"></i>' + (on ? 'Mark ex-student' : 'Mark active') + '</button></div></div></div></article>';
+}
 function renderMine_() {
-  const f = $('mF').value, q = $('mQ').value.trim().toLowerCase();
+  const root = $('stuBody'), tools = $('stuTools'), q = $('mQ').value.trim(), field = $('mField').value;
+  $('mClr').hidden = !q;
   const nAct = MINE.filter(mActive).length, nEx = MINE.length - nAct;
-  let rows = MINE.filter(s => f === 'all' || (f === 'active') === mActive(s));
-  if (q) rows = rows.filter(s => ['Student Name', 'Student ID', 'Student Contact No', 'Class', 'Batch', 'Board', 'My Subjects', 'Guardian Name'].some(k => String(s[k] || '').toLowerCase().includes(q)));
-  rows = rows.slice().sort((a, b) => String(a['Student Name'] || '').localeCompare(String(b['Student Name'] || ''), undefined, { sensitivity: 'base' }));
-  $('mStat').textContent = nAct + ' active · ' + nEx + ' ex-student' + (nEx === 1 ? '' : 's') + (rows.length !== MINE.length ? ' · showing ' + rows.length : '');
-  $('mList').innerHTML = rows.length ? rows.map(s => {
-    const on = mActive(s), ph = String(s['Student Contact No'] || '').trim(), dg = ph.replace(/\D/g, ''), wa = dg.length === 10 ? '91' + dg : dg;
-    const id = mEsc(s['Student ID']);
-    return '<article class="mc' + (on ? '' : ' ex') + '" data-id="' + id + '"><div class="mc-h"><span class="mc-av">' + mEsc((s['Student Name'] || '?').trim().charAt(0).toUpperCase()) + '</span>' +
-      '<span class="mc-t"><b>' + mEsc(s['Student Name'] || 'Unnamed') + '</b><small>' + id + '</small></span>' +
-      '<span class="mc-tag ' + (on ? 'ok' : 'ex') + '">' + (on ? 'Active' : 'Ex-student') + '</span></div>' +
-      '<div class="mc-r"><span>Class <b>' + mEsc(s['Class'] || '—') + '</b></span><span>Batch <b>' + mEsc(s['Batch'] || '—') + '</b></span><span>Board <b>' + mEsc(s['Board'] || '—') + '</b></span><span>My subjects <b>' + mEsc(s['My Subjects'] || '—') + '</b></span></div>' +
-      '<div class="mc-a">' + (dg ? '<a href="tel:' + mEsc(ph.replace(/[^\d+]/g, '')) + '"><i class="fa-solid fa-phone"></i>Call</a><a href="https://wa.me/' + mEsc(wa) + '" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>' : '') +
-      '<button class="' + (on ? 'off' : 'on') + '" data-id="' + id + '" data-v="' + (on ? 0 : 1) + '"><i class="fa-solid ' + (on ? 'fa-user-slash' : 'fa-user-check') + '"></i>' + (on ? 'Mark ex-student' : 'Mark active') + '</button></div></article>';
-  }).join('') : '<div class="m-empty">' + (MINE.length ? 'No students match.' : 'No students are assigned to your Teacher ID yet.') + '</div>';
+  if (!MINE.length) { mMsg('<div class="stu-empty"><i class="fa-solid fa-user-graduate"></i> No students are assigned to your Teacher ID yet.</div>'); $('mStat').textContent = '0 students'; return; }
+  const vis = mVisible();
+  if (!vis.length) { mMsg('<div class="stu-empty"><i class="fa-solid fa-user-graduate"></i> ' + ($('mF').value === 'ex' ? 'No ex-students.' : 'No active students.') + '</div>'); $('mStat').textContent = nAct + ' active \u00B7 ' + nEx + ' ex'; return; }
+  const groups = mGroups();
+  if (MUI.cls && MUI.cls !== '*' && !groups.some(g => g.key === MUI.cls)) MUI.cls = null;
+  const grp = groups.find(g => g.key === MUI.cls), listMode = MUI.cls !== null || !!q;
+  let html = '', th = '';
+  if (!listMode) {
+    html = '<div class="cls-grid"><button class="cls-tile all" type="button" data-act="cls" data-k="*" style="--c:#0b1745;--i:0"><span class="ct-ic"><i class="fa-solid fa-users"></i></span><span class="ct-n txt">All my students</span>' +
+      '<span class="ct-meta"><b>' + vis.length + '</b> across ' + groups.length + (groups.length === 1 ? ' class' : ' classes') + (nEx ? ' \u00B7 ' + nEx + ' ex' : '') + '</span><i class="fa-solid fa-arrow-right ct-go"></i></button>' +
+      groups.map((g, i) => {
+        const bs = mUniq(g.list.map(s => s['Batch'])), shown = bs.slice(0, 3).map(b => '<span class="mini">' + mEsc(b) + '</span>').join(''), more = bs.length > 3 ? '<span class="mini">+' + (bs.length - 3) + '</span>' : '';
+        return '<button class="cls-tile" type="button" data-act="cls" data-k="' + mEsc(g.key) + '" style="--c:' + MCOL[i % MCOL.length] + ';--i:' + (i + 1) + '"><span class="ct-ic"><i class="fa-solid ' + clsIcon_(g.n) + '"></i></span>' +
+          (g.n != null ? '<span class="ct-k">Class</span>' : '') + '<span class="ct-n' + (g.n != null ? '' : ' txt') + '">' + mEsc(g.n != null ? g.n : g.label) + '</span>' +
+          '<span class="ct-meta"><b>' + g.list.length + '</b> student' + (g.list.length === 1 ? '' : 's') + '</span><span class="ct-batches">' + shown + more + '</span><i class="fa-solid fa-arrow-right ct-go"></i></button>';
+      }).join('') + '</div>';
+    $('mStat').textContent = nAct + ' active \u00B7 ' + nEx + ' ex \u00B7 ' + groups.length + (groups.length === 1 ? ' class' : ' classes');
+  } else {
+    const scope = grp ? grp.list : vis;
+    let hits = q ? mSearch(scope, field, q) : scope.slice();
+    const so = MUI.sort, byName = (a, b) => String(a['Student Name'] || '').localeCompare(String(b['Student Name'] || ''), undefined, { sensitivity: 'base' });
+    if (so === 'name') hits.sort(byName);
+    else if (so === 'new') hits.sort((a, b) => String(b['Student ID']).localeCompare(String(a['Student ID']), undefined, { numeric: true }));
+    else if (so === 'old') hits.sort((a, b) => String(a['Student ID']).localeCompare(String(b['Student ID']), undefined, { numeric: true }));
+    else if (so === 'batch' || so === 'board') { const k = so === 'batch' ? 'Batch' : 'Board'; hits.sort((a, b) => String(a[k] || '').localeCompare(String(b[k] || ''), undefined, { sensitivity: 'base', numeric: true }) || byName(a, b)); }
+    const title = grp ? (grp.n != null ? 'Class ' + grp.n : grp.label) : (q && MUI.cls === null ? 'Search results' : 'All my students');
+    const icon = grp ? clsIcon_(grp.n) : (q && MUI.cls === null ? 'fa-magnifying-glass' : 'fa-users');
+    th = '<div class="crumb"><button class="back" type="button" data-act="back"><i class="fa-solid fa-arrow-left"></i><span>Classes</span></button>' +
+      '<div class="crumb-t"><span class="ct-ic sm"><i class="fa-solid ' + icon + '"></i></span><div><h2>' + mEsc(title) + '</h2><small>' + mPlural(hits.length, 'student') + '</small></div></div>' +
+      '<label class="sortbox"><i class="fa-solid fa-arrow-down-wide-short"></i><select id="mSort" aria-label="Sort">' + [['name', 'Name'], ['new', 'Newest first'], ['old', 'Oldest first'], ['board', 'Board'], ['batch', 'Batch']].map(([v, l]) => '<option value="' + v + '"' + (so === v ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></label></div>';
+    html = hits.length ? '<div class="stu-list">' + hits.map(s => mCard(s, !grp)).join('') + '</div>'
+      : '<div class="stu-empty"><i class="fa-regular fa-face-frown"></i> ' + (q ? 'No student matches \u201C' + mEsc(q) + '\u201D.' : 'No students here.') + '</div>';
+    $('mStat').textContent = q ? hits.length + ' of ' + scope.length + ' students' : scope.length + ' students';
+  }
+  if (th !== MUI.tools) { tools.innerHTML = th; MUI.tools = th; }
+  if (html !== MUI.html) { root.classList.toggle('anim', MUI.anim); root.innerHTML = html; MUI.html = html; }
+  MUI.anim = false;
 }
 async function setMineActive_(id, val) {
   const s = MINE.find(x => String(x['Student ID']) === String(id)); if (!s) return;
-  if (!val && !confirm('Mark ' + (s['Student Name'] || id) + ' as ex-student? Nothing is deleted; you can undo it.')) return;
-  const before = s['Active Status']; s['Active Status'] = val; renderMine_();
+  if (!confirm(val ? 'Mark ' + (s['Student Name'] || id) + ' as ACTIVE again?' : 'Mark ' + (s['Student Name'] || id) + ' as EX-STUDENT? Today\'s date is saved as the deactivated date (nothing is deleted).')) return;
+  const before = s['Active Status'], beforeD = s['Deactive Date']; s['Active Status'] = val; s['Deactive Date'] = val ? '' : (()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})(); renderMine_();
   try {
     const r = await fetch(STU_API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'setActive', 'Student ID': id, active: val, teacherId: S.id }) });
     const j = await r.json();
     if (!j.success) throw new Error(j.error || 'failed');
-    toast(val ? 'Marked active' : 'Marked ex-student');
+    mineCacheSave_(); toast(val ? 'Marked active' : 'Marked ex-student');
   } catch (e) {
-    s['Active Status'] = before; renderMine_(); toast('Could not save: ' + (e.message || 'error'), 'fa-triangle-exclamation');
+    s['Active Status'] = before; s['Deactive Date'] = beforeD; mineCacheSave_(); renderMine_(); toast('Could not save: ' + (e.message || 'error'), 'fa-triangle-exclamation');
   }
 }
-$('mF').addEventListener('change', renderMine_);
-$('mQ').addEventListener('input', renderMine_);
-$('mRef').addEventListener('click', () => loadMine_(true));
-$('mList').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (b) setMineActive_(b.dataset.id, b.dataset.v === '1'); });
+  /* ═════ Register student (dialog; ported from teacher panel admission form) ═════ */
+  const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbyiYCckDlSoJDjQAH9Ddl7hNc63RyAucqmJn-YdEuG49BRf5cQJWjJzaad82l5gAMgyIA/exec";
+  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbx1T1vHcHRRqfTDvqGvF3_0GCFxeGfX7NGWEgusqW071W3GREAhU9i9JI_MSNbYyjuH/exec";
+  const NO_BOARD_ = ['JEE','NEET'];
+  const DEFAULT_SUBJECTS_ = ['Physics','Chemistry','Biology - Botany','Biology - Zoology','Mathematics','English'];
+  const SUBJ_CACHE_KEY_ = 'pp_subjects_cache_v1', SUBJ_TTL_ = 24*60*60*1000;
+  const rg = {form:null, subjects:[], checks:[], cache:{}, tok:0, lastId:'', idBusy:false, idFocus:false, saving:false, sq:0, st:null, timer:null, pre:false, fees:{}, add:null, last:[], dup:null, force:false, mode:'new'};
+
+  function rgFetch_(url, opt={}, ms=8000){
+    const c = new AbortController(), t = setTimeout(()=>c.abort(), ms);
+    return fetch(url, {...opt, signal:c.signal}).finally(()=>clearTimeout(t));
+  }
+  function rgMsg_(t, ok){ const m=$('rgMsg'); m.textContent=t||''; m.classList.toggle('ok', !!ok); }
+  function rgKey_(c,b){ c=(c||'').trim(); return c+'|'+(NO_BOARD_.includes(c)?'':(b||'')); }
+  function rgStore_(k,l){ if(!l||!l.length) return; rg.cache[k]={subjects:l,ts:Date.now()}; try{localStorage.setItem(SUBJ_CACHE_KEY_,JSON.stringify(rg.cache));}catch(e){} }
+  function rgEsc_(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function rgBuild_(list){
+    rg.last = list;
+    const prev = new Set(rg.subjects), panel = $('rgSubPanel');
+    panel.innerHTML = '';
+    list.forEach(s=>{
+      const l = document.createElement('label'); l.className='msel-opt';
+      const taken = !!(rg.add && rg.add.keys.has(rgSKey_(s)));
+      l.innerHTML = `<input type="checkbox" value="${rgEsc_(s)}"><span>${rgEsc_(s)}${taken ? ' (already added)' : ''}</span>`;
+      const cb = l.querySelector('input');
+      if(taken){ cb.disabled = true; l.classList.add('taken'); } else if(prev.has(s)) cb.checked = true;
+      cb.addEventListener('change', rgSync_); panel.appendChild(l);
+    });
+    rg.checks = [...panel.querySelectorAll('input')];
+    rgSync_();
+  }
+  function rgSync_(){
+    rg.subjects = rg.checks.filter(c=>c.checked).map(c=>c.value);
+    $('rgSubHidden').value = rg.subjects.join(', ');
+    const t = $('rgSubTxt'); t.textContent = rg.subjects.length ? rg.subjects.join(', ') : 'Select subjects';
+    t.classList.toggle('ph', !rg.subjects.length);
+    const ch = $('rgChips'); ch.innerHTML = '';
+    rg.subjects.forEach(s=>{
+      const c = document.createElement('span'); c.className='rchip';
+      c.innerHTML = `${rgEsc_(s)} <button type="button" aria-label="remove"><i class="fa-solid fa-xmark"></i></button>`;
+      c.querySelector('button').onclick = ()=>{ rg.checks.forEach(x=>{ if(x.value===s) x.checked=false; }); rgSync_(); };
+      ch.appendChild(c);
+    });
+    rgFeeRows_();
+  }
+  async function rgRemote_(cls, board, tries=3){
+    let last;
+    for(let i=0;i<tries;i++){
+      try{
+        const r = await rgFetch_(`${SUBJECT_URL}?action=getSubjects&class=${encodeURIComponent(cls)}&board=${encodeURIComponent(board||'')}`, {}, 10000);
+        const j = await r.json();
+        if(j.result==='success' && Array.isArray(j.subjects)) return j.subjects;
+        throw new Error(j.error||'Bad response');
+      }catch(e){ last=e; if(i<tries-1) await new Promise(r=>setTimeout(r,800*(i+1))); }
+    }
+    throw last;
+  }
+  async function rgPrefetch_(){
+    if(rg.pre) return; rg.pre = true;
+    try{
+      const cs = [...$('rgClass').options].filter(o=>!o.disabled).map(o=>o.value);
+      const bs = [...$('rgBoard').options].filter(o=>!o.disabled).map(o=>o.value);
+      const jobs = [];
+      cs.forEach(c=>(NO_BOARD_.includes(c.trim())?['']:bs).forEach(b=>{
+        const k = rg.cache[rgKey_(c,b)]; if(!k || Date.now()-k.ts>SUBJ_TTL_) jobs.push([c,b]);
+      }));
+      const w = async()=>{ while(jobs.length){ const [c,b]=jobs.shift(); try{ rgStore_(rgKey_(c,b), await rgRemote_(c,b,2)); }catch(e){} } };
+      await Promise.all([w(),w(),w()]);
+    } finally { rg.pre = false; }
+  }
+  function rgBoardVis_(){
+    const nb = NO_BOARD_.includes($('rgClass').value.trim());
+    $('rgBoardF').style.display = nb ? 'none' : '';
+    $('rgBoard').required = !nb; if(nb) $('rgBoard').value = '';
+  }
+  async function rgLoadSubjects_(){
+    const cls = $('rgClass').value, board = $('rgBoard').value, nb = NO_BOARD_.includes(cls.trim());
+    const t = $('rgSubTxt'), panel = $('rgSubPanel');
+    if(!cls){ rgBuild_(DEFAULT_SUBJECTS_); return; }
+    if(!nb && !board){ rgBuild_([]); t.textContent='Select board first'; t.classList.add('ph'); return; }
+    const key = rgKey_(cls,board), my = ++rg.tok, c = rg.cache[key];
+    if(c && c.subjects && c.subjects.length){
+      rgBuild_(c.subjects);
+      if(Date.now()-c.ts>SUBJ_TTL_) rgRemote_(cls,board,1).then(l=>{ rgStore_(key,l); }).catch(()=>{});
+      return;
+    }
+    t.textContent='Loading subjects…'; t.classList.add('ph');
+    panel.innerHTML = '<div class="msel-skel"></div><div class="msel-skel"></div><div class="msel-skel"></div>';
+    try{
+      const l = await rgRemote_(cls,board,3); if(my!==rg.tok) return;
+      if(l.length){ rgStore_(key,l); rgBuild_(l); rgMsg_(''); }
+      else { panel.innerHTML=''; t.textContent='No subjects found'; }
+    }catch(e){
+      if(my!==rg.tok) return;
+      rgBuild_(DEFAULT_SUBJECTS_); rgMsg_('Offline — default subjects shown');
+    }
+  }
+  async function rgNextId_(force){
+    if(rg.add) return;   // ID locked to the existing student
+    if(!force && (rg.idFocus || rg.saving || rg.idBusy || !$('regModal').open)) return;
+    rg.idBusy = true;
+    const inp = $('rgId'), px = $('rgIdPx');
+    px.innerHTML = '<span class="rg-ring"></span>'; inp.placeholder = 'Fetching next ID…'; $('rgIdRef').classList.add('spin'); $('regModal').classList.add('idload');
+    try{
+      const r = await rgFetch_(`${STUDENT_DETAILS_URL}?action=nextId&t=${Date.now()}`, {}, 25000);
+      const j = await r.json();
+      if(j.result!=='success' || !j.id) throw new Error(j.error||'Bad response');
+      if(force || inp.value==='' || inp.value===rg.lastId) inp.value = j.id;
+      rg.lastId = j.id;
+    }catch(e){ if(force) rgMsg_('ID fetch failed: '+e.message); }
+    finally{ px.innerHTML='<i class="fa-solid fa-hashtag"></i>'; $('rgIdRef').classList.remove('spin'); $('regModal').classList.remove('idload'); inp.placeholder='Enter student ID'; rg.idBusy=false; }
+  }
+
+  /* ═════ Multi-subject: per-subject fees, duplicate alert, add-another-subject ═════ */
+  function rgSKey_(x){
+    const k = String(x||'').toLowerCase().replace(/[^a-z]/g,'');
+    return ({maths:'math',mathematics:'math',computerscience:'cs',computer:'cs',computers:'cs',comp:'cs',phy:'physics',chem:'chemistry',bio:'biology'})[k] || k;
+  }
+  function rgFeeRows_(){
+    const box = $('rgFeeRows'); box.innerHTML = '';
+    if(!rg.subjects.length){
+      box.innerHTML = '<div class="feerows-empty">Select subjects to set fees</div>';
+      rgTotal_(); return;
+    }
+    rg.subjects.forEach(s=>{
+      const row = document.createElement('div'); row.className = 'feerow';
+      const nm = document.createElement('span'); nm.textContent = s;
+      const w = document.createElement('span'); w.className = 'feein'; w.innerHTML = '<b>₹</b>';
+      const i = document.createElement('input');
+      i.type = 'number'; i.min = '0'; i.step = 'any'; i.placeholder = '0'; i.required = true;
+      i.setAttribute('inputmode','decimal'); i.setAttribute('aria-label','Fee for ' + s);
+      i.value = rg.fees[s] != null ? rg.fees[s] : '';
+      i.addEventListener('input', ()=>{ rg.fees[s] = i.value; rgTotal_(); });
+      w.appendChild(i); row.appendChild(nm); row.appendChild(w); box.appendChild(row);
+    });
+    rgTotal_();
+  }
+  function rgTotal_(){
+    $('rgFeesHidden').value = rg.subjects.map(s => (rg.fees[s]==null || rg.fees[s]==='') ? '' : String(Number(rg.fees[s]))).join(', ');
+    $('rgTotal').value = rg.subjects.length ? rg.subjects.reduce((t,s)=> t + (Number(rg.fees[s])||0), 0) : '';
+  }
+  function rgShowDup_(m){
+    rg.dup = m;
+    const row = (k,v)=>'<div><span>' + k + '</span><b>' + rgEsc_(v || '—') + '</b></div>';
+    const tch = [...new Set((m.teachers||[]).filter(Boolean))].join(', ');
+    const exS = m.active === false;
+    $('dupNew').style.display = exS ? 'none' : '';
+    $('dupBody').innerHTML = exS
+      ? '<b>' + rgEsc_(m.name) + '</b> (' + rgEsc_(m.id) + ') is an <b>EX-STUDENT</b>. New admission is not allowed. Add a subject to re-activate this student?'
+      : '<b>' + rgEsc_(m.name) + '</b> (' + rgEsc_(m.id) + ') is already registered. Do you want to add another subject?';
+    $('dupInfo').innerHTML = row('Class', m.class) + row('Current subjects', (m.subjects||[]).join(', ')) +
+      row('Status', m.active === false ? 'Ex-student' + (m.deactiveDate ? ' (since ' + String(m.deactiveDate).slice(0,10) + ')' : '') : 'Active') + row('Monthly fee', '₹' + (m.total || 0)) + (tch ? row('Teacher', tch) : '');
+    $('dupModal').showModal();
+  }
+  function rgEnterAdd_(m){
+    rg.add = {id:m.id, name:m.name, ex:(m.active === false), keys:new Set(m.active === false ? [] : (m.subjects||[]).map(rgSKey_))};  /* ex-student: old subjects stay selectable (rejoin) */
+    const inp = $('rgId'); inp.value = m.id; inp.readOnly = true; $('rgIdRef').disabled = true;
+    rg.checks.forEach(c=>{ if(rg.add.keys.has(rgSKey_(c.value))) c.checked = false; });
+    rgSync_(); rgBuild_(rg.last);
+    const bar = $('rgAddBar');
+    bar.innerHTML = '<i class="fa-solid fa-circle-plus lead"></i><div class="tx"><b>Adding a subject to ' + rgEsc_(m.name) + '</b> · ' + rgEsc_(m.id) +
+      '<small>Already has: ' + rgEsc_((m.subjects||[]).join(', ') || '—') + '. Pick the new subject and set its fee.</small>' + (m.active === false ? '<small style="color:#b4423a;font-weight:600">⚠ This is an EX-STUDENT. Pick any subject (old ones too) to re-enrol. They will be marked ACTIVE again.</small>' : '') + '</div>' +
+      '<button type="button" id="rgAddExit">Change student</button>';
+    bar.hidden = false;
+    $('rgAddExit').addEventListener('click', ()=>rgExitAdd_(true));
+    $('rgSaveLbl').textContent = 'Add subject'; rgMsg_('');
+    rgApplyMode_();
+    $('regModal').scrollTop = 0;
+  }
+  function rgExitAdd_(rebuild){
+    rg.add = null;
+    const inp = $('rgId'); inp.readOnly = false; $('rgIdRef').disabled = false;
+    const bar = $('rgAddBar'); bar.hidden = true; bar.innerHTML = '';
+    $('rgSaveLbl').textContent = rg.mode === 'add' ? 'Add subject' : 'Enroll student';
+    if(rebuild){ rgBuild_(rg.last); if(rg.mode !== 'add') rgNextId_(true); }
+    if(rg.mode === 'add' && rebuild) rgResetAdd_();      // back to the search box
+  }
+
+  /* ═════ Mode tabs (New student | Add subject to existing) + student search ═════ */
+  function rgApplyMode_(){
+    const m = $('regModal'), add = rg.mode === 'add';
+    m.classList.toggle('mode-add', add);
+    m.classList.toggle('await-pick', add && !rg.add);
+    $('rgTabs').querySelectorAll('button').forEach(b=>{
+      const on = b.dataset.mode === rg.mode;
+      b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    // fields only a brand-new student needs lose `required` while adding a subject
+    m.querySelectorAll('.new-only [required], .new-only [data-rq]').forEach(el=>{
+      if(!el.hasAttribute('data-rq') && el.required) el.setAttribute('data-rq','1');
+      el.required = !add && el.hasAttribute('data-rq');
+    });
+    $('rgSearch').hidden = !add || !!rg.add;
+    if(!rg.add) $('rgSaveLbl').textContent = add ? 'Add subject' : 'Enroll student';
+  }
+  function rgHideSugg_(){ const b = $('rgSugg'); b.classList.remove('show'); b.innerHTML = ''; }
+  function rgResetAdd_(){
+    $('rgSrch').value = ''; rgHideSugg_();
+    const st = $('rgSStat'); st.textContent = ''; st.className = 'rg-sstat';
+    rg.checks.forEach(c=>c.checked = false); rg.fees = {}; rgSync_();
+    rgApplyMode_();
+    setTimeout(()=>{ try{ $('rgSrch').focus(); }catch(e){} }, 60);
+  }
+  function rgSetMode_(mode, keep){
+    if(rg.mode === mode) return;
+    rg.mode = mode;
+    rgMsg_(''); try{ $('dupModal').close(); }catch(e){}
+    if(!keep){ rg.checks.forEach(c=>c.checked = false); rg.fees = {}; rgSync_(); }
+    if(mode === 'new'){
+      rgHideSugg_();
+      if(rg.add) rgExitAdd_(true); else rgNextId_(true);
+      rgApplyMode_();
+    } else {
+      rgApplyMode_();
+      if(!rg.add && !keep) rgResetAdd_();
+    }
+  }
+  function rgRenderSugg_(list){
+    const box = $('rgSugg'); box.innerHTML = '';
+    if(!list.length) box.innerHTML = '<div class="none">No matching students</div>';
+    list.forEach(s=>{
+      const it = document.createElement('div'); it.className = 'it';
+      const meta = [s.class, (s.subjects||[]).join(', ')].filter(Boolean).join(' · ');
+      if(s.active === false) it.style.background = '#e9e7e3';
+      it.innerHTML = '<b>' + rgEsc_(s.id) + ' — ' + rgEsc_(s.name) + (s.active === false ? ' <span style="color:#b4423a;font-size:11px;font-weight:600">· EX-STUDENT</span>' : ' <span style="color:#1f7a4d;font-size:11px;font-weight:600">· ACTIVE</span>') + '</b><small>' + rgEsc_(meta || '—') + '</small>';
+      it.addEventListener('mousedown', ev=>{ ev.preventDefault(); rgPick_(s); });
+      box.appendChild(it);
+    });
+    box.classList.add('show');
+  }
+  async function rgSearch_(q){
+    const my = ++rg.sq, st = $('rgSStat'), px = $('rgSrchPx');
+    px.innerHTML = '<span class="rg-ring"></span>';
+    st.textContent = 'Searching…'; st.className = 'rg-sstat';
+    try{
+      const r = await rgFetch_(`${STUDENT_DETAILS_URL}?action=searchStudents&q=${encodeURIComponent(q)}`, {}, 15000);
+      const j = await r.json();
+      if(my !== rg.sq) return;
+      if(j.status === 'ok'){ const l = j.students || []; rgRenderSugg_(l); st.textContent = l.length + ' match' + (l.length === 1 ? '' : 'es'); }
+      else { rgHideSugg_(); st.textContent = j.message || 'No matches'; st.className = 'rg-sstat err'; }
+    }catch(e){
+      if(my !== rg.sq) return;
+      rgHideSugg_(); st.textContent = 'Search failed — check connection'; st.className = 'rg-sstat err';
+    }finally{ if(my === rg.sq) px.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>'; }
+  }
+  function rgPrefill_(d){
+    const setSel = (sel, v)=>{
+      v = String(v||'').trim().toLowerCase(); if(!v || !sel) return;
+      const o = [...sel.options].find(x=> x.value.trim().toLowerCase() === v); if(o) sel.value = o.value;
+    };
+    const f = n => rg.form.querySelector('[name="' + n + '"]');
+    if(d.name && f('Name')) f('Name').value = d.name;
+    setSel(f('Batch'), d.batch); setSel($('rgClass'), d.class);
+    rgBoardVis_(); setSel($('rgBoard'), d.board);
+    rgLoadSubjects_();
+  }
+  async function rgPick_(s){
+    rgHideSugg_();
+    $('rgSrch').value = (s.id || '') + ' — ' + (s.name || '');
+    const st = $('rgSStat'); st.textContent = 'Loading student…'; st.className = 'rg-sstat';
+    let d = s;
+    try{
+      const r = await rgFetch_(`${STUDENT_DETAILS_URL}?action=getStudent&id=${encodeURIComponent(s.id)}`, {}, 15000);
+      const j = await r.json();
+      if(j && j.status === 'ok') d = Object.assign({}, s, j);
+    }catch(e){ /* fall back to the search row */ }
+    st.textContent = '';
+    rgEnterAdd_({id: d.id || s.id, name: d.name || s.name, subjects: d.subjects || s.subjects || [], active: (d.active !== undefined ? d.active : s.active)});
+    rgPrefill_(d);
+  }
+
+  /* ═════ Teacher dropdown (admin can pick who the entry is recorded under) ═════ */
+  function rgFillTeachers_(){
+    const el = $('rgTid'), me = (S && S.id) || '';
+    el.innerHTML = ''; const o = document.createElement('option'); o.value = me;
+    o.textContent = ((S && S.name) ? S.name + ' \u2014 ' : '') + me + ' (you)'; el.appendChild(o); el.value = me;
+  }
+
+  function openRegisterStudentPage(){
+    const f = rg.form, d = $('regModal');
+    f.reset(); rg.subjects = []; rg.checks = []; rg.fees = {};
+    rg.mode = 'new'; rgExitAdd_(false); rgApplyMode_(); rgHideSugg_(); $('rgSrch').value = '';
+    rgFillTeachers_();
+    rgBoardVis_(); rgBuild_(DEFAULT_SUBJECTS_); rgMsg_('');
+    $('rgSaveLbl').textContent = 'Enroll student'; $('rgSave').disabled = false;
+    d.showModal();
+    rgNextId_(true); rgPrefetch_();
+    clearInterval(rg.timer); rg.timer = setInterval(()=>rgNextId_(false), 10000);
+  }
+  (function rgInit_(){
+    rg.form = $('regForm');
+    try{ rg.cache = JSON.parse(localStorage.getItem(SUBJ_CACHE_KEY_)) || {}; }catch(e){ rg.cache = {}; }
+    $('rgClass').addEventListener('change', ()=>{ rgBoardVis_(); rgLoadSubjects_(); });
+    $('rgBoard').addEventListener('change', rgLoadSubjects_);
+    $('rgSubBtn').addEventListener('click', e=>{ e.stopPropagation(); $('rgSubPanel').classList.toggle('open'); });
+    $('regModal').addEventListener('click', e=>{ if(!$('rgMsel').contains(e.target)) $('rgSubPanel').classList.remove('open'); });
+    $('regModal').addEventListener('close', ()=>{ clearInterval(rg.timer); $('rgSubPanel').classList.remove('open'); });
+    $('rgId').addEventListener('focus', ()=>{ rg.idFocus = true; });
+    $('rgId').addEventListener('blur', ()=>{ rg.idFocus = false; });
+    const rb = $('rgIdRef');
+    rb.addEventListener('click', async ()=>{
+      if(rb.disabled || rg.idBusy) return; rb.disabled = true;
+      await rgNextId_(true); rb.disabled = false;
+    });
+    window.addEventListener('online', rgPrefetch_);
+    $('rgTabs').addEventListener('click', e=>{ const b = e.target.closest('button[data-mode]'); if(b) rgSetMode_(b.dataset.mode); });
+    $('rgSrch').addEventListener('input', ()=>{
+      clearTimeout(rg.st); const q = $('rgSrch').value.trim();
+      if(!q){ rgHideSugg_(); $('rgSStat').textContent = ''; return; }
+      rg.st = setTimeout(()=>rgSearch_(q), 300);
+    });
+    $('rgSrch').addEventListener('keydown', e=>{
+      if(e.key === 'Enter'){ e.preventDefault(); const first = $('rgSugg').querySelector('.it'); if(first) first.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,cancelable:true})); }
+      else if(e.key === 'Escape'){ e.stopPropagation(); rgHideSugg_(); }
+    });
+    $('regModal').addEventListener('click', e=>{ if(!$('rgSearch').contains(e.target)) rgHideSugg_(); });
+    // click on the dimmed area outside the popup closes the form
+    (function(){
+      const d = $('regModal'); let downOut = false;
+      const outside = e => { const r = d.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; };
+      d.addEventListener('pointerdown', e=>{ downOut = (e.target === d) && outside(e); });
+      d.addEventListener('click', e=>{ if(downOut && e.target === d && outside(e) && !rg.saving) d.close(); downOut = false; });
+    })();
+    rgApplyMode_();
+    $('dupAdd').addEventListener('click', ()=>{ $('dupModal').close(); rgSetMode_('add', true); rgEnterAdd_(rg.dup); });
+    $('dupNew').addEventListener('click', ()=>{ $('dupModal').close(); rg.force = true; rg.form.requestSubmit(); });
+    $('dupCancel').addEventListener('click', ()=> $('dupModal').close());
+    rg.form.addEventListener('submit', async e=>{
+      e.preventDefault();
+      if(!rg.subjects.length){ rgMsg_('Pick at least one subject'); return; }
+      const noFee = rg.subjects.find(s => rg.fees[s]==null || rg.fees[s]==='' || !(Number(rg.fees[s]) >= 0));
+      if(noFee){ rgMsg_('Enter the fee for ' + noFee); return; }
+      const sv = $('rgSave'), lbl = $('rgSaveLbl');
+      sv.disabled = true; rg.saving = true; $('regModal').classList.add('saving');
+      lbl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving'; rgMsg_('');
+      rgTotal_();
+      const data = Object.fromEntries(new FormData(rg.form).entries());
+      data['Teacher ID'] = $('rgTid').value || S.id; data.token = S.token;
+      data['Fees Structure'] = $('rgFeesHidden').value;     // "500, 400" same order as Subjects
+      data['Monthly Fee'] = $('rgTotal').value;
+      const adding = !!rg.add;
+      if(adding){ data.action = 'addSubject'; data['Student ID'] = rg.add.id; }
+      else if(rg.force) data['Force New'] = '1';
+      rg.force = false;
+      try{
+        const r = await rgFetch_(STUDENT_DETAILS_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(data)}, 30000);
+        const j = await r.json();
+        if(j.result === 'exists' && j.matches && j.matches.length){ rgShowDup_(j.matches[0]); if(j.exStudent) toast(j.error || 'Ex-student found. New admission cancelled.', 'fa-triangle-exclamation'); return; }
+        if(j.result!=='success') throw new Error(j.error||'Unknown error');
+        $('regModal').close();
+        toast(adding ? 'Subject added to ' + data['Student ID'] + (j.reactivated ? ' \u2014 marked active again' : '') : 'Saved as ' + (j.id || data['Student ID']));
+        mineAt = 0; try{ loadMine_(true); }catch(e){}
+      }catch(err){
+        rgMsg_(err && err.message && err.message!=='Failed to fetch' ? 'Failed — ' + err.message : 'Failed — check connection');
+      }finally{
+        sv.disabled = false; rg.saving = false; $('regModal').classList.remove('saving'); lbl.textContent = (rg.add || rg.mode === 'add') ? 'Add subject' : 'Enroll student';
+      }
+    });
+  })();
+
+  $('rgBack').addEventListener('click', () => { if (!rg.saving) $('regModal').close(); });
+
+function mLeaveCls_() { $('mQ').value = ''; MUI.cls = null; MUI.anim = true; renderMine_(); }
+(function wireMine_() {
+  const view = $('stuV');
+  view.addEventListener('click', e => {
+    const t = e.target.closest('[data-act]'); if (!t || !view.contains(t)) return;
+    const act = t.dataset.act, card = t.closest('.sc');
+    if (act === 'reg') openRegisterStudentPage();
+    else if (act === 'cls') { MUI.cls = t.dataset.k; MUI.anim = true; layerPush('stuCls', mLeaveCls_); renderMine_(); view.scrollTop = 0; }
+    else if (act === 'back') { layerDrop('stuCls'); mLeaveCls_(); view.scrollTop = 0; }
+    else if (act === 'clear') { $('mQ').value = ''; renderMine_(); $('mQ').focus(); }
+    else if (act === 'toggle' && card) { const id = card.dataset.id, on = !card.classList.contains('open'); card.classList.toggle('open', on); t.setAttribute('aria-expanded', on); on ? MUI.open.add(id) : MUI.open.delete(id); }
+    else if (act === 'active' && card) setMineActive_(card.dataset.id, t.dataset.v === '1');
+  });
+  view.addEventListener('change', e => { if (e.target.id === 'mSort') { MUI.sort = e.target.value; renderMine_(); } });
+  $('mF').addEventListener('change', () => { MUI.anim = true; renderMine_(); });
+  $('mField').addEventListener('change', renderMine_);
+  $('mQ').addEventListener('input', () => { MUI.anim = false; renderMine_(); });
+  $('mRef').addEventListener('click', () => loadMine_(true));
+})();
+$$('dialog').forEach(d => {
+  new MutationObserver(() => { if (d.open) layerPush('dlg:' + d.id, () => { try { d.close(); } catch (e) {} }); }).observe(d, { attributes: true, attributeFilter: ['open'] });
+  d.addEventListener('close', () => layerDrop('dlg:' + d.id));
+});
 window.addEventListener('popstate', e => {
+  if (SKIP_POP > 0) { SKIP_POP--; return; }
   if (!S) return;
+  const l = LAYERS.pop();
+  if (l) { l.fn(); return; }
   go((e.state && e.state.v) || 'home', true);
 });
 
@@ -658,7 +1454,7 @@ $('lf').addEventListener('submit', async e => {
   try {
     const r = await post({ action: 'login', id: $('lid').value.trim(), password: $('lpw').value });
     if (r.status === 'ok') { enter(r); toast('Signed in successfully'); } else m.textContent = r.message || 'Sign-in failed';
-  } catch (err) { m.textContent = 'Cannot reach the server. Check AUTH_URL and your connection.'; }
+  } catch (err) { m.textContent = 'Sign-in error: ' + ((err && err.message) || 'cannot reach the server') + '. Check AUTH_URL and that the login script is deployed for Anyone.'; console.error('login failed', err); }
   b.disabled = false; b.innerHTML = LABEL.go;
 });
 
@@ -681,6 +1477,516 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 try { const s = JSON.parse(sessionStorage.getItem('tp') || 'null'); if (s && s.exp > Date.now()) enter(s); } catch (e) {}
 </script>
 
+<script type="text/plain" id="doc-stat"><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fee Status – Progressive Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f4f6f7; --card:#fff; --field:#fafcfd; --ink:#14232a; --muted:#5d727b; --line:#dfe6e9;
+  --brand:#0e4a5c; --brand2:#146b84; --head:#eaf1f4;
+  --red:#d94040; --orange:#e8832a; --yellow:#e5b400; --green:#2f9e5b; --grey:#b7c4ca;
+  --p-bg:#fde8e8; --p-fg:#9b1c1c; --p-bd:#f5c2c2;
+  --d-bg:#fff0dd; --d-fg:#9a4a08; --d-bd:#f6d3a3;
+  --u-bg:#fdf6c8; --u-fg:#7a5b00; --u-bd:#ecdd96;
+  --g-bg:#e0f5e7; --g-fg:#17663a; --g-bd:#b2e0c2;
+  --n-bg:#eef2f4; --n-fg:#7d909a; --n-bd:#e1e8eb;
+  --shadow:0 1px 3px rgba(14,74,92,.08),0 6px 20px rgba(14,74,92,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.4}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px}
+header{background:var(--brand);color:#fff;padding:18px 16px 60px}
+.wrap{max-width:1100px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.sub{font-size:.82rem;opacity:.8;margin-top:3px}
+.acts{display:flex;gap:8px}
+.btn-h{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:10px;padding:8px 13px;cursor:pointer;font-size:.85rem;font-weight:500;display:flex;align-items:center;gap:7px}
+.btn-h:hover{background:rgba(255,255,255,.22)}
+.btn-h.spin .fa-rotate{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{max-width:1100px;margin:-42px auto 40px;padding:0 16px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.kpi b{display:block;font-size:1.45rem;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi span{font-size:.78rem;color:var(--muted)}
+.kpi.bad b{color:var(--p-fg)}
+.kpi.good b{color:var(--g-fg)}
+.sticky{position:sticky;top:0;z-index:5;padding:10px 0 6px;background:var(--bg)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px}
+.bar{display:flex;gap:10px;flex-wrap:wrap}
+.search{position:relative;flex:1;min-width:200px}
+.search i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{width:100%;padding:11px 14px 11px 40px;border:1.5px solid var(--line);border-radius:10px;background:var(--field);outline:none}
+.search input:focus,.sel select:focus{border-color:var(--brand2);outline:2px solid color-mix(in srgb,var(--brand2) 30%,transparent)}
+.sel{position:relative}
+.sel select{appearance:none;-webkit-appearance:none;padding:11px 36px 11px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--field);cursor:pointer;height:100%;outline:none}
+.sel select.on{border-color:var(--brand2)}
+.sel i{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:.7rem}
+.chips{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:7px}
+.chip .n{background:var(--head);border-radius:999px;padding:0 8px;font-size:.72rem;font-variant-numeric:tabular-nums}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip.on .n{background:rgba(255,255,255,.22)}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 2px 0;font-size:.78rem;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-top:14px}
+.stu{background:var(--card);border-radius:12px;padding:15px;border:1px solid var(--line);border-left:4px solid var(--grey)}
+.stu.has-pending{border-left-color:var(--red)}
+.stu.has-due{border-left-color:var(--orange)}
+.stu.all-paid{border-left-color:var(--green)}
+.row1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.name{font-weight:600;font-size:1rem}
+.sid{font-size:.78rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.badge{font-size:.74rem;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.b-pending{background:var(--p-bg);color:var(--p-fg)}
+.b-due{background:var(--d-bg);color:var(--d-fg)}
+.b-paid{background:var(--g-bg);color:var(--g-fg)}
+.b-up{background:var(--u-bg);color:var(--u-fg)}
+.b-none{background:var(--n-bg);color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted);margin:10px 0 12px}
+.meta i{width:14px;text-align:center;margin-right:4px}
+.months{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.m{border:1px solid transparent;border-radius:8px;text-align:center;padding:6px 0 5px;font-size:.74rem;font-weight:600;line-height:1.15}
+.m small{display:block;font-size:.64rem;font-weight:500;margin-top:2px}
+.m.pending{background:var(--p-bg);color:var(--p-fg);border-color:var(--p-bd)}
+.m.due{background:var(--d-bg);color:var(--d-fg);border-color:var(--d-bd)}
+.m.upcoming{background:var(--u-bg);color:var(--u-fg);border-color:var(--u-bd)}
+.m.paid{background:var(--g-bg);color:var(--g-fg);border-color:var(--g-bd)}
+.m.na{background:var(--n-bg);color:var(--n-fg);border-color:var(--n-bd)}
+.m.sel-m{outline:2px solid var(--brand2);outline-offset:1px}
+.mbox{border-radius:10px;padding:12px;border:1.5px solid var(--line)}
+.mbox.none,.mbox.pending{border-color:var(--p-bd);background:var(--p-bg)}
+.mbox.part,.mbox.due{border-color:var(--d-bd);background:var(--d-bg)}
+.mbox.upcoming{border-color:var(--u-bd);background:var(--u-bg)}
+.mbox.paid{border-color:var(--g-bd);background:var(--g-bg)}
+.mhead{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:1rem;margin-bottom:6px}
+.mhead small{font-size:.8rem;font-weight:500;color:var(--muted)}
+.sr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px solid rgba(128,128,128,.2)}
+.sr .l i{width:20px;margin-right:6px}
+.sr.ok{color:var(--g-fg)}.sr.no{color:var(--p-fg)}.sr.soon{color:var(--u-fg)}
+.sr .r{font-size:.82rem;font-variant-numeric:tabular-nums}
+.sr.tot{font-weight:700;color:var(--ink)}
+.rem{margin-top:12px;width:100%;border:1px solid var(--line);background:var(--field);border-radius:9px;padding:8px;cursor:pointer;font-size:.82rem;font-weight:500;display:flex;align-items:center;justify-content:center;gap:7px}
+.rem:hover{border-color:var(--brand2);color:var(--brand2)}
+.tsec{margin-top:22px}
+.thead{width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 14px;background:var(--head);border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer}
+.tn{font-weight:600;font-size:1rem;display:flex;align-items:center;gap:9px}
+.tn small{font-weight:400;color:var(--muted);font-size:.8rem}
+.tn .chev{font-size:.7rem;color:var(--muted);transition:transform .15s}
+.tsec.closed .chev{transform:rotate(-90deg)}
+.tsec.closed .tgrid{display:none}
+.tsum{display:flex;gap:6px;flex-wrap:wrap}
+.tsum span{font-size:.74rem;font-weight:600;padding:2px 10px;border-radius:999px}
+.tsum .g{background:var(--g-bg);color:var(--g-fg)}.tsum .o{background:var(--d-bg);color:var(--d-fg)}.tsum .r{background:var(--p-bg);color:var(--p-fg)}
+.state{grid-column:1/-1;text-align:center;padding:46px 10px;color:var(--muted)}
+.state i{font-size:1.8rem;margin-bottom:10px;display:block}
+.state p{margin-bottom:12px}
+.state button{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:8px 16px;cursor:pointer}
+.state.err{color:var(--p-fg)}
+.sk{height:178px;border-left-color:var(--line);background:linear-gradient(90deg,var(--card),var(--head),var(--card));background-size:200% 100%;animation:sh 1.4s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.stamp{font-size:.76rem;color:var(--muted);text-align:right;margin-top:12px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:.85rem;opacity:0;pointer-events:none;transition:.2s}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media(max-width:700px){.kpis{grid-template-columns:repeat(2,1fr)}.btn-h span{display:none}}
+@media(max-width:420px){.grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== panel theme ===== */
+:root{
+  --bg:#f3efe6; --card:#fff; --field:#fff; --ink:#0d1636; --muted:#5b6485; --line:#e4dece; --head:#ece6d6;
+  --brand:#0b1745; --brand2:#16296f; --acc:#b8891a; --shadow:none;
+  --red:#b4423a; --orange:#c9741d; --yellow:#e0b030; --green:#1f7a4d; --grey:#b9b6ab;
+  --display:'Newsreader',Georgia,serif; --body:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);font-size:15px;-webkit-font-smoothing:antialiased}
+header{background:transparent;color:var(--ink);padding:44px 44px 0}
+header .wrap{border-bottom:1px solid var(--ink);padding-bottom:18px}
+.kick{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--acc);margin:0 0 6px;text-transform:uppercase;letter-spacing:.08em}
+h1{display:block;font-family:var(--display);font-weight:500;font-size:clamp(30px,4vw,44px);line-height:1.05;letter-spacing:-.02em}
+.sub{color:var(--muted);opacity:1;font-size:14.5px;margin-top:6px}
+.top{align-items:flex-end}
+.btn-h{background:#fff;border:1px solid var(--line);color:var(--brand2);border-radius:4px;padding:10px 14px;font-weight:500;font-size:13.5px}
+.btn-h:hover{background:#fff;border-color:var(--ink)}
+.btn-h i{color:var(--acc)}
+main{margin:18px auto 40px;padding:0 44px;max-width:1188px}
+.kpi{border-radius:6px;padding:14px 16px}
+.kpi b{font-family:var(--display);font-weight:500;font-size:1.9rem;letter-spacing:-.01em}
+.kpi span{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+.panel{border-radius:6px;padding:12px}
+.search input,.sel select{border:1px solid var(--line);border-radius:4px;background:#fff}
+.search input:focus,.sel select:focus{border-color:var(--ink);outline:1px solid var(--ink)}
+.search i{color:var(--acc)}
+.chip{border:1px solid var(--line);color:var(--muted);font-weight:500}
+.chip.on{background:var(--brand2);border-color:var(--brand2);color:#fff}
+.legend{font-family:var(--mono);font-size:.72rem}
+.stu{border-radius:6px;box-shadow:none}
+.name{font-weight:600}
+.sid{font-family:var(--mono);font-size:.75rem}
+.meta i{color:var(--acc)}
+.m{border-radius:4px}
+.badge{font-family:var(--mono);font-size:.7rem;font-weight:500}
+.rem{border-radius:4px;background:#fff}
+.rem:hover{border-color:var(--ink);color:var(--brand2)}
+.rem i{color:var(--acc)}
+.thead{border-radius:6px;background:#fff;border-left:4px solid var(--acc)}
+.tn{font-family:var(--display);font-size:1.15rem;font-weight:600}
+.tn .fa-chalkboard-user{color:var(--acc)}
+.tn small{font-family:var(--mono);font-size:.72rem}
+.mbox,.sr{border-radius:4px}
+.state button{border-radius:4px}
+.stamp{font-family:var(--mono)}
+#toast{border-radius:4px;background:var(--brand)}
+@media(max-width:900px){header{padding:26px 16px 0}main{padding:0 16px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="kick"><i class="fa-solid fa-chart-pie"></i>Fees · My students</div>
+    <div class="top">
+      <div>
+        <h1>Fee status</h1>
+        <div class="sub" id="sub">Progressive Physics</div>
+      </div>
+      <div class="acts">
+        <button class="btn-h" id="export" aria-label="Export dues as CSV"><i class="fa-solid fa-file-arrow-down"></i><span>Export dues</span></button>
+        <button class="btn-h" id="refresh" aria-label="Refresh data"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="kpis" id="kpis"></div>
+  <div class="sticky">
+    <div class="panel">
+      <div class="bar">
+        <div class="search">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input id="q" type="search" placeholder="Search student ID, name or teacher…" aria-label="Search students" autocomplete="off">
+        </div>
+        <div class="sel">
+          <select id="grp" aria-label="Group by"><option value="teacher">By teacher</option><option value="student">By student</option></select>
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </div>
+        <div class="sel">
+          <select id="month" aria-label="Month"></select>
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </div>
+      </div>
+      <div class="chips" id="chips" role="group" aria-label="Filter by status"></div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--red)"></i> Pending</span>
+    <span><i class="dot" style="background:var(--orange)"></i> Due this month</span>
+    <span><i class="dot" style="background:var(--yellow)"></i> Upcoming</span>
+    <span><i class="dot" style="background:var(--green)"></i> Paid</span>
+    <span><i class="dot" style="background:var(--grey)"></i> N/A</span>
+  </div>
+
+  <div id="list" class="grid"></div>
+  <div class="stamp" id="stamp" aria-live="polite"></div>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ====== CONFIG ====== */
+const API_URL = 'https://script.google.com/macros/s/AKfycby2WRxAyBFGsd8crTfG9kLgWzPVmAaaGWwZwS_b5k57vAszA9yvm2-t-QAh6MBZXlXl/exec';   // Apps Script /exec URL
+const ADMIN = !!window.FEE_ADMIN, ME = window.TEACHER || {};   // admin sees all; teacher sees only own subjects/students
+const CACHE_KEY = 'fee_status_cache_v4' + (ADMIN ? '_admin' : '_' + (ME.id || 'x'));
+const nz = v => String(v == null ? '' : v).toLowerCase().replace(/\s+/g, '');
+const isMe = t => { const n = nz(t), i = nz(ME.id), m = nz(ME.name); return !!n && ((i && n.includes(i)) || (m && n.includes(m))); };
+window.setView = function(){};
+/* ==================== */
+
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const LBL = {pending:'Pending', due:'Due', upcoming:'Soon', paid:'Paid', na:'N/A'};
+const FILTERS = [
+  {k:'all', t:'All'},
+  {k:'pending', t:'Pending'},
+  {k:'due', t:'Due now'},
+  {k:'upcoming', t:'Upcoming'},
+  {k:'paid', t:'Paid'}
+];
+
+let students = [], filter = 'all', query = '', month = -1, groupBy = 'teacher';
+let loading = true, shown = [], closed = new Set();
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr = n => '₹' + Number(n).toLocaleString('en-IN');
+
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function matches(s, f){
+  if (month >= 0){
+    const st = s.months[month];
+    return f === 'all' ? st !== 'na' : st === f;
+  }
+  if (f === 'all') return true;
+  return s[f] > 0;
+}
+
+/* unpaid amount in pending/due months (or only the chosen month) */
+function owed(s){
+  let amt = 0;
+  const idx = month >= 0 ? [month] : s.months.map((_, i) => i);
+  idx.forEach(i => {
+    const st = s.months[i];
+    if (st !== 'pending' && st !== 'due') return;
+    ((s.detail && s.detail[i]) || []).forEach(x => { if (!x.paid) amt += Number(x.fee) || 0; });
+  });
+  return amt;
+}
+
+function initMonth(){
+  const sel = $('month');
+  sel.innerHTML = '<option value="-1">All months</option>' + FULL.map((m,i) => `<option value="${i}">${m}</option>`).join('');
+  sel.onchange = () => { month = Number(sel.value); sel.classList.toggle('on', month >= 0); render(); };
+}
+
+function renderChips(all){
+  $('chips').innerHTML = FILTERS.map(f => {
+    const n = all.filter(s => matches(s, f.k)).length;
+    return `<button class="chip ${filter===f.k?'on':''}" data-k="${f.k}" aria-pressed="${filter===f.k}">${f.t}<span class="n">${n}</span></button>`;
+  }).join('');
+  $('chips').querySelectorAll('.chip').forEach(b => b.onclick = () => { filter = b.dataset.k; render(); });
+}
+
+function renderKpis(all){
+  const ids = new Set(), owing = new Set(); let amt = 0;
+  all.forEach(s => {
+    ids.add(s.id);
+    const o = owed(s);
+    if (o > 0){ amt += o; owing.add(s.id); }
+  });
+  const k = (v, l, c) => `<div class="kpi ${c||''}"><b>${v}</b><span>${l}</span></div>`;
+  $('kpis').innerHTML = k(ids.size, 'Students')
+    + k(owing.size, 'With dues', owing.size ? 'bad' : '')
+    + k(inr(amt), month >= 0 ? 'Outstanding in ' + MN[month] : 'Outstanding', amt ? 'bad' : '')
+    + k(ids.size - owing.size, 'No dues', 'good');
+}
+
+/* teacher view: one row per (student, teacher), only that teacher's subjects */
+function derive(s, t, names){
+  const set = new Set(names);
+  const sub = s.subList.filter(x => set.has(x.n));
+  const detail = s.detail.map(d => d.filter(x => set.has(x.n)));
+  const months = s.months.map((st,i) => {
+    const d = detail[i];
+    if (!d.length) return 'na';
+    if (d.every(x => x.paid)) return 'paid';
+    return st === 'paid' ? 'pending' : st;
+  });
+  const c = k => months.filter(x => x === k).length;
+  return Object.assign({}, s, {
+    teacher: t, detail, months,
+    subjects: names.join(', '),
+    totalFees: sub.map(x => x.fee).filter(Boolean).join(', '),
+    pending: c('pending'), due: c('due'), upcoming: c('upcoming'), paid: c('paid')
+  });
+}
+
+function buildRows(){
+  if (ADMIN && groupBy !== 'teacher') return students.map(s => Object.assign({}, s, {teacher:''}));
+  const out = [];
+  students.forEach(s => {
+    if (!s.subList || !s.subList.length){ out.push(Object.assign({}, s, {teacher:'Unassigned'})); return; }
+    const by = {};
+    s.subList.forEach(x => { const k = x.t || 'Unassigned'; (by[k] = by[k] || []).push(x.n); });
+    Object.keys(by).forEach(t => out.push(derive(s, t, by[t])));
+  });
+  return ADMIN ? out : out.filter(r => isMe(r.teacher));
+}
+
+function card(s){
+  let cls = s.pending ? 'has-pending' : s.due ? 'has-due' : (s.paid && !s.upcoming) ? 'all-paid' : '';
+  let badge = s.pending ? `<span class="badge b-pending">${s.pending} pending</span>`
+              : s.due     ? `<span class="badge b-due">Due now</span>`
+              : s.paid && !s.upcoming ? `<span class="badge b-paid">All clear</span>`
+              : `<span class="badge b-none">No dues</span>`;
+  let subs = '';
+  if (month >= 0){
+    const st = s.months[month];
+    badge = `<span class="badge ${st==='pending'?'b-pending':st==='due'?'b-due':st==='paid'?'b-paid':st==='upcoming'?'b-up':'b-none'}">${MN[month]}: ${LBL[st]}</span>`;
+    const det = (s.detail && s.detail[month]) || [];
+    if (det.length){
+      const pn = det.filter(x => x.paid).length;
+      const full = pn === det.length;
+      const lvl = full ? 'paid' : pn ? 'part' : st==='upcoming' ? 'upcoming' : 'none';
+      const bc = {paid:'b-paid', part:'b-due', upcoming:'b-up', none:'b-pending'}[lvl];
+      cls = {paid:'all-paid', part:'has-due', upcoming:'', none:'has-pending'}[lvl];
+      badge = `<span class="badge ${bc}">${MN[month]}: ${full ? 'Full paid' : pn ? pn+'/'+det.length+' paid' : st==='upcoming' ? 'Upcoming' : 'Not paid'}</span>`;
+      const due = det.filter(x => !x.paid).reduce((a,x) => a + (Number(x.fee)||0), 0);
+      const nc = st==='upcoming' ? 'soon' : 'no';
+      subs = `<div class="mbox ${lvl}"><div class="mhead"><span>${FULL[month]}</span><small>${pn} of ${det.length} paid</small></div>` + det.map(x => x.paid
+        ? `<div class="sr ok"><span class="l"><i class="fa-solid fa-circle-check"></i>${esc(x.n)}</span><span class="r">${esc(x.rc) || 'paid'}${x.fee ? ', ₹'+esc(x.fee) : ''}</span></div>`
+        : `<div class="sr ${nc}"><span class="l"><i class="fa-solid fa-circle-xmark"></i>${esc(x.n)}</span><span class="r">${st==='upcoming'?'upcoming':'not paid'}${x.fee ? ', ₹'+esc(x.fee) : ''}</span></div>`).join('')
+        + (due ? `<div class="sr tot"><span>Due amount</span><span>${inr(due)}</span></div>` : '') + `</div>`;
+    }
+  }
+  const months = s.months.map((st,i) =>
+    `<div class="m ${st}${i===month?' sel-m':''}">${MN[i]}<small>${LBL[st]}</small></div>`).join('');
+  const rem = owed(s) > 0 ? `<button class="rem" data-i="${s._i}"><i class="fa-regular fa-copy"></i>Copy reminder message</button>` : '';
+  return `<article class="stu ${cls}">
+    <div class="row1">
+      <div><div class="name">${esc(s.name) || '—'}</div><div class="sid">${esc(s.id)}</div></div>
+      ${badge}
+    </div>
+    <div class="meta">
+      <span><i class="fa-solid fa-book"></i>${esc(s.subjects) || '—'}</span>
+      <span><i class="fa-regular fa-calendar"></i>${esc(s.date) || '—'}</span>
+      ${s.totalFees ? `<span><i class="fa-solid fa-indian-rupee-sign"></i>${esc(s.totalFees)}</span>` : ''}
+    </div>
+    ${subs || `<div class="months">${months}</div>`}
+    ${rem}
+  </article>`;
+}
+
+const empty = `<div class="state"><i class="fa-regular fa-folder-open"></i><p>No students match these filters.</p><button data-act="clear">Clear filters</button></div>`;
+
+function render(){
+  if (loading && !students.length){
+    $('list').className = 'grid';
+    $('list').innerHTML = '<div class="stu sk"></div>'.repeat(6);
+    return;
+  }
+  const all = buildRows();
+  renderChips(all);
+  renderKpis(all);
+  const q = query.trim().toLowerCase().replace(/\s+/g,'');
+  const norm = v => String(v || '').toLowerCase().replace(/\s+/g,'');
+  const rows = all
+    .filter(s => matches(s, filter))
+    .filter(s => !q || norm(s.id).includes(q) || norm(s.name).includes(q) || norm(s.teacher).includes(q))
+    .sort((a,b) => month >= 0 ? a.id.localeCompare(b.id) : (b.pending - a.pending) || (b.due - a.due) || a.id.localeCompare(b.id));
+  rows.forEach((r,i) => r._i = i);
+  shown = rows;
+  if (groupBy !== 'teacher'){
+    $('list').className = 'grid';
+    $('list').innerHTML = rows.length ? rows.map(card).join('') : empty;
+    return;
+  }
+  $('list').className = '';
+  if (!rows.length){ $('list').innerHTML = `<div class="grid">${empty}</div>`; return; }
+  const groups = {};
+  rows.forEach(r => (groups[r.teacher] = groups[r.teacher] || []).push(r));
+  const keys = Object.keys(groups).sort((a,b) => a==='Unassigned' ? 1 : b==='Unassigned' ? -1 : a.localeCompare(b));
+  $('list').innerHTML = keys.map(k => {
+    const g = groups[k];
+    let sum = '';
+    if (month >= 0){
+      let f=0,p=0,n=0;
+      g.forEach(r => { const d = r.detail[month] || []; if(!d.length) return; const pn = d.filter(x=>x.paid).length; pn===d.length ? f++ : pn ? p++ : n++; });
+      sum = `<span class="tsum">${f?`<span class="g">${f} full paid</span>`:''}${p?`<span class="o">${p} partial</span>`:''}${n?`<span class="r">${n} not paid</span>`:''}</span>`;
+    } else {
+      const pc = g.filter(r => r.pending > 0).length;
+      sum = pc ? `<span class="tsum"><span class="r">${pc} with pending</span></span>` : '';
+    }
+    const isClosed = closed.has(k);
+    return `<section class="tsec${isClosed?' closed':''}"><button class="thead" data-t="${esc(k)}" aria-expanded="${!isClosed}"><span class="tn"><i class="fa-solid fa-chevron-down chev"></i><i class="fa-solid fa-chalkboard-user"></i>${esc(k)}<small>${g.length} student${g.length>1?'s':''}</small></span>${sum}</button><div class="grid tgrid">${g.map(card).join('')}</div></section>`;
+  }).join('');
+}
+
+function copyText(text, ok){
+  const done = () => toast(ok);
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, () => toast('Copy failed'));
+  } else {
+    const a = document.createElement('textarea'); a.value = text; document.body.appendChild(a); a.select();
+    try{ document.execCommand('copy'); done(); }catch(e){ toast('Copy failed'); }
+    a.remove();
+  }
+}
+
+function reminder(s){
+  return `Hello, this is Progressive Physics. A fee of ${inr(owed(s))} for ${s.subjects || 'tuition'} is pending for ${s.name} (${s.id}). Please pay at your earliest convenience. Thank you.`;
+}
+
+function exportCsv(){
+  const q = v => '"' + String(v ?? '').replace(/"/g,'""') + '"';
+  const rows = shown.filter(s => owed(s) > 0);
+  if (!rows.length){ toast('No dues to export'); return; }
+  const csv = [['Student ID','Name','Teacher','Subjects','Outstanding (INR)'].map(q).join(',')]
+    .concat(rows.map(s => [s.id, s.name, s.teacher, s.subjects, owed(s)].map(q).join(','))).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], {type:'text/csv'}));
+  a.download = 'fee-dues.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function setBusy(b){ $('refresh').classList.toggle('spin', b); }
+
+async function load(){
+  setBusy(true);
+  try{
+    const res = await fetch(API_URL);
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || 'API error');
+    students = d.students;
+    const mi = d.now.month;
+    $('sub').textContent = `Progressive Physics – ${MN[mi]} ${d.now.year}` + (ADMIN ? ' · all teachers' : ' · ' + (ME.name || ME.id || ''));
+    $('stamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(d)); }catch(e){}
+    loading = false; render();
+  }catch(err){
+    loading = false;
+    if (!students.length){
+      $('list').className = 'grid';
+      $('list').innerHTML = `<div class="state err"><i class="fa-solid fa-triangle-exclamation"></i><p>Could not load fee data: ${esc(err.message)}. Check your connection and try again.</p><button data-act="retry">Try again</button></div>`;
+    } else {
+      $('stamp').textContent = 'Offline: showing saved data from your last visit';
+      render();
+    }
+  }finally{ setBusy(false); }
+}
+
+/* instant paint from cache, then refresh */
+try{
+  const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+  if (c && c.students){ students = c.students; }
+}catch(e){}
+
+initMonth();
+if (!ADMIN) $('grp').parentElement.hidden = true;
+$('grp').onchange = e => { groupBy = e.target.value; render(); };
+let dt;
+$('q').addEventListener('input', e => { query = e.target.value; clearTimeout(dt); dt = setTimeout(render, 150); });
+$('refresh').onclick = load;
+$('export').onclick = exportCsv;
+$('list').addEventListener('click', e => {
+  const r = e.target.closest('[data-i]');
+  if (r){ copyText(reminder(shown[r.dataset.i]), 'Reminder copied'); return; }
+  const h = e.target.closest('[data-t]');
+  if (h){ const k = h.dataset.t; closed.has(k) ? closed.delete(k) : closed.add(k); render(); return; }
+  const a = e.target.closest('[data-act]');
+  if (a && a.dataset.act === 'retry'){ loading = true; render(); load(); }
+  if (a && a.dataset.act === 'clear'){
+    filter = 'all'; query = ''; month = -1; $('q').value = ''; $('month').value = '-1'; $('month').classList.remove('on'); render();
+  }
+});
+render();
+load();
+<\/script>
+</body>
+</html></script>
 <script type="text/plain" id="doc-fee"><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1344,7 +2650,7 @@ footer i{color:var(--muted);margin-right:6px}
   const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbwD1aqFLzL3xA_5LUsu4t81uRGA0ik8JRwCVlmh4Fc63aS2tuBjk9mOWtPhCVZx_hQC/exec";
 
   // Student Details Web App URL — looks up name/phone/subjects from student_details sheet
-  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec";
+  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbx1T1vHcHRRqfTDvqGvF3_0GCFxeGfX7NGWEgusqW071W3GREAhU9i9JI_MSNbYyjuH/exec";
 
   const form = document.getElementById('feeForm');
   const statusEl = document.getElementById('status');
@@ -2160,1319 +3466,6 @@ footer i{color:var(--muted);margin-right:6px}
       btn.disabled = false;
       btnText.textContent = 'Record Entry';
       spinner.classList.remove('show');
-    }
-  });
-<\/script>
-</body>
-</html></script>
-<script type="text/plain" id="doc-adm"><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Admission Register</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-/* no blue tap/selection highlights */
-*{-webkit-tap-highlight-color:transparent}
-button,.nb,.tile,.nav-btn,.seg button,label{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
-::selection{background:#e9dfc4;color:#0d1636}
-.nav{scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
-  :root{
-    --paper:#f4ecdc;
-    --paper-line:#d9c9a3;
-    --ink:#2b241a;
-    --ink-soft:#6b5f4a;
-    --maroon:#7a2e2e;
-    --maroon-deep:#5a1f1f;
-    --gold:#b3862c;
-    --ok:#2f6b4f;
-    --card:#fffaf0;
-    --shadow: 0 20px 50px -20px rgba(43,36,26,0.35);
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    min-height:100vh;
-    font-family:'Space Mono', monospace;
-    color:var(--ink);
-    background:
-      repeating-linear-gradient(180deg, transparent, transparent 27px, var(--paper-line) 28px),
-      var(--paper);
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    padding:56px 20px 90px;
-  }
-  body::before{
-    content:"";
-    position:fixed; inset:0;
-    background-image: radial-gradient(circle at 1px 1px, rgba(43,36,26,0.06) 1px, transparent 0);
-    background-size: 22px 22px;
-    pointer-events:none;
-  }
-
-  .sheet{
-    width:100%;
-    max-width:640px;
-    background:var(--card);
-    border:1px solid var(--paper-line);
-    box-shadow:var(--shadow);
-    position:relative;
-    padding:50px 40px 40px;
-    animation: rise .7s cubic-bezier(.2,.8,.2,1) both;
-  }
-  .sheet::before{
-    content:"";
-    position:absolute;
-    top:14px;left:14px;right:14px;bottom:14px;
-    border:1px solid var(--gold);
-    opacity:.35;
-    pointer-events:none;
-  }
-  @keyframes rise{
-    from{opacity:0; transform:translateY(24px);}
-    to{opacity:1; transform:translateY(0);}
-  }
-
-  .stamp-wrap{
-    position:absolute;
-    top:26px; right:26px;
-    display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    gap:6px;
-  }
-  .stamp{
-    border:2px solid var(--maroon);
-    color:var(--maroon);
-    font-family:'Space Mono',monospace;
-    font-size:9px;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    padding:5px 9px;
-    transform:rotate(6deg);
-    opacity:.75;
-    white-space:nowrap;
-  }
-  .stamp-date{
-    font-family:'Space Mono',monospace;
-    font-size:9.5px;
-    letter-spacing:.08em;
-    color:var(--ink-soft);
-    opacity:.7;
-    white-space:nowrap;
-  }
-
-  .eyebrow{
-    font-size:11px;
-    letter-spacing:.28em;
-    text-transform:uppercase;
-    color:var(--gold);
-    font-weight:700;
-    margin:0 84px 6px 0;
-  }
-  h1{
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-optical-sizing:auto;
-    font-size:clamp(26px, 6vw, 38px);
-    margin:0 84px 4px 0;
-    color:var(--maroon-deep);
-    line-height:1.15;
-    word-break:break-word;
-  }
-  .sub{
-    color:var(--ink-soft);
-    font-size:12.5px;
-    line-height:1.6;
-    margin:0 0 30px;
-    border-bottom:1px dashed var(--paper-line);
-    padding-bottom:22px;
-  }
-
-  form{ display:grid; gap:20px; }
-  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
-  @media (max-width:520px){ .row2{ grid-template-columns:1fr; } }
-
-  label{
-    display:block;
-    font-size:10.5px;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    margin-bottom:7px;
-    font-weight:700;
-  }
-  .req{ color:var(--maroon); }
-
-  .field{
-    position:relative;
-    display:flex;
-    align-items:flex-end;
-    gap:6px;
-    border-bottom:2px solid var(--paper-line);
-    transition:border-color .25s ease;
-  }
-  .field:focus-within{ border-bottom-color:var(--maroon); }
-  input, select{
-    width:100%;
-    font-family:'Fraunces', serif;
-    font-size:17px;
-    font-weight:500;
-    color:var(--ink);
-    background:transparent;
-    border:none;
-    padding:8px 2px 10px;
-    outline:none;
-    appearance:none;
-    -webkit-appearance:none;
-    min-width:0;
-  }
-  select{ cursor:pointer; }
-  input::placeholder{ color:#b9ac92; font-family:'Space Mono',monospace; font-size:13px;}
-  .field::after{
-    content:"";
-    position:absolute; left:0; bottom:-2px;
-    width:0; height:2px;
-    background:var(--gold);
-    transition:width .3s ease;
-  }
-  .field:focus-within::after{ width:100%; }
-
-  .prefix{
-    flex:0 0 auto;
-    margin-bottom:9px;
-    font-family:'Space Mono',monospace;
-    font-weight:700;
-    font-size:12px;
-    letter-spacing:.02em;
-    color:var(--maroon);
-    background:rgba(122,46,46,0.08);
-    border:1px solid rgba(122,46,46,0.25);
-    border-radius:4px;
-    padding:3px 7px;
-    line-height:1.4;
-    pointer-events:none;
-    white-space:nowrap;
-  }
-  .prefix.rupee{
-    font-family:'Fraunces', serif;
-    font-weight:700;
-    font-size:15px;
-    padding:1px 8px 3px;
-  }
-
-  select{
-    background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
-    background-position: calc(100% - 14px) 50%, calc(100% - 8px) 50%;
-    background-size: 6px 6px, 6px 6px;
-    background-repeat:no-repeat;
-    padding-right:26px;
-  }
-  input[type="date"]{ cursor:pointer; }
-  input[type="date"]::-webkit-calendar-picker-indicator{
-    filter: sepia(1) saturate(3) hue-rotate(315deg) opacity(.6);
-  }
-
-  .msel{ position:relative; }
-  .msel-btn{
-    all:unset;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    width:100%;
-    font-family:'Fraunces', serif;
-    font-size:17px;
-    font-weight:500;
-    color:var(--ink);
-    padding:8px 2px 10px;
-    border-bottom:2px solid var(--paper-line);
-    cursor:pointer;
-    box-sizing:border-box;
-  }
-  .msel-btn:focus{ border-bottom-color:var(--maroon); }
-  .msel-btn:hover, .msel-btn:active, .msel-btn:focus{
-    background:transparent;
-    color:var(--ink);
-    font-weight:500;
-    box-shadow:none;
-    transform:none;
-  }
-  #subjectBtnText.placeholder{ color:#b9ac92; font-family:'Space Mono',monospace; font-size:13px; }
-  .msel-skel{ height:16px; border-radius:4px; margin:8px 10px; background:linear-gradient(90deg,#eee2cf 25%,#f5ecdc 37%,#eee2cf 63%); background-size:400% 100%; animation:msel-shimmer 1.4s ease infinite; }
-  @keyframes msel-shimmer{ 0%{background-position:100% 50%;} 100%{background-position:0 50%;} }
-  .msel-arrow{
-    width:7px; height:7px;
-    border-right:2px solid var(--ink-soft);
-    border-bottom:2px solid var(--ink-soft);
-    transform:rotate(45deg);
-    margin-bottom:3px;
-    flex:0 0 auto;
-  }
-  .msel-panel{
-    display:none;
-    position:absolute;
-    z-index:5;
-    top:calc(100% + 6px);
-    left:0; right:0;
-    background:var(--card);
-    border:1px solid var(--paper-line);
-    box-shadow:var(--shadow);
-    padding:8px;
-  }
-  .msel-panel.open{ display:block; }
-  .msel-opt{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-family:'Space Mono',monospace;
-    font-size:13px;
-    color:var(--ink);
-    padding:9px 8px;
-    cursor:pointer;
-    text-transform:none;
-    letter-spacing:0;
-    margin-bottom:0;
-    font-weight:400;
-  }
-  .msel-opt:hover{ background:rgba(122,46,46,0.06); }
-  .msel-opt input{ all:revert; accent-color:var(--maroon); width:15px; height:15px; }
-
-  .chips{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    margin-top:10px;
-  }
-  .chip{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    font-family:'Space Mono',monospace;
-    font-size:11px;
-    letter-spacing:.04em;
-    color:var(--maroon);
-    background:rgba(122,46,46,0.08);
-    border:1px solid rgba(122,46,46,0.25);
-    border-radius:4px;
-    padding:4px 8px;
-  }
-  .chip button{
-    all:unset;
-    cursor:pointer;
-    font-weight:700;
-    line-height:1;
-    color:var(--maroon);
-  }
-
-  .actions{
-    margin-top:12px;
-    display:flex;
-    align-items:center;
-    gap:16px;
-  }
-  button{
-    font-family:'Space Mono', monospace;
-    font-weight:700;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    font-size:12.5px;
-    color:#fdf6e8;
-    background:var(--maroon);
-    border:none;
-    padding:15px 28px;
-    cursor:pointer;
-    position:relative;
-    overflow:hidden;
-    transition:transform .15s ease, box-shadow .15s ease, background .2s ease;
-    box-shadow:0 8px 0 var(--maroon-deep);
-  }
-  button:hover{ background:#8a3535; }
-  button:active{ transform:translateY(6px); box-shadow:0 2px 0 var(--maroon-deep); }
-  button:disabled{ opacity:.6; cursor:progress; }
-
-  @keyframes spin{ to{ transform:rotate(360deg); } }
-  .spinner{
-    display:inline-block;
-    width:13px; height:13px;
-    border:2px solid rgba(253,246,232,0.35);
-    border-top-color:#fdf6e8;
-    border-radius:50%;
-    animation:spin .7s linear infinite;
-    vertical-align:-2px;
-    margin-right:8px;
-  }
-  .spinner.dark{
-    border-color:rgba(122,46,46,0.25);
-    border-top-color:var(--maroon);
-  }
-  button .btn-label{ display:inline-flex; align-items:center; }
-
-  form.is-saving{ position:relative; }
-  form.is-saving::after{
-    content:"";
-    position:absolute;
-    inset:-6px;
-    background:rgba(244,236,220,0.45);
-    cursor:progress;
-    z-index:4;
-  }
-  form.is-saving .field,
-  form.is-saving .msel-btn{ pointer-events:none; opacity:.7; }
-
-  .status{
-    font-size:12px;
-    color:var(--ink-soft);
-    min-height:16px;
-  }
-  .status.ok{ color:var(--ok); font-weight:700; }
-  .status.err{ color:var(--maroon); font-weight:700; }
-
-  .foot{
-    margin-top:28px;
-    padding-top:18px;
-    border-top:1px dashed var(--paper-line);
-    display:flex;
-    justify-content:space-between;
-    flex-wrap:wrap;
-    gap:6px;
-    font-size:10px;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    color:#b9ac92;
-  }
-  .foot .partner{
-    color:var(--gold);
-    font-weight:700;
-  }
-
-  @media (max-width:520px){
-    body{ padding:28px 0 60px; }
-    .sheet{ padding:36px 22px 30px; max-width:100%; }
-    .sheet::before{ top:10px; left:10px; right:10px; bottom:10px; }
-    .stamp-wrap{ top:18px; right:18px; }
-    .stamp{ font-size:8px; padding:4px 7px; }
-    .stamp-date{ font-size:8px; }
-    .foot{ flex-direction:column; align-items:flex-start; gap:4px; }
-    .eyebrow, h1{ margin-right:70px; }
-    h1{ font-size:26px; }
-    .sub{ font-size:12px; margin-bottom:24px; }
-    form{ gap:18px; }
-    input, select{ font-size:16px; }
-    .actions{ flex-direction:column; align-items:stretch; gap:10px; }
-    button{ width:100%; padding:16px; }
-    .status{ text-align:center; }
-  }
-  #teacherIdInput{color:var(--maroon-deep);font-weight:700;cursor:not-allowed;}
-</style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style id="theme">
-:root{--paper:#f3efe6;--paper-line:#e4dece;--ink:#0d1636;--ink-soft:#5b6485;--maroon:#b4423a;--maroon-deep:#8c2f29;--gold:#b4423a;--ok:#1f7a4d;--card:#ffffff;--shadow:none;
-  --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
-body{font-family:var(--body);padding:36px 24px 70px;background:var(--paper)}
-body::before{display:none}
-.sheet{max-width:700px;margin:0 auto;padding:0;border:0;border-radius:0;overflow:visible;box-shadow:none;background:var(--paper)}
-.sheet::before{display:none}
-.hd{display:block;padding:28px;color:#fff;background:#0b1745;border-radius:4px;position:static;overflow:visible}
-.hd::after{display:none}
-.hd-ico{display:none}
-.eyebrow{margin:0 0 10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#e0b030;font-weight:500}
-h1{margin:0;font-family:var(--display);font-weight:500;font-size:clamp(30px,5vw,42px);color:#fff;line-height:1.04;letter-spacing:-.02em}
-.sub{margin:10px 0 0;padding:0;border:0;color:rgba(255,255,255,.74);font-size:14.5px;line-height:1.55;max-width:56ch}
-form{padding:26px 0 6px;gap:18px}
-.sec{display:flex;align-items:center;gap:12px;margin-top:14px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;color:var(--ink)}
-.sec i{display:none}
-.sec::after{content:"";flex:1;height:1px;background:var(--paper-line)}
-label{font-size:12px;font-weight:500;letter-spacing:.01em;text-transform:none;color:var(--ink-soft);margin-bottom:6px}
-label>i{display:inline-block;width:14px;margin-right:7px;text-align:center;font-size:12px;color:var(--maroon)}
-.req{color:var(--maroon)}
-.field{align-items:center;border:1px solid var(--paper-line);border-radius:4px;background:#fff;padding:0 4px 0 0;transition:none}
-.field::after{display:none}
-.field:focus-within{border-color:var(--maroon);outline:1px solid var(--maroon);box-shadow:none;background:#fff}
-input,select{font-family:var(--body);font-size:16px;font-weight:400;padding:11px 12px;color:var(--ink)}
-input::placeholder{font-family:var(--body);font-size:15px;font-weight:400;color:#a9a392}
-select{background-image:none;padding-right:34px}
-.field:has(select)::after{display:block;content:"\f078";font-family:"Font Awesome 6 Free";font-weight:900;font-size:10px;color:var(--ink-soft);position:absolute;left:auto;right:14px;top:50%;bottom:auto;width:auto;height:auto;background:none;transform:translateY(-50%);pointer-events:none}
-.field:has(select):focus-within::after{width:auto}
-.prefix{margin:0 0 0 1px;align-self:stretch;display:flex;align-items:center;border:0;border-right:1px solid var(--paper-line);border-radius:3px 0 0 3px;background:#ece6d7;color:var(--ink-soft);padding:0 12px;font-family:var(--mono);font-size:13px}
-.prefix i{font-size:12px}
-.field .id-refresh{width:34px;height:34px;min-width:34px;padding:0;margin:0;flex:none;display:grid;place-items:center;border:0;border-radius:4px;background:transparent;color:var(--ink-soft);box-shadow:none;transform:none;font-size:14px}
-.field .id-refresh:hover{background:#ece6d7;color:var(--maroon-deep);transform:none;box-shadow:none}
-.field .id-refresh:active{transform:none;box-shadow:none;background:#e3dcc8}
-.field .id-refresh i{margin:0;font-size:14px}
-.field .id-refresh.spin i{animation:fa-spin .8s linear infinite}
-input[type="date"]::-webkit-calendar-picker-indicator{filter:none;opacity:.55;cursor:pointer}
-.msel-btn{border:1px solid var(--paper-line);border-radius:4px;background:#fff;padding:11px 12px;font-family:var(--body);font-size:16px;transition:none}
-.msel-btn:hover,.msel-btn:active,.msel-btn:focus{background:#fff;box-shadow:none;transform:none;color:var(--ink)}
-.msel-btn:focus{border-color:var(--ink);outline:1px solid var(--ink)}
-#subjectBtnText{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px}
-#subjectBtnText.placeholder{font-family:var(--body);font-size:15px;font-weight:400;color:#a9a392}
-.msel-arrow{width:auto;height:auto;border:0;transform:none;margin:0;font-size:10px;color:var(--ink-soft);transition:transform .15s}
-.msel:has(.msel-panel.open) .msel-arrow{transform:rotate(180deg)}
-.msel-panel{border:1px solid var(--ink);border-radius:4px;padding:4px;box-shadow:none;background:#fff}
-.msel-opt{font-family:var(--body);font-size:14.5px;border-radius:3px;padding:9px 10px}
-.msel-opt:hover{background:#ece6d7}
-.chips{gap:6px;margin-top:10px}
-.chip{font-family:var(--body);font-size:13px;font-weight:500;border-radius:4px;padding:5px 6px 5px 10px;background:rgba(180,66,58,.1);border:0;color:var(--maroon-deep)}
-.chip button{display:grid;place-items:center;width:18px;height:18px;border-radius:3px;background:rgba(180,66,58,.15);color:var(--maroon-deep);font-size:10px}
-.chip button:hover{background:var(--maroon);color:#fff}
-.tid-card{border:1px solid var(--paper-line);border-left:4px solid var(--maroon);border-radius:0;padding:14px 16px 12px;background:#fff}
-.tid-card .field{background:#ece6d7;cursor:not-allowed}
-#teacherIdInput{font-family:var(--mono);font-weight:500;font-size:15px;letter-spacing:.02em;color:var(--ink)}
-#teacherNameNote{margin-top:8px;font-size:12.5px;color:var(--ink-soft)}
-.actions{margin-top:6px;gap:16px;padding-bottom:4px}
-#submitBtn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:var(--body);font-size:15px;font-weight:500;letter-spacing:0;text-transform:none;border:1px solid var(--maroon);border-radius:4px;padding:13px 24px;color:#fff;background:var(--maroon);box-shadow:none;transition:background .15s}
-#submitBtn:hover{background:var(--maroon-deep);transform:none;filter:none;box-shadow:none}
-#submitBtn:active{transform:none;box-shadow:none}
-#submitBtn:disabled{filter:none;transform:none;opacity:.6}
-.status{font-size:13px;font-weight:500}
-.status.ok::before,.status.err::before{font-family:"Font Awesome 6 Free";font-weight:900;margin-right:7px}
-.status.ok::before{content:"\f058"}.status.err::before{content:"\f06a"}
-.status.ok{color:var(--ok)}
-.foot{margin:22px 0 0;padding:16px 0 0;border-top:1px solid var(--paper-line);font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--ink-soft);background:none}
-.foot .partner{color:var(--ink)}
-form.is-saving::after{background:rgba(246,243,236,.6);border-radius:0}
-@media (max-width:520px){
-  body{padding:22px 16px 30px}
-  .sheet{max-width:100%}
-  form{padding:20px 0 4px;gap:16px}
-  h1{font-size:30px}
-  .actions{align-items:stretch}#submitBtn{width:100%}
-}
-.feerows{display:grid;gap:8px}
-.feerows-empty{font-size:13px;color:#a9a392;padding:2px 0}
-.feerow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px 8px 12px;border:1px solid var(--paper-line);border-radius:4px;background:#fff;color:var(--ink);font-size:14px;font-weight:500}
-.feerow>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.feein{flex:none;width:132px;display:flex;align-items:center;gap:6px;border:1px solid var(--paper-line);border-radius:4px;background:var(--paper);padding:0 8px}
-.feein:focus-within{border-color:var(--maroon);outline:1px solid var(--maroon)}
-.feein b{font-family:var(--mono);font-size:13px;color:var(--ink-soft);font-weight:500}
-.feein input{border:0;background:transparent;padding:8px 0;min-width:0;width:100%;font-size:15px;text-align:right;outline:0}
-#totalFeeInput{font-family:var(--mono);font-weight:500;background:#ece6d7;cursor:not-allowed}
-.addbar{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1px solid var(--paper-line);border-left:4px solid var(--maroon);background:#fff;font-size:13.5px;line-height:1.5;color:var(--ink)}
-.addbar[hidden]{display:none}
-.addbar i.lead{color:var(--maroon);margin-top:3px}
-.addbar .tx{flex:1;min-width:0}
-.addbar small{display:block;color:var(--ink-soft);font-size:12.5px}
-.addbar button{flex:none;border:1px solid var(--paper-line);background:#fff;border-radius:4px;padding:6px 10px;font-size:12.5px;color:var(--ink-soft);cursor:pointer}
-.addbar button:hover{color:var(--maroon-deep);border-color:var(--maroon)}
-.msel-opt.taken{opacity:.45;cursor:not-allowed}
-.msel-opt.taken:hover{background:transparent}
-#studentIdInput[readonly]{background:#ece6d7;cursor:not-allowed}
-.dup-ov{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:rgba(13,22,54,.55)}
-.dup-ov[hidden]{display:none}
-.dup-card{width:min(440px,100%);background:var(--paper);border:1px solid var(--ink);border-radius:4px;padding:24px 22px 20px}
-.dup-card h2{margin:0 0 8px;font-family:var(--display);font-weight:500;font-size:24px;color:var(--ink);display:flex;align-items:center;gap:10px}
-.dup-card h2 i{color:var(--maroon);font-size:18px}
-.dup-card p{margin:0 0 14px;font-size:14.5px;line-height:1.55;color:var(--ink)}
-.dup-info{display:grid;gap:6px;padding:12px 14px;margin-bottom:18px;background:#fff;border:1px solid var(--paper-line);border-left:4px solid var(--maroon);font-size:13.5px}
-.dup-info div{display:flex;justify-content:space-between;gap:12px}
-.dup-info span{color:var(--ink-soft)}
-.dup-info b{font-weight:500;text-align:right}
-.dup-act{display:grid;gap:8px}
-.dup-act button{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--body);font-size:15px;font-weight:500;padding:12px 18px;border-radius:4px;cursor:pointer;border:1px solid var(--maroon)}
-.dup-pri{background:var(--maroon);color:#fff}
-.dup-pri:hover{background:var(--maroon-deep)}
-.dup-sec{background:#fff;color:var(--maroon-deep)}
-.dup-ghost{background:transparent;color:var(--ink-soft);border-color:var(--paper-line)!important}
-.modetabs{display:grid;grid-template-columns:1fr 1fr;margin:18px 0 0;border:1px solid var(--ink);border-radius:4px;overflow:hidden;background:#fff}
-.modetabs button{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 10px;border:0;background:transparent;font-family:var(--body);font-size:14px;font-weight:500;line-height:1.25;text-align:center;color:var(--ink-soft);cursor:pointer;box-shadow:none;transform:none}
-.modetabs button+button{border-left:1px solid var(--ink)}
-.modetabs button.on{background:var(--maroon);color:#fff}
-.modetabs button:not(.on):hover{background:var(--paper);color:var(--maroon-deep)}
-.modetabs button:focus-visible{outline:2px solid var(--maroon);outline-offset:-3px}
-.modetabs button i{font-size:13px}
-.addsearch{position:relative}
-.addsearch[hidden]{display:none}
-.addsearch .field{position:relative}
-.sugg{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;background:#fff;border:1px solid var(--ink);border-radius:4px;max-height:280px;overflow:auto;box-shadow:0 8px 22px rgba(13,22,54,.14)}
-.sugg.show{display:block}
-.sugg .it{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--paper-line)}
-.sugg .it:last-child{border-bottom:0}
-.sugg .it:hover{background:var(--paper)}
-.sugg .it b{display:block;font-weight:500;font-size:14.5px;color:var(--ink)}
-.sugg .it small{display:block;margin-top:2px;font-size:12.5px;color:var(--ink-soft)}
-.sugg .none{padding:12px;font-size:13.5px;color:var(--ink-soft)}
-.wrap-c{display:contents}
-form.mode-add .new-only{display:none}
-form.await-pick .after-pick{display:none}
-@media(max-width:560px){.modetabs button{font-size:13px;padding:12px 8px}}
-</style>
-</head>
-<body>
-
-<div class="sheet">
-  <header class="hd">
-    <span class="hd-ico"><i class="fa-solid fa-user-plus"></i></span>
-    <div>
-      <p class="eyebrow">Admission Register</p>
-      <h1>Student Enrollment</h1>
-      <p class="sub">Fill every field carefully. Entry syncs directly to the register sheet and is recorded under your Teacher ID.</p>
-    </div>
-  </header>
-
-  <nav class="modetabs" id="modeTabs" role="tablist" aria-label="Register mode">
-    <button type="button" role="tab" class="on" data-mode="new" aria-selected="true"><i class="fa-solid fa-user-plus"></i>New student register</button>
-    <button type="button" role="tab" data-mode="add" aria-selected="false"><i class="fa-solid fa-circle-plus"></i>Add subject to existing student</button>
-  </nav>
-
-  <form id="studentForm">
-    <div class="addbar" id="addBar" hidden></div>
-
-    <div class="addsearch" id="addSearch" hidden>
-      <div class="sec"><i class="fa-solid fa-magnifying-glass"></i>Find existing student</div>
-      <label for="addSearchInput" style="margin-top:14px"><i class="fa-solid fa-id-card"></i>Student ID or name</label>
-      <div class="field has-prefix">
-        <span class="prefix" id="addSearchPx"><i class="fa-solid fa-magnifying-glass"></i></span>
-        <input type="text" id="addSearchInput" placeholder="Type PP 26 0001 or student name" autocomplete="off">
-        <div class="sugg" id="addSugg"></div>
-      </div>
-      <div class="status" id="addSearchStatus" style="margin-top:8px"></div>
-    </div>
-
-    <div class="wrap-c new-only">
-    <div class="sec"><i class="fa-solid fa-user-graduate"></i>Student</div>
-
-    <div>
-      <label><i class="fa-solid fa-id-card"></i>Student ID <span class="req">*</span></label>
-      <div class="field has-prefix">
-        <span class="prefix" id="studentIdPrefix"><i class="fa-solid fa-hashtag"></i></span>
-        <input type="text" name="Student ID" id="studentIdInput" placeholder="PP 26 0001" pattern="PP\s?\d{2}\s?\d{4}" required>
-        <button type="button" class="id-refresh" id="stuIdRefresh" title="Fetch next Student ID" aria-label="Fetch next Student ID"><i class="fa-solid fa-rotate"></i></button>
-      </div>
-    </div>
-
-    <div>
-      <label><i class="fa-solid fa-calendar-check"></i>Admission Date <span class="req">*</span></label>
-      <div class="field">
-        <input type="date" name="Admission" required>
-      </div>
-    </div>
-
-    <div>
-      <label><i class="fa-solid fa-user-graduate"></i>Student Name <span class="req">*</span></label>
-      <div class="field">
-        <input type="text" name="Name" placeholder="Full name" required>
-      </div>
-    </div>
-
-    <div>
-      <label><i class="fa-solid fa-mobile-screen"></i>Student Contact No</label>
-      <div class="field has-prefix">
-        <span class="prefix">+91</span>
-        <input type="tel" name="Student Contact No" placeholder="98765 43210" pattern="[0-9\s]{10,15}">
-      </div>
-    </div>
-
-    <div class="sec"><i class="fa-solid fa-people-roof"></i>Guardian</div>
-
-    <div class="row2">
-      <div>
-        <label><i class="fa-solid fa-user-shield"></i>Guardian Name <span class="req">*</span></label>
-        <div class="field">
-          <input type="text" name="Parent" placeholder="Guardian's name" required>
-        </div>
-      </div>
-      <div>
-        <label><i class="fa-solid fa-phone"></i>Guardian Phone <span class="req">*</span></label>
-        <div class="field has-prefix">
-          <span class="prefix">+91</span>
-          <input type="tel" name="Guardian Phone" placeholder="98765 43210" pattern="[0-9\s]{10,15}" required>
-        </div>
-      </div>
-    </div>
-
-    <div>
-      <label><i class="fa-solid fa-phone-volume"></i>Optional secondary No.</label>
-      <div class="field has-prefix">
-        <span class="prefix">+91</span>
-        <input type="tel" name="Student Phone" placeholder="98765 43210 (optional)" pattern="[0-9\s]{10,15}">
-      </div>
-    </div>
-
-    </div>
-    <div class="wrap-c after-pick">
-    <div class="sec"><i class="fa-solid fa-book-open-reader"></i>Course</div>
-
-    <div class="row2">
-      <div>
-        <label><i class="fa-solid fa-school"></i>Class <span class="req">*</span></label>
-        <div class="field">
-          <select name="Class" required>
-            <option value="" disabled selected>Select class</option>
-            <option>Class 7</option><option>Class 8</option>
-            <option>Class 9</option><option>Class 10</option>
-            <option>Class 11 - Science</option><option>Class 12 - Science</option>
-            <option>JEE</option>
-            <option>NEET</option>
-          </select>
-        </div>
-      </div>
-      <div class="new-only">
-        <label><i class="fa-solid fa-clock"></i>Batch <span class="req">*</span></label>
-        <div class="field">
-          <select name="Batch" required>
-            <option value="" disabled selected>Select batch</option>
-            <option>Morning</option><option>Afternoon</option><option>Evening</option><option>Weekend</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div id="boardField">
-      <label><i class="fa-solid fa-building-columns"></i>Board <span class="req">*</span></label>
-      <div class="field">
-        <select name="Board" required>
-          <option value="" disabled selected>Select board</option>
-          <option>CBSE</option><option>ICSE/ISC</option>
-          <option>WBBSE/WBCHSE</option>
-        </select>
-      </div>
-    </div>
-
-    <div>
-      <label><i class="fa-solid fa-book-open"></i>Subjects <span class="req">*</span></label>
-      <div class="msel" id="subjectMsel">
-        <button type="button" class="msel-btn" id="subjectBtn">
-          <span id="subjectBtnText">Select subjects</span>
-          <i class="fa-solid fa-chevron-down msel-arrow"></i>
-        </button>
-        <div class="msel-panel" id="subjectPanel">
-        </div>
-      </div>
-      <div class="chips" id="subjectChips"></div>
-      <input type="hidden" name="Subjects" id="subjectsHidden">
-    </div>
-
-    <div>
-      <label><i class="fa-solid fa-indian-rupee-sign"></i>Fee per subject (₹) <span class="req">*</span></label>
-      <div class="feerows" id="feeRows"><div class="feerows-empty">Select subjects to set fees</div></div>
-      <input type="hidden" name="Fees Structure" id="feesStructureHidden">
-    </div>
-
-    <div>
-      <label><i class="fa-solid fa-calculator"></i>Total Monthly Fee (₹)</label>
-      <div class="field has-prefix">
-        <span class="prefix rupee">₹</span>
-        <input type="number" name="Monthly Fee" id="totalFeeInput" placeholder="0" readonly tabindex="-1" title="Sum of the subject fees">
-      </div>
-    </div>
-
-    <div class="sec"><i class="fa-solid fa-shield-halved"></i>Recorded by</div>
-
-    <div class="tid-card">
-      <label><i class="fa-solid fa-chalkboard-user"></i>Teacher ID <span class="req">*</span></label>
-      <div class="field has-prefix">
-        <span class="prefix"><i class="fa-solid fa-lock"></i></span>
-        <input type="text" name="Teacher ID" id="teacherIdInput" readonly required tabindex="-1" title="Locked to your login">
-      </div>
-      <div class="status" id="teacherNameNote"></div>
-    </div>
-
-    <div class="actions">
-      <button type="submit" id="submitBtn"><i class="fa-solid fa-user-plus"></i><span class="btn-label" id="submitBtnLabel">Enroll Student</span></button>
-      <span class="status" id="status"></span>
-    </div>
-    </div>
-  </form>
-
-  <div class="foot">
-    <span class="partner">Progressive Physics</span>
-    <span id="today"></span>
-  </div>
-</div>
-
-<div class="dup-ov" id="dupOv" hidden>
-  <div class="dup-card" role="alertdialog" aria-modal="true" aria-labelledby="dupTitle">
-    <h2 id="dupTitle"><i class="fa-solid fa-user-check"></i>Student already exists</h2>
-    <p id="dupBody"></p>
-    <div class="dup-info" id="dupInfo"></div>
-    <div class="dup-act">
-      <button type="button" class="dup-pri" id="dupAdd"><i class="fa-solid fa-plus"></i>Add another subject</button>
-      <button type="button" class="dup-sec" id="dupNew">Save as new student</button>
-      <button type="button" class="dup-ghost" id="dupCancel">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
-
-  const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbyiYCckDlSoJDjQAH9Ddl7hNc63RyAucqmJn-YdEuG49BRf5cQJWjJzaad82l5gAMgyIA/exec";
-  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec";
-
-  const form = document.getElementById('studentForm');
-  const TCH = window.TEACHER || (window.parent && window.parent.TEACHER) || { id: '', name: '', token: '' };
-  const teacherIdInput = document.getElementById('teacherIdInput');
-  teacherIdInput.value = TCH.id;
-  document.getElementById('teacherNameNote').textContent = TCH.name + ' · locked to your login';
-  const status = document.getElementById('status');
-  const btn = document.getElementById('submitBtn');
-  const btnLabel = document.getElementById('submitBtnLabel');
-
-  
-  async function fetchWithTimeout(url, options = {}, ms = 8000){
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), ms);
-    try {
-      return await fetch(url, { ...options, signal: controller.signal });
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
-  const subjectBtn = document.getElementById('subjectBtn');
-  const subjectBtnText = document.getElementById('subjectBtnText');
-  const subjectPanel = document.getElementById('subjectPanel');
-  const subjectChips = document.getElementById('subjectChips');
-  const subjectsHidden = document.getElementById('subjectsHidden');
-  const classSelect = form.querySelector('select[name="Class"]');
-  const boardSelect = form.querySelector('select[name="Board"]');
-  const boardField = document.getElementById('boardField');
-  let subjects = [];
-  let subjectChecks = [];
-  let addMode = null;            // {id, name, keys:Set} while adding a subject to an existing student
-  let lastSubjectList = [];
-  let feeVals = {};              // subject -> fee typed (survives re-render)
-  const feeRows = document.getElementById('feeRows');
-  const totalFeeInput = document.getElementById('totalFeeInput');
-  const feesStructureHidden = document.getElementById('feesStructureHidden');
-  const sKey = x => {
-    const k = String(x || '').toLowerCase().replace(/[^a-z]/g, '');
-    return ({ maths: 'math', mathematics: 'math', computerscience: 'cs', computer: 'cs', computers: 'cs', comp: 'cs', phy: 'physics', chem: 'chemistry', bio: 'biology' })[k] || k;
-  };
-
-  function renderFeeRows(){
-    feeRows.innerHTML = '';
-    if (!subjects.length){
-      feeRows.innerHTML = '<div class="feerows-empty">Select subjects to set fees</div>';
-      updateTotal(); return;
-    }
-    subjects.forEach(s => {
-      const row = document.createElement('div'); row.className = 'feerow';
-      const nm = document.createElement('span'); nm.textContent = s;
-      const w = document.createElement('span'); w.className = 'feein'; w.innerHTML = '<b>₹</b>';
-      const inp = document.createElement('input');
-      inp.type = 'number'; inp.min = '0'; inp.step = 'any'; inp.placeholder = '0'; inp.required = true;
-      inp.setAttribute('inputmode', 'decimal'); inp.setAttribute('aria-label', 'Fee for ' + s);
-      inp.value = feeVals[s] != null ? feeVals[s] : '';
-      inp.addEventListener('input', () => { feeVals[s] = inp.value; updateTotal(); });
-      w.appendChild(inp); row.appendChild(nm); row.appendChild(w); feeRows.appendChild(row);
-    });
-    updateTotal();
-  }
-  function updateTotal(){
-    feesStructureHidden.value = subjects.map(s => (feeVals[s] == null || feeVals[s] === '') ? '' : String(Number(feeVals[s]))).join(', ');
-    totalFeeInput.value = subjects.length ? subjects.reduce((t, s) => t + (Number(feeVals[s]) || 0), 0) : '';
-  }
-
-  const NO_BOARD_CLASSES = ['JEE', 'NEET'];
-
-  function updateBoardVisibility(){
-    const isNoBoard = NO_BOARD_CLASSES.includes(classSelect.value.trim());
-    boardField.style.display = isNoBoard ? 'none' : '';
-    boardSelect.required = !isNoBoard;
-    if (isNoBoard) boardSelect.value = '';
-  }
-
-  const DEFAULT_SUBJECTS = ['Physics','Chemistry','Biology - Botany','Biology - Zoology','Mathematics','English'];
-
-  function buildSubjectPanel(list){
-    lastSubjectList = list;
-    const prevChecked = new Set(subjects);
-    subjectPanel.innerHTML = '';
-    list.forEach(s => {
-      const label = document.createElement('label');
-      label.className = 'msel-opt';
-      const taken = !!(addMode && addMode.keys.has(sKey(s)));
-      label.innerHTML = `<input type="checkbox" value="${s}"><span>${s}</span>`;
-      const cb = label.querySelector('input');
-      if (taken) { cb.disabled = true; label.classList.add('taken'); label.querySelector('span').textContent = s + ' (already added)'; }
-      else if (prevChecked.has(s)) cb.checked = true;
-      cb.addEventListener('change', syncSubjects);
-      subjectPanel.appendChild(label);
-    });
-    subjectChecks = Array.from(subjectPanel.querySelectorAll('input[type="checkbox"]'));
-    syncSubjects();
-  }
-
-  function syncSubjects(){
-    subjects = subjectChecks.filter(c => c.checked).map(c => c.value);
-    subjectsHidden.value = subjects.join(', ');
-    subjectBtnText.textContent = subjects.length ? subjects.join(', ') : 'Select subjects';
-    subjectBtnText.classList.toggle('placeholder', subjects.length === 0);
-    subjectChips.innerHTML = '';
-    subjects.forEach(s => {
-      const chip = document.createElement('span');
-      chip.className = 'chip';
-      chip.innerHTML = `${s} <button type="button" aria-label="remove"><i class="fa-solid fa-xmark"></i></button>`;
-      chip.querySelector('button').addEventListener('click', () => {
-        subjectChecks.forEach(c => { if (c.value === s) c.checked = false; });
-        syncSubjects();
-      });
-      subjectChips.appendChild(chip);
-    });
-    renderFeeRows();
-  }
-
-  function showSubjectSkeleton(){
-    subjectPanel.innerHTML = '';
-    for (let i = 0; i < 5; i++){
-      const row = document.createElement('div');
-      row.className = 'msel-skel';
-      subjectPanel.appendChild(row);
-    }
-  }
-
-  // ---- Subjects cache (localStorage): fetch once, reuse forever, refresh silently ----
-  const SUBJECT_CACHE_KEY = 'pp_subjects_cache_v1';
-  const SUBJECT_TTL = 24 * 60 * 60 * 1000; // silent refresh after 24h
-  function readSubjectCache(){
-    try { return JSON.parse(localStorage.getItem(SUBJECT_CACHE_KEY)) || {}; } catch (e) { return {}; }
-  }
-  function writeSubjectCache(){
-    try { localStorage.setItem(SUBJECT_CACHE_KEY, JSON.stringify(subjectCache)); } catch (e) {}
-  }
-  let subjectCache = readSubjectCache();
-  const subjectKey = (cls, board) => {
-    cls = (cls || '').trim();
-    return cls + '|' + (NO_BOARD_CLASSES.includes(cls) ? '' : (board || ''));
-  };
-  function storeSubjects(key, list){
-    if (!list || !list.length) return;
-    subjectCache[key] = { subjects: list, ts: Date.now() };
-    writeSubjectCache();
-  }
-
-  async function fetchSubjectsRemote(cls, board, tries = 3){
-    let lastErr;
-    for (let i = 0; i < tries; i++){
-      try {
-        const url = `${SUBJECT_URL}?action=getSubjects&class=${encodeURIComponent(cls)}&board=${encodeURIComponent(board || '')}`;
-        const res = await fetchWithTimeout(url, {}, 10000);
-        const result = await res.json();
-        if (result.result === 'success' && Array.isArray(result.subjects)) return result.subjects;
-        throw new Error(result.error || 'Bad response');
-      } catch (err) {
-        lastErr = err;
-        if (i < tries - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)));
-      }
-    }
-    throw lastErr;
-  }
-
-  // Background: pull every class x board combo once and keep in localStorage
-  let prefetching = false;
-  async function prefetchAllSubjects(){
-    if (prefetching) return;
-    prefetching = true;
-    try {
-      const classes = Array.from(classSelect.options).filter(o => !o.disabled).map(o => o.value);
-      const boards  = Array.from(boardSelect.options).filter(o => !o.disabled).map(o => o.value);
-      const jobs = [];
-      classes.forEach(c => {
-        const list = NO_BOARD_CLASSES.includes(c.trim()) ? [''] : boards;
-        list.forEach(b => {
-          const cached = subjectCache[subjectKey(c, b)];
-          if (!cached || Date.now() - cached.ts > SUBJECT_TTL) jobs.push([c, b]);
-        });
-      });
-      const worker = async () => {
-        while (jobs.length){
-          const [c, b] = jobs.shift();
-          try { storeSubjects(subjectKey(c, b), await fetchSubjectsRemote(c, b, 2)); } catch (e) {}
-        }
-      };
-      await Promise.all([worker(), worker(), worker()]);
-    } finally {
-      prefetching = false;
-    }
-  }
-
-  function refreshSubjectsSilently(cls, board, key){
-    fetchSubjectsRemote(cls, board, 1).then(list => {
-      if (!list.length) return;
-      const changed = JSON.stringify(list) !== JSON.stringify((subjectCache[key] || {}).subjects);
-      storeSubjects(key, list);
-      const stillCurrent = subjectKey(classSelect.value, boardSelect.value) === key;
-      if (changed && stillCurrent && !subjectPanel.classList.contains('open')) buildSubjectPanel(list);
-    }).catch(() => {});
-  }
-
-  let subjectFetchToken = 0;
-  async function loadSubjectsForSelection(){
-    const cls = classSelect.value;
-    const board = boardSelect.value;
-    const noBoard = NO_BOARD_CLASSES.includes(cls.trim());
-    if (!cls) { buildSubjectPanel(DEFAULT_SUBJECTS); return; }
-    if (!noBoard && !board) { buildSubjectPanel([]); subjectBtnText.textContent = 'Select board first'; subjectBtnText.classList.add('placeholder'); subjectPanel.innerHTML=''; return; }
-
-    const key = subjectKey(cls, board);
-    const myToken = ++subjectFetchToken;
-
-    // 1) Cache hit -> instant, no network wait
-    const cached = subjectCache[key];
-    if (cached && cached.subjects && cached.subjects.length){
-      buildSubjectPanel(cached.subjects);
-      if (status.textContent.startsWith('Offline')) status.textContent = '';
-      if (Date.now() - cached.ts > SUBJECT_TTL) refreshSubjectsSilently(cls, board, key);
-      return;
-    }
-
-    // 2) No cache -> fetch with retries
-    subjectBtnText.textContent = 'Loading subjects…';
-    subjectBtnText.classList.add('placeholder');
-    showSubjectSkeleton();
-    try {
-      const list = await fetchSubjectsRemote(cls, board, 3);
-      if (myToken !== subjectFetchToken) return;
-      if (list.length){
-        storeSubjects(key, list);
-        buildSubjectPanel(list);
-        if (status.textContent.startsWith('Offline')) status.textContent = '';
-      } else {
-        subjectPanel.innerHTML = '';
-        subjectBtnText.textContent = 'No subjects found';
-        subjectBtnText.classList.add('placeholder');
-      }
-    } catch (err) {
-      console.error('Could not fetch subjects', err);
-      if (myToken !== subjectFetchToken) return;
-      // 3) Server down + no cache -> default list so form still usable
-      buildSubjectPanel(DEFAULT_SUBJECTS);
-      status.textContent = 'Offline — default subjects shown';
-      status.className = 'status err';
-    }
-  }
-
-  classSelect.addEventListener('change', () => { updateBoardVisibility(); loadSubjectsForSelection(); });
-  boardSelect.addEventListener('change', loadSubjectsForSelection);
-  updateBoardVisibility();
-
-  subjectBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    subjectPanel.classList.toggle('open');
-  });
-  document.addEventListener('click', (e) => {
-    if (!document.getElementById('subjectMsel').contains(e.target)) {
-      subjectPanel.classList.remove('open');
-    }
-  });
-
-  buildSubjectPanel(DEFAULT_SUBJECTS);
-  prefetchAllSubjects();
-  window.addEventListener('online', prefetchAllSubjects);
-
-
-  const studentIdInput = document.getElementById('studentIdInput');
-  const studentIdPrefix = document.getElementById('studentIdPrefix');
-  let lastSuggestedId = '';
-  let studentIdFocused = false;
-
-  studentIdInput.addEventListener('focus', () => { studentIdFocused = true; });
-  studentIdInput.addEventListener('blur', () => { studentIdFocused = false; });
-
-  let idFetchInFlight = false;
-
-  async function fetchNextId(force){
-    
-    if (!force && (studentIdFocused || form.classList.contains('is-saving') || idFetchInFlight)) return;
-
-    if (addMode) return;   // ID is locked to the existing student
-    idFetchInFlight = true;
-    studentIdPrefix.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
-    studentIdInput.placeholder = 'Fetching…';
-    try {
-      const res = await fetchWithTimeout(`${STUDENT_DETAILS_URL}?action=nextId&t=${Date.now()}`, {}, 25000);
-      const result = await res.json();
-      if (result.result !== 'success' || !result.id) {
-        throw new Error(result.error || 'Backend old/wrong: redeploy script as New version');
-      }
-      {
-        
-        const untouched = force || studentIdInput.value === '' || studentIdInput.value === lastSuggestedId;
-        if (untouched) studentIdInput.value = result.id;
-        lastSuggestedId = result.id;
-      }
-    } catch (err) {
-      console.error('Could not fetch next Student ID', err);
-      if (force) {
-        status.textContent = 'ID fetch failed: ' + err.message;
-        status.className = 'status err';
-      }
-    } finally {
-      studentIdPrefix.innerHTML = '<i class="fa-solid fa-hashtag"></i>';
-      studentIdInput.placeholder = 'PP 26 0001';
-      idFetchInFlight = false;
-    }
-  }
-  fetchNextId(true);
-  const stuIdRefreshBtn = document.getElementById('stuIdRefresh');
-  stuIdRefreshBtn.addEventListener('click', async () => {
-    if (stuIdRefreshBtn.classList.contains('spin') || idFetchInFlight) return;
-    stuIdRefreshBtn.classList.add('spin'); stuIdRefreshBtn.disabled = true;
-    await fetchNextId(true);
-    stuIdRefreshBtn.classList.remove('spin'); stuIdRefreshBtn.disabled = false;
-  });
-  setInterval(() => fetchNextId(false), 10000); 
-
-  // ===== Duplicate alert + add-another-subject =====
-  const escH = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const dupOv = document.getElementById('dupOv');
-  const dupBody = document.getElementById('dupBody');
-  const dupInfo = document.getElementById('dupInfo');
-  const addBar = document.getElementById('addBar');
-  let dupMatch = null, forceNew = false;
-
-  function showDup(m){
-    dupMatch = m;
-    const row = (k, v) => '<div><span>' + k + '</span><b>' + escH(v || '—') + '</b></div>';
-    const tch = Array.from(new Set((m.teachers || []).filter(Boolean))).join(', ');
-    dupBody.innerHTML = '<b>' + escH(m.name) + '</b> (' + escH(m.id) + ') is already registered. Do you want to add another subject?';
-    dupInfo.innerHTML = row('Class', m.class) + row('Current subjects', (m.subjects || []).join(', ')) +
-      row('Monthly fee', '₹' + (m.total || 0)) + (tch ? row('Teacher', tch) : '');
-    dupOv.hidden = false;
-    document.getElementById('dupAdd').focus();
-  }
-  function hideDup(){ dupOv.hidden = true; }
-
-  function enterAddMode(m){
-    addMode = { id: m.id, name: m.name, keys: new Set((m.subjects || []).map(sKey)) };
-    studentIdInput.value = m.id;
-    studentIdInput.readOnly = true;
-    stuIdRefreshBtn.disabled = true;
-    subjectChecks.forEach(c => { if (addMode.keys.has(sKey(c.value))) c.checked = false; });
-    syncSubjects();
-    buildSubjectPanel(lastSubjectList);
-    addBar.innerHTML = '<i class="fa-solid fa-circle-plus lead"></i><div class="tx"><b>Adding a subject to ' + escH(m.name) + '</b> · ' + escH(m.id) +
-      '<small>Already has: ' + escH((m.subjects || []).join(', ') || '—') + '. Pick the new subject and set its fee.</small></div>' +
-      '<button type="button" id="addExit">Change student</button>';
-    addBar.hidden = false;
-    document.getElementById('addExit').addEventListener('click', () => exitAddMode(true));
-    btnLabel.textContent = 'Add Subject';
-    status.textContent = ''; status.className = 'status';
-    form.classList.remove('await-pick');
-    addSearch.hidden = true;
-    addBar.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-  function exitAddMode(restoreId){
-    if (!addMode) return;
-    addMode = null;
-    studentIdInput.readOnly = false;
-    stuIdRefreshBtn.disabled = false;
-    addBar.hidden = true; addBar.innerHTML = '';
-    btnLabel.textContent = (mode === 'add') ? 'Add Subject' : 'Enroll Student';
-    buildSubjectPanel(lastSubjectList);
-    if (mode === 'add') resetAddFlow();          // back to the search box
-    else if (restoreId) fetchNextId(true);
-  }
-
-  document.getElementById('dupAdd').addEventListener('click', () => { hideDup(); setMode('add', true); enterAddMode(dupMatch); });
-  document.getElementById('dupNew').addEventListener('click', () => {
-    hideDup(); forceNew = true;
-    if (form.requestSubmit) form.requestSubmit(); else btn.click();
-  });
-  document.getElementById('dupCancel').addEventListener('click', hideDup);
-  dupOv.addEventListener('click', e => { if (e.target === dupOv) hideDup(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !dupOv.hidden) hideDup(); });
-
-  // ===== Mode tabs: New student register | Add subject to existing student =====
-  const modeTabs = document.getElementById('modeTabs');
-  const addSearch = document.getElementById('addSearch');
-  const addSearchInput = document.getElementById('addSearchInput');
-  const addSearchPx = document.getElementById('addSearchPx');
-  const addSearchStatus = document.getElementById('addSearchStatus');
-  const addSugg = document.getElementById('addSugg');
-  let mode = 'new';
-
-  // fields only needed for a brand-new student: drop `required` while adding a subject
-  function relaxRequired(on){
-    form.querySelectorAll('.new-only [required], .new-only [data-rq]').forEach(el => {
-      if (!el.hasAttribute('data-rq') && el.required) el.setAttribute('data-rq', '1');
-      el.required = !on && el.hasAttribute('data-rq');
-    });
-  }
-  relaxRequired(false);
-
-  function hideSugg(){ addSugg.classList.remove('show'); addSugg.innerHTML = ''; }
-  function resetAddFlow(){
-    form.classList.add('await-pick');
-    addSearch.hidden = false;
-    addSearchInput.value = ''; hideSugg();
-    addSearchStatus.textContent = ''; addSearchStatus.className = 'status';
-    subjectChecks.forEach(c => c.checked = false); feeVals = {}; syncSubjects();
-    setTimeout(() => { try { addSearchInput.focus(); } catch (e) {} }, 60);
-  }
-  function setMode(m, keep){
-    if (m === mode) return;
-    mode = m;
-    modeTabs.querySelectorAll('button').forEach(b => {
-      const on = b.dataset.mode === m;
-      b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
-    form.classList.toggle('mode-add', m === 'add');
-    relaxRequired(m === 'add');
-    hideDup(); status.textContent = ''; status.className = 'status';
-    if (!keep){ subjectChecks.forEach(c => c.checked = false); feeVals = {}; syncSubjects(); }
-    if (m === 'add'){
-      btnLabel.textContent = 'Add Subject';
-      if (!addMode){ if (keep){ form.classList.add('await-pick'); addSearch.hidden = false; } else resetAddFlow(); }
-      else addSearch.hidden = true;
-    } else {
-      form.classList.remove('await-pick');
-      addSearch.hidden = true; hideSugg();
-      btnLabel.textContent = 'Enroll Student';
-      if (addMode) exitAddMode(true); else fetchNextId(true);
-    }
-  }
-  modeTabs.addEventListener('click', e => { const b = e.target.closest('button[data-mode]'); if (b) setMode(b.dataset.mode); });
-
-  // ---- search existing student by ID or name ----
-  let addTimer = null, addSeq = 0;
-  function renderSugg(list){
-    addSugg.innerHTML = '';
-    if (!list.length) addSugg.innerHTML = '<div class="none">No matching students</div>';
-    list.forEach(s => {
-      const it = document.createElement('div'); it.className = 'it';
-      const meta = [s.class, (s.subjects || []).join(', ')].filter(Boolean).join(' · ');
-      it.innerHTML = '<b>' + escH(s.id) + ' — ' + escH(s.name) + '</b><small>' + escH(meta || '—') + '</small>';
-      it.addEventListener('mousedown', ev => { ev.preventDefault(); pickExisting(s); });
-      addSugg.appendChild(it);
-    });
-    addSugg.classList.add('show');
-  }
-  async function runAddSearch(q){
-    const my = ++addSeq;
-    addSearchPx.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
-    addSearchStatus.textContent = 'Searching…'; addSearchStatus.className = 'status';
-    try {
-      const res = await fetchWithTimeout(`${STUDENT_DETAILS_URL}?action=searchStudents&q=${encodeURIComponent(q)}`, {}, 15000);
-      const j = await res.json();
-      if (my !== addSeq) return;
-      if (j.status === 'ok'){
-        const l = j.students || [];
-        renderSugg(l);
-        addSearchStatus.textContent = l.length + ' match' + (l.length === 1 ? '' : 'es');
-      } else {
-        hideSugg(); addSearchStatus.textContent = j.message || 'No matches'; addSearchStatus.className = 'status err';
-      }
-    } catch (err){
-      if (my !== addSeq) return;
-      hideSugg(); addSearchStatus.textContent = 'Search failed — check connection'; addSearchStatus.className = 'status err';
-    } finally {
-      if (my === addSeq) addSearchPx.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>';
-    }
-  }
-  addSearchInput.addEventListener('input', () => {
-    clearTimeout(addTimer);
-    const q = addSearchInput.value.trim();
-    if (!q){ hideSugg(); addSearchStatus.textContent = ''; return; }
-    addTimer = setTimeout(() => runAddSearch(q), 300);
-  });
-  addSearchInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter'){
-      e.preventDefault();
-      const first = addSugg.querySelector('.it');
-      if (first) first.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-    } else if (e.key === 'Escape') hideSugg();
-  });
-  document.addEventListener('click', e => { if (!addSearch.contains(e.target)) hideSugg(); });
-
-  function prefillFromRecord(d){
-    const setSel = (sel, v) => {
-      v = String(v || '').trim().toLowerCase(); if (!v) return;
-      const o = Array.from(sel.options).find(x => x.value.trim().toLowerCase() === v);
-      if (o) sel.value = o.value;
-    };
-    const nm = form.querySelector('[name="Name"]'); if (nm && d.name) nm.value = d.name;
-    setSel(form.querySelector('select[name="Batch"]'), d.batch);
-    setSel(classSelect, d.class);
-    updateBoardVisibility();
-    setSel(boardSelect, d.board);
-    loadSubjectsForSelection();
-  }
-  async function pickExisting(s){
-    hideSugg();
-    addSearchInput.value = (s.id || '') + ' — ' + (s.name || '');
-    addSearchStatus.textContent = 'Loading student…'; addSearchStatus.className = 'status';
-    let d = s;
-    try {
-      const res = await fetchWithTimeout(`${STUDENT_DETAILS_URL}?action=getStudent&id=${encodeURIComponent(s.id)}`, {}, 15000);
-      const j = await res.json();
-      if (j && j.status === 'ok') d = Object.assign({}, s, j);
-    } catch (e) { /* fall back to the search row */ }
-    addSearchStatus.textContent = '';
-    enterAddMode({ id: d.id || s.id, name: d.name || s.name, subjects: d.subjects || s.subjects || [],
-                   class: d.class, total: d.total, teachers: d.teachers });
-    prefillFromRecord(d);
-  }
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    if (!subjects.length) {
-      status.textContent = 'Pick at least one subject';
-      status.className = 'status err';
-      return;
-    }
-    const noFee = subjects.find(s => feeVals[s] == null || feeVals[s] === '' || !(Number(feeVals[s]) >= 0));
-    if (noFee) {
-      status.textContent = 'Enter the fee for ' + noFee;
-      status.className = 'status err';
-      return;
-    }
-
-    btn.disabled = true;
-    btnLabel.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving';
-    form.classList.add('is-saving');
-    status.textContent = 'Saving…';
-    status.className = 'status';
-
-    updateTotal();
-    const data = Object.fromEntries(new FormData(form).entries());
-    data['Teacher ID'] = TCH.id; data.token = TCH.token;   // saved to the teacher_id column by the Apps Script
-    data['Fees Structure'] = feesStructureHidden.value;     // "500, 400" same order as Subjects
-    data['Monthly Fee'] = totalFeeInput.value;
-    const adding = !!addMode;
-    if (adding) { data.action = 'addSubject'; data['Student ID'] = addMode.id; }
-    else if (forceNew) data['Force New'] = '1';
-    forceNew = false;
-    const studentId = data['Student ID'];
-
-    try {
-      const res = await fetchWithTimeout(STUDENT_DETAILS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(data)
-      }, 30000);
-      const result = await res.json();
-
-      if (result.result === 'success') {
-        status.textContent = adding ? `Subject added to ${studentId}` : `Saved as ${result.id || studentId}`;
-        status.className = 'status ok';
-        form.reset(); teacherIdInput.value = TCH.id;
-        subjectChecks.forEach(c => c.checked = false);
-        feeVals = {};
-        syncSubjects();
-        exitAddMode(false);
-        if (mode === 'new') fetchNextId(true);
-      } else if (result.result === 'exists' && result.matches && result.matches.length) {
-        status.textContent = ''; status.className = 'status';
-        showDup(result.matches[0]);
-      } else {
-        throw new Error(result.error || 'Unknown error');
-      }
-    } catch (err) {
-      status.textContent = 'Failed — ' + (err && err.message && err.message !== 'Failed to fetch' ? err.message : 'check connection');
-      status.className = 'status err';
-      console.error(err);
-    } finally {
-      btn.disabled = false;
-      btnLabel.textContent = (addMode || mode === 'add') ? 'Add Subject' : 'Enroll Student';
-      form.classList.remove('is-saving');
     }
   });
 <\/script>
