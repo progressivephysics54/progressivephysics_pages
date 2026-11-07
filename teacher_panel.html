@@ -106,7 +106,30 @@ form.fm{display:grid;gap:18px}
 .topbar,.dock{display:none}
 #stage{position:relative;min-height:0;min-width:0;background:var(--bg)}
 #stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
-#home{position:absolute;inset:0;overflow:auto;padding:48px 44px 60px;background:var(--bg)}
+#home,#stuV{position:absolute;inset:0;overflow:auto;padding:48px 44px 60px;background:var(--bg)}
+#stuV[hidden]{display:none}
+.mh{font-family:var(--display);font-weight:500;font-size:34px;margin:0 0 4px;letter-spacing:-.01em}
+.mbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 18px}
+.mbar .inp{flex:1;min-width:200px}
+.mbar select,.mref{border:1px solid var(--line);background:#fff;border-radius:4px;padding:0 12px;font:inherit;font-size:14px;color:var(--ink);height:44px}
+.mref{width:44px;padding:0}
+.mc{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-bottom:10px;display:grid;gap:8px}
+.mc.ex{background:#faf6f3}
+.mc-h{display:flex;gap:12px;align-items:center}
+.mc-av{width:38px;height:38px;border-radius:50%;background:var(--navy);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-weight:600;flex:none}
+.mc.ex .mc-av{background:#9a8f86}
+.mc-t b{display:block;font-size:15.5px}
+.mc-t small{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.mc-tag{margin-left:auto;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid var(--line);white-space:nowrap}
+.mc-tag.ok{background:#e6f4ec;border-color:#bfe0cc;color:var(--ok)}
+.mc-tag.ex{background:#fbe9e7;border-color:#f0c4be;color:var(--adm)}
+.mc-r{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px}
+.mc-r b{color:var(--ink);font-weight:500}
+.mc-a{display:flex;flex-wrap:wrap;gap:8px}
+.mc-a a,.mc-a button{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:4px;padding:7px 12px;font:inherit;font-size:13px;font-weight:500;color:var(--ink);text-decoration:none;cursor:pointer}
+.mc-a .off{color:var(--adm);border-color:#f0c4be}
+.mc-a .on{color:var(--ok);border-color:#bfe0cc}
+.m-empty{padding:40px 10px;text-align:center;color:var(--muted)}
 .wrap{max-width:860px;margin:0 auto}
 .greet{padding:0 0 28px;border-bottom:1px solid var(--ink)}
 .kick{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 14px;text-transform:uppercase;letter-spacing:.08em}
@@ -174,13 +197,13 @@ dialog h3 i{font-size:15px;color:var(--accent)}
   .topbar .logo b{font-size:16px;white-space:nowrap}.topbar .logo span{display:none}
   .topbar .id{font-family:var(--mono);font-size:12px;color:var(--muted)}
   .topbar button{width:36px;height:36px;border-radius:4px;border:1px solid var(--line);background:transparent;font-size:14px}
-  .dock{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  .dock{display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
   .dock .nb{flex-direction:column;gap:4px;padding:8px 2px;font-size:11.5px;justify-content:center;align-items:center;text-align:center}
   .dock .nb i{font-size:17px;width:auto}
   .dock .nb{color:var(--muted)}.dock .nb:hover{background:none;color:var(--ink)}
   .dock .nb.on{background:transparent;box-shadow:none;color:var(--navy)}
   .dock .nb.on i{color:var(--navy)}
-  #home{padding:26px 18px 40px}
+  #home,#stuV{padding:26px 18px 40px}
   .tile{padding:18px 8px 18px 40px}.tile .no{top:21px}.tile .go span,.tile .go{font-size:0}.tile .go i{font-size:13px}
   .chip{padding:7px 10px}
 }
@@ -271,6 +294,7 @@ dialog h3 i{font-size:15px;color:var(--accent)}
       <div class="cap">Workspace</div>
       <button class="nb on" data-v="home"><i class="fa-solid fa-house"></i>Home</button>
       <button class="nb" data-v="adm"><i class="fa-solid fa-user-plus"></i>Admission</button>
+      <button class="nb" data-v="stu"><i class="fa-solid fa-user-graduate"></i>My students</button>
       <button class="nb" data-v="receipt"><i class="fa-solid fa-receipt"></i>Fee receipt</button>
       <button class="nb" data-v="history"><i class="fa-solid fa-clock-rotate-left"></i>Fees history</button>
     </nav>
@@ -304,8 +328,21 @@ dialog h3 i{font-size:15px;color:var(--accent)}
         <div class="tiles">
           <button class="tile" data-v="adm" style="--c:#b4423a"><span class="no">01</span><span class="ti"><i class="fa-solid fa-user-plus"></i></span><h2>Student admission</h2><p>Enroll a new student into the register.</p><span class="go">Open form <i class="fa-solid fa-arrow-right"></i></span></button>
           <button class="tile" data-v="receipt" style="--c:#0e8a7c"><span class="no">02</span><span class="ti"><i class="fa-solid fa-receipt"></i></span><h2>Fees receipt</h2><p>Record a fee payment and issue the receipt.</p><span class="go">Collect fees <i class="fa-solid fa-arrow-right"></i></span></button>
+          <button class="tile" data-v="stu" style="--c:#7a5a12"><span class="no">04</span><span class="ti"><i class="fa-solid fa-user-graduate"></i></span><h2>My students</h2><p>Students you teach. Mark ex-students.</p><span class="go">View students <i class="fa-solid fa-arrow-right"></i></span></button>
           <button class="tile" data-v="history" style="--c:#2456c8"><span class="no">03</span><span class="ti"><i class="fa-solid fa-clock-rotate-left"></i></span><h2>Fees history</h2><p>Receipts you have collected, newest first.</p><span class="go">View history <i class="fa-solid fa-arrow-right"></i></span></button>
         </div>
+      </div>
+    </div>
+    <div id="stuV" hidden>
+      <div class="wrap">
+        <h1 class="mh">My students</h1>
+        <p class="sub" id="mStat">Loading…</p>
+        <div class="mbar">
+          <div class="inp"><i class="fa-solid fa-magnifying-glass"></i><input id="mQ" type="search" placeholder="Search name, ID, phone, class…" autocomplete="off"></div>
+          <select id="mF" aria-label="Status"><option value="all" selected>All</option><option value="active">Active</option><option value="ex">Ex-students</option></select>
+          <button class="mref" id="mRef" type="button" aria-label="Refresh"><i class="fa-solid fa-rotate"></i></button>
+        </div>
+        <div id="mList"></div>
       </div>
     </div>
   </main>
@@ -313,6 +350,7 @@ dialog h3 i{font-size:15px;color:var(--accent)}
   <nav class="dock">
     <button class="nb on" data-v="home"><i class="fa-solid fa-house"></i>Home</button>
     <button class="nb" data-v="adm"><i class="fa-solid fa-user-plus"></i>Admission</button>
+    <button class="nb" data-v="stu"><i class="fa-solid fa-user-graduate"></i>Students</button>
     <button class="nb" data-v="receipt"><i class="fa-solid fa-receipt"></i>Receipt</button>
     <button class="nb" data-v="history"><i class="fa-solid fa-clock-rotate-left"></i>History</button>
   </nav>
@@ -397,7 +435,7 @@ function toast(msg, icon) {
 }
 function leave(msg) {
   sessionStorage.removeItem('tp'); Object.values(frames).forEach(f => f.remove()); frames = {};
-  S = null; window.TEACHER = null; $('app').hidden = true; $('login').hidden = false;
+  S = null; MINE = []; window.TEACHER = null; $('app').hidden = true; $('login').hidden = false;
   $('lpw').value = ''; mode('in'); $('msg').textContent = msg || '';
 }
 function frame(key) {
@@ -418,6 +456,8 @@ function go(v, fromPop) {
   curV = v;
   $$('.nb').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $('home').hidden = v !== 'home';
+  $('stuV').hidden = v !== 'stu';
+  if (v === 'stu') loadMine_();
   const need = { adm: 'adm', receipt: 'fee', history: 'fee' }[v];
   Object.entries(frames).forEach(([k, f]) => f.hidden = k !== need);
   if (!need) return;
@@ -428,6 +468,61 @@ function go(v, fromPop) {
   }
 }
 $$('[data-v]').forEach(b => b.addEventListener('click', () => go(b.dataset.v)));
+
+/* ---------- MY STUDENTS (only students whose teacher_id includes me) ---------- */
+const STU_API = "https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec";
+let MINE = [], mineBusy = false;
+const mEsc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const mActive = s => { const v = s['Active Status']; return !(v === false || /^(false|no|n|0|inactive|ex|ex-student|left)$/i.test(String(v == null ? '' : v).trim())); };
+async function loadMine_(force) {
+  if (!S || mineBusy) return;
+  mineBusy = true; $('mStat').textContent = 'Loading…';
+  try {
+    const r = await fetch(STU_API + '?action=myStudents&teacherId=' + encodeURIComponent(S.id) + '&_=' + Date.now());
+    const j = await r.json();
+    if (j.error) throw new Error(j.error);
+    MINE = j.students || [];
+    renderMine_();
+  } catch (e) {
+    $('mStat').textContent = 'Could not load students';
+    $('mList').innerHTML = '<div class="m-empty">Check connection and tap refresh.</div>';
+  } finally { mineBusy = false; }
+}
+function renderMine_() {
+  const f = $('mF').value, q = $('mQ').value.trim().toLowerCase();
+  const nAct = MINE.filter(mActive).length, nEx = MINE.length - nAct;
+  let rows = MINE.filter(s => f === 'all' || (f === 'active') === mActive(s));
+  if (q) rows = rows.filter(s => ['Student Name', 'Student ID', 'Student Contact No', 'Class', 'Batch', 'Board', 'My Subjects', 'Guardian Name'].some(k => String(s[k] || '').toLowerCase().includes(q)));
+  rows = rows.slice().sort((a, b) => String(a['Student Name'] || '').localeCompare(String(b['Student Name'] || ''), undefined, { sensitivity: 'base' }));
+  $('mStat').textContent = nAct + ' active · ' + nEx + ' ex-student' + (nEx === 1 ? '' : 's') + (rows.length !== MINE.length ? ' · showing ' + rows.length : '');
+  $('mList').innerHTML = rows.length ? rows.map(s => {
+    const on = mActive(s), ph = String(s['Student Contact No'] || '').trim(), dg = ph.replace(/\D/g, ''), wa = dg.length === 10 ? '91' + dg : dg;
+    const id = mEsc(s['Student ID']);
+    return '<article class="mc' + (on ? '' : ' ex') + '" data-id="' + id + '"><div class="mc-h"><span class="mc-av">' + mEsc((s['Student Name'] || '?').trim().charAt(0).toUpperCase()) + '</span>' +
+      '<span class="mc-t"><b>' + mEsc(s['Student Name'] || 'Unnamed') + '</b><small>' + id + '</small></span>' +
+      '<span class="mc-tag ' + (on ? 'ok' : 'ex') + '">' + (on ? 'Active' : 'Ex-student') + '</span></div>' +
+      '<div class="mc-r"><span>Class <b>' + mEsc(s['Class'] || '—') + '</b></span><span>Batch <b>' + mEsc(s['Batch'] || '—') + '</b></span><span>Board <b>' + mEsc(s['Board'] || '—') + '</b></span><span>My subjects <b>' + mEsc(s['My Subjects'] || '—') + '</b></span></div>' +
+      '<div class="mc-a">' + (dg ? '<a href="tel:' + mEsc(ph.replace(/[^\d+]/g, '')) + '"><i class="fa-solid fa-phone"></i>Call</a><a href="https://wa.me/' + mEsc(wa) + '" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>' : '') +
+      '<button class="' + (on ? 'off' : 'on') + '" data-id="' + id + '" data-v="' + (on ? 0 : 1) + '"><i class="fa-solid ' + (on ? 'fa-user-slash' : 'fa-user-check') + '"></i>' + (on ? 'Mark ex-student' : 'Mark active') + '</button></div></article>';
+  }).join('') : '<div class="m-empty">' + (MINE.length ? 'No students match.' : 'No students are assigned to your Teacher ID yet.') + '</div>';
+}
+async function setMineActive_(id, val) {
+  const s = MINE.find(x => String(x['Student ID']) === String(id)); if (!s) return;
+  if (!val && !confirm('Mark ' + (s['Student Name'] || id) + ' as ex-student? Nothing is deleted; you can undo it.')) return;
+  const before = s['Active Status']; s['Active Status'] = val; renderMine_();
+  try {
+    const r = await fetch(STU_API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'setActive', 'Student ID': id, active: val, teacherId: S.id }) });
+    const j = await r.json();
+    if (!j.success) throw new Error(j.error || 'failed');
+    toast(val ? 'Marked active' : 'Marked ex-student');
+  } catch (e) {
+    s['Active Status'] = before; renderMine_(); toast('Could not save: ' + (e.message || 'error'), 'fa-triangle-exclamation');
+  }
+}
+$('mF').addEventListener('change', renderMine_);
+$('mQ').addEventListener('input', renderMine_);
+$('mRef').addEventListener('click', () => loadMine_(true));
+$('mList').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (b) setMineActive_(b.dataset.id, b.dataset.v === '1'); });
 window.addEventListener('popstate', e => {
   if (!S) return;
   go((e.state && e.state.v) || 'home', true);
@@ -1249,7 +1344,7 @@ footer i{color:var(--muted);margin-right:6px}
   const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbwD1aqFLzL3xA_5LUsu4t81uRGA0ik8JRwCVlmh4Fc63aS2tuBjk9mOWtPhCVZx_hQC/exec";
 
   // Student Details Web App URL — looks up name/phone/subjects from student_details sheet
-  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwLasirfCGCC7e-4rtp94rTWoEIyrfoQ8khTXQ7OTeZkJYtqpPANjC1muRPalo2lN-v/exec";
+  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec";
 
   const form = document.getElementById('feeForm');
   const statusEl = document.getElementById('status');
@@ -2807,7 +2902,7 @@ form.await-pick .after-pick{display:none}
   document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
 
   const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbyiYCckDlSoJDjQAH9Ddl7hNc63RyAucqmJn-YdEuG49BRf5cQJWjJzaad82l5gAMgyIA/exec";
-  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbwLasirfCGCC7e-4rtp94rTWoEIyrfoQ8khTXQ7OTeZkJYtqpPANjC1muRPalo2lN-v/exec";
+  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec";
 
   const form = document.getElementById('studentForm');
   const TCH = window.TEACHER || (window.parent && window.parent.TEACHER) || { id: '', name: '', token: '' };
