@@ -36,6 +36,9 @@ i.fa-solid,i.fa-regular,i.fa-brands{line-height:1}
 /* ── TOAST ── */
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:1000;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 32px);padding:12px 18px;border-radius:6px;background:var(--deep);color:#f4f1e6;font-size:14px;font-weight:500;box-shadow:0 10px 30px rgba(15,43,36,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+#toast[popover]{top:auto;right:auto;margin:0;border:0;overflow:visible}
+#toast.err{background:#8f2d26;color:#fff}
+#toast.err i{color:#ffd9d4}
 #toast i{color:var(--brass);font-size:14px}
 
 /* ── LOGIN ── */
@@ -2176,7 +2179,7 @@ footer i{color:var(--muted);margin-right:6px}
   const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbwD1aqFLzL3xA_5LUsu4t81uRGA0ik8JRwCVlmh4Fc63aS2tuBjk9mOWtPhCVZx_hQC/exec";
 
   // Student Details Web App URL — looks up name/phone/subjects from student_details sheet
-  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbzfpaTQWIPX1mDRj0G8KwtN6CUj73BK-eVqSMOxBQCnMzMUNDYkRL2XNAHP6JNKHMaD/exec";
+  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbx1T1vHcHRRqfTDvqGvF3_0GCFxeGfX7NGWEgusqW071W3GREAhU9i9JI_MSNbYyjuH/exec";
 
   const form = document.getElementById('feeForm');
   const statusEl = document.getElementById('status');
@@ -3196,10 +3199,15 @@ function wipeCache_() {
 
 let toastT;
 function toast(msg, icon) {
+  const t = $('toast'), err = /exclamation|xmark|ban/.test(icon || '');
   $('toastTxt').textContent = msg;
-  $('toast').querySelector('i').className = 'fa-solid ' + (icon || 'fa-circle-check');
-  $('toast').classList.add('show');
-  clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.remove('show'), 2600);
+  t.querySelector('i').className = 'fa-solid ' + (icon || 'fa-circle-check');
+  t.classList.toggle('err', err);
+  /* top layer: shows ABOVE open dialogs/modals instead of hiding behind them */
+  try { if (!t.hasAttribute('popover')) t.setAttribute('popover', 'manual'); if (!t.matches(':popover-open')) t.showPopover(); } catch (e) {}
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { t.classList.remove('show'); try { t.hidePopover(); } catch (e) {} }, err ? 4200 : 2600);
 }
 
 function enter(s) {
@@ -3447,7 +3455,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 
 /* ═════════ ADMIN LOGIC (students + teachers) ═════════ */
 
-  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbzfpaTQWIPX1mDRj0G8KwtN6CUj73BK-eVqSMOxBQCnMzMUNDYkRL2XNAHP6JNKHMaD/exec';
+  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbx1T1vHcHRRqfTDvqGvF3_0GCFxeGfX7NGWEgusqW071W3GREAhU9i9JI_MSNbYyjuH/exec';
   const TEACHER_API_URL = 'https://script.google.com/macros/s/AKfycbxIe7QVlhDVkufRs_aND-J8Y_eZvDACZTm4ObN2HXsc9B_tVujVhYltuxSfOt-dybbb/exec';
  
 
@@ -3469,7 +3477,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 
   /* ═════ Register student (dialog; ported from teacher panel admission form) ═════ */
   const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbyiYCckDlSoJDjQAH9Ddl7hNc63RyAucqmJn-YdEuG49BRf5cQJWjJzaad82l5gAMgyIA/exec";
-  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbzfpaTQWIPX1mDRj0G8KwtN6CUj73BK-eVqSMOxBQCnMzMUNDYkRL2XNAHP6JNKHMaD/exec";
+  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbx1T1vHcHRRqfTDvqGvF3_0GCFxeGfX7NGWEgusqW071W3GREAhU9i9JI_MSNbYyjuH/exec";
   const NO_BOARD_ = ['JEE','NEET'];
   const DEFAULT_SUBJECTS_ = ['Physics','Chemistry','Biology - Botany','Biology - Zoology','Mathematics','English'];
   const SUBJ_CACHE_KEY_ = 'pp_subjects_cache_v1', SUBJ_TTL_ = 24*60*60*1000;
@@ -3613,19 +3621,23 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
     rg.dup = m;
     const row = (k,v)=>'<div><span>' + k + '</span><b>' + rgEsc_(v || '—') + '</b></div>';
     const tch = [...new Set((m.teachers||[]).filter(Boolean))].join(', ');
-    $('dupBody').innerHTML = '<b>' + rgEsc_(m.name) + '</b> (' + rgEsc_(m.id) + ') is already registered. Do you want to add another subject?';
+    const exS = m.active === false;
+    $('dupNew').style.display = exS ? 'none' : '';
+    $('dupBody').innerHTML = exS
+      ? '<b>' + rgEsc_(m.name) + '</b> (' + rgEsc_(m.id) + ') is an <b>EX-STUDENT</b>. New admission is not allowed. Add a subject to re-activate this student?'
+      : '<b>' + rgEsc_(m.name) + '</b> (' + rgEsc_(m.id) + ') is already registered. Do you want to add another subject?';
     $('dupInfo').innerHTML = row('Class', m.class) + row('Current subjects', (m.subjects||[]).join(', ')) +
       row('Status', m.active === false ? 'Ex-student' + (m.deactiveDate ? ' (since ' + String(m.deactiveDate).slice(0,10) + ')' : '') : 'Active') + row('Monthly fee', '₹' + (m.total || 0)) + (tch ? row('Teacher', tch) : '');
     $('dupModal').showModal();
   }
   function rgEnterAdd_(m){
-    rg.add = {id:m.id, name:m.name, keys:new Set((m.subjects||[]).map(rgSKey_))};
+    rg.add = {id:m.id, name:m.name, ex:(m.active === false), keys:new Set(m.active === false ? [] : (m.subjects||[]).map(rgSKey_))};  /* ex-student: old subjects stay selectable (rejoin) */
     const inp = $('rgId'); inp.value = m.id; inp.readOnly = true; $('rgIdRef').disabled = true;
     rg.checks.forEach(c=>{ if(rg.add.keys.has(rgSKey_(c.value))) c.checked = false; });
     rgSync_(); rgBuild_(rg.last);
     const bar = $('rgAddBar');
     bar.innerHTML = '<i class="fa-solid fa-circle-plus lead"></i><div class="tx"><b>Adding a subject to ' + rgEsc_(m.name) + '</b> · ' + rgEsc_(m.id) +
-      '<small>Already has: ' + rgEsc_((m.subjects||[]).join(', ') || '—') + '. Pick the new subject and set its fee.</small>' + (m.active === false ? '<small style="color:#b4423a;font-weight:600">⚠ This is an EX-STUDENT. Re-activate them from the student list if they are rejoining.</small>' : '') + '</div>' +
+      '<small>Already has: ' + rgEsc_((m.subjects||[]).join(', ') || '—') + '. Pick the new subject and set its fee.</small>' + (m.active === false ? '<small style="color:#b4423a;font-weight:600">⚠ This is an EX-STUDENT. Pick any subject (old ones too) to re-enrol. They will be marked ACTIVE again.</small>' : '') + '</div>' +
       '<button type="button" id="rgAddExit">Change student</button>';
     bar.hidden = false;
     $('rgAddExit').addEventListener('click', ()=>rgExitAdd_(true));
@@ -3825,10 +3837,10 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
       try{
         const r = await rgFetch_(STUDENT_DETAILS_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(data)}, 30000);
         const j = await r.json();
-        if(j.result === 'exists' && j.matches && j.matches.length){ rgShowDup_(j.matches[0]); return; }
+        if(j.result === 'exists' && j.matches && j.matches.length){ rgShowDup_(j.matches[0]); if(j.exStudent) toast(j.error || 'Ex-student found. New admission cancelled.', 'fa-triangle-exclamation'); return; }
         if(j.result!=='success') throw new Error(j.error||'Unknown error');
         $('regModal').close();
-        toast(adding ? 'Subject added to ' + data['Student ID'] : 'Saved as ' + (j.id || data['Student ID']));
+        toast(adding ? 'Subject added to ' + data['Student ID'] + (j.reactivated ? ' \u2014 marked active again' : '') : 'Saved as ' + (j.id || data['Student ID']));
         try{ loadStudents(false); }catch(e){}
       }catch(err){
         rgMsg_(err && err.message && err.message!=='Failed to fetch' ? 'Failed — ' + err.message : 'Failed — check connection');
