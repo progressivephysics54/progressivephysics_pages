@@ -309,6 +309,7 @@ dialog h3 i{font-size:15px;color:var(--accent)}
 .sc-tags{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
 .tag{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:10px;background:var(--bg);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
 .tag.ex{background:#fbe9e7;border-color:#f0c4be;color:#b4423a}
+.sc.exs{background:#e9e7e3;border-color:#d3cfc8}.sc.exs .sc-main:hover{background:#e2dfda}.sc.exs .sc-av{filter:grayscale(1);opacity:.55}.sc.exs .sc-t b,.sc.exs .sc-t small{color:#7d776f}.sc.exs .sd b{color:#6d675f}.sc.exs .sc-drawer{border-top-color:#d3cfc8}
 .ab.off{color:#b4423a;border-color:#f0c4be}
 .ab.on-act{color:#1f7a4d;border-color:#bfe0cc}
 .tag.cls{background:#fbeede;border-color:#efd3ac;color:var(--accent-d);display:inline-flex;gap:5px;align-items:center}
@@ -354,7 +355,7 @@ dialog h3 i{font-size:15px;color:var(--accent)}
   .topbar .logo b{font-size:16px;white-space:nowrap}.topbar .logo div span{display:none}
   .topbar .id{font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.7)}
   .topbar button{width:36px;height:36px;border-radius:4px;border:1px solid rgba(255,255,255,.18);background:transparent;color:#fff;font-size:14px}
-  .dock{display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  .dock{display:grid;grid-template-columns:repeat(6,1fr);background:#fff;border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
   .dock .nb{flex-direction:column;gap:4px;padding:8px 2px;font-size:11.5px;justify-content:center;align-items:center;text-align:center;color:var(--muted)}
   .dock .nb i{font-size:17px;width:auto}
   .dock .nb:hover{background:none;color:var(--ink)}
@@ -665,6 +666,7 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
       <div class="cap" style="padding-top:14px">Fees</div>
       <button class="nb" data-v="receipt"><i class="fa-solid fa-receipt"></i>Fee receipt</button>
       <button class="nb" data-v="history"><i class="fa-solid fa-clock-rotate-left"></i>Fees history</button>
+      <button class="nb" data-v="status"><i class="fa-solid fa-chart-pie"></i>Fees status</button>
     </nav>
     <div class="me"><div class="av t-av"></div><div class="mi"><b class="t-name"></b><span class="t-id"></span></div></div>
     <div class="me-act">
@@ -786,6 +788,7 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
     <button class="nb" data-v="teacher"><i class="fa-solid fa-chalkboard-user"></i>Teachers</button>
     <button class="nb" data-v="receipt"><i class="fa-solid fa-receipt"></i>Receipt</button>
     <button class="nb" data-v="history"><i class="fa-solid fa-clock-rotate-left"></i>History</button>
+    <button class="nb" data-v="status"><i class="fa-solid fa-chart-pie"></i>Status</button>
   </nav>
 
   <button type="button" id="syncPill" class="syncing" role="status" aria-live="polite" onclick="syncRetry_()">
@@ -928,6 +931,567 @@ dialog label.sw-row,.field label.sw-row,label.sw-row{display:flex;align-items:ce
 <div id="idOffscreen" aria-hidden="true"></div>
 
 <!-- FEE RECEIPT + HISTORY (copied from teacher_panel.html; runs in an iframe) -->
+<script type="text/plain" id="doc-stat"><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fee Status – Progressive Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f4f6f7; --card:#fff; --field:#fafcfd; --ink:#14232a; --muted:#5d727b; --line:#dfe6e9;
+  --brand:#0e4a5c; --brand2:#146b84; --head:#eaf1f4;
+  --red:#d94040; --orange:#e8832a; --yellow:#e5b400; --green:#2f9e5b; --grey:#b7c4ca;
+  --p-bg:#fde8e8; --p-fg:#9b1c1c; --p-bd:#f5c2c2;
+  --d-bg:#fff0dd; --d-fg:#9a4a08; --d-bd:#f6d3a3;
+  --u-bg:#fdf6c8; --u-fg:#7a5b00; --u-bd:#ecdd96;
+  --g-bg:#e0f5e7; --g-fg:#17663a; --g-bd:#b2e0c2;
+  --n-bg:#eef2f4; --n-fg:#7d909a; --n-bd:#e1e8eb;
+  --shadow:0 1px 3px rgba(14,74,92,.08),0 6px 20px rgba(14,74,92,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.4}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand2);outline-offset:2px}
+header{background:var(--brand);color:#fff;padding:18px 16px 60px}
+.wrap{max-width:1100px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.sub{font-size:.82rem;opacity:.8;margin-top:3px}
+.acts{display:flex;gap:8px}
+.btn-h{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:10px;padding:8px 13px;cursor:pointer;font-size:.85rem;font-weight:500;display:flex;align-items:center;gap:7px}
+.btn-h:hover{background:rgba(255,255,255,.22)}
+.btn-h.spin .fa-rotate{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{max-width:1100px;margin:-42px auto 40px;padding:0 16px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.kpi b{display:block;font-size:1.45rem;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi span{font-size:.78rem;color:var(--muted)}
+.kpi.bad b{color:var(--p-fg)}
+.kpi.good b{color:var(--g-fg)}
+.sticky{position:sticky;top:0;z-index:5;padding:10px 0 6px;background:var(--bg)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px}
+.bar{display:flex;gap:10px;flex-wrap:wrap}
+.search{position:relative;flex:1;min-width:200px}
+.search i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{width:100%;padding:11px 14px 11px 40px;border:1.5px solid var(--line);border-radius:10px;background:var(--field);outline:none}
+.search input:focus,.sel select:focus{border-color:var(--brand2);outline:2px solid color-mix(in srgb,var(--brand2) 30%,transparent)}
+.sel{position:relative}
+.sel select{appearance:none;-webkit-appearance:none;padding:11px 36px 11px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--field);cursor:pointer;height:100%;outline:none}
+.sel select.on{border-color:var(--brand2)}
+#tch{max-width:230px;text-overflow:ellipsis}
+.sel i{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:.7rem}
+.chips{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:7px}
+.chip .n{background:var(--head);border-radius:999px;padding:0 8px;font-size:.72rem;font-variant-numeric:tabular-nums}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip.on .n{background:rgba(255,255,255,.22)}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 2px 0;font-size:.78rem;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-top:14px}
+.stu{background:var(--card);border-radius:12px;padding:15px;border:1px solid var(--line);border-left:4px solid var(--grey)}
+.stu.has-pending{border-left-color:var(--red)}
+.stu.has-due{border-left-color:var(--orange)}
+.stu.all-paid{border-left-color:var(--green)}
+.row1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.name{font-weight:600;font-size:1rem}
+.sid{font-size:.78rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.badge{font-size:.74rem;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.b-pending{background:var(--p-bg);color:var(--p-fg)}
+.b-due{background:var(--d-bg);color:var(--d-fg)}
+.b-paid{background:var(--g-bg);color:var(--g-fg)}
+.b-up{background:var(--u-bg);color:var(--u-fg)}
+.b-none{background:var(--n-bg);color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted);margin:10px 0 12px}
+.meta i{width:14px;text-align:center;margin-right:4px}
+.months{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.m{border:1px solid transparent;border-radius:8px;text-align:center;padding:6px 0 5px;font-size:.74rem;font-weight:600;line-height:1.15}
+.m small{display:block;font-size:.64rem;font-weight:500;margin-top:2px}
+.m.pending{background:var(--p-bg);color:var(--p-fg);border-color:var(--p-bd)}
+.m.due{background:var(--d-bg);color:var(--d-fg);border-color:var(--d-bd)}
+.m.upcoming{background:var(--u-bg);color:var(--u-fg);border-color:var(--u-bd)}
+.m.paid{background:var(--g-bg);color:var(--g-fg);border-color:var(--g-bd)}
+.m.na{background:var(--n-bg);color:var(--n-fg);border-color:var(--n-bd)}
+.m.sel-m{outline:2px solid var(--brand2);outline-offset:1px}
+.mbox{border-radius:10px;padding:12px;border:1.5px solid var(--line)}
+.mbox.none,.mbox.pending{border-color:var(--p-bd);background:var(--p-bg)}
+.mbox.part,.mbox.due{border-color:var(--d-bd);background:var(--d-bg)}
+.mbox.upcoming{border-color:var(--u-bd);background:var(--u-bg)}
+.mbox.paid{border-color:var(--g-bd);background:var(--g-bg)}
+.mhead{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:1rem;margin-bottom:6px}
+.mhead small{font-size:.8rem;font-weight:500;color:var(--muted)}
+.sr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px solid rgba(128,128,128,.2)}
+.sr .l i{width:20px;margin-right:6px}
+.sr.ok{color:var(--g-fg)}.sr.no{color:var(--p-fg)}.sr.soon{color:var(--u-fg)}
+.sr .r{font-size:.82rem;font-variant-numeric:tabular-nums}
+.sr.tot{font-weight:700;color:var(--ink)}
+.rem{margin-top:12px;width:100%;border:1px solid var(--line);background:var(--field);border-radius:9px;padding:8px;cursor:pointer;font-size:.82rem;font-weight:500;display:flex;align-items:center;justify-content:center;gap:7px}
+.rem:hover{border-color:var(--brand2);color:var(--brand2)}
+.tsec{margin-top:22px}
+.thead{width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 14px;background:var(--head);border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer}
+.tn{font-weight:600;font-size:1rem;display:flex;align-items:center;gap:9px}
+.tn small{font-weight:400;color:var(--muted);font-size:.8rem}
+.tn .chev{font-size:.7rem;color:var(--muted);transition:transform .15s}
+.tsec.closed .chev{transform:rotate(-90deg)}
+.tsec.closed .tgrid{display:none}
+.tsum{display:flex;gap:6px;flex-wrap:wrap}
+.tsum span{font-size:.74rem;font-weight:600;padding:2px 10px;border-radius:999px}
+.tsum .g{background:var(--g-bg);color:var(--g-fg)}.tsum .o{background:var(--d-bg);color:var(--d-fg)}.tsum .r{background:var(--p-bg);color:var(--p-fg)}
+.state{grid-column:1/-1;text-align:center;padding:46px 10px;color:var(--muted)}
+.state i{font-size:1.8rem;margin-bottom:10px;display:block}
+.state p{margin-bottom:12px}
+.state button{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:8px 16px;cursor:pointer}
+.state.err{color:var(--p-fg)}
+.sk{height:178px;border-left-color:var(--line);background:linear-gradient(90deg,var(--card),var(--head),var(--card));background-size:200% 100%;animation:sh 1.4s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.stamp{font-size:.76rem;color:var(--muted);text-align:right;margin-top:12px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:.85rem;opacity:0;pointer-events:none;transition:.2s}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media(max-width:700px){.kpis{grid-template-columns:repeat(2,1fr)}.btn-h span{display:none}}
+@media(max-width:420px){.grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== panel theme ===== */
+:root{
+  --bg:#eef0e8; --card:#fff; --field:#fff; --ink:#10201b; --muted:#566a62; --line:#d6dccf; --head:#e4e9dc;
+  --brand:#0f2b24; --brand2:#1b4d3f; --acc:#b4531f; --shadow:none;
+  --red:#b4423a; --orange:#c9741d; --yellow:#e9a24b; --green:#1f7a4d; --grey:#b9b6ab;
+  --display:'Newsreader',Georgia,serif; --body:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);font-size:15px;-webkit-font-smoothing:antialiased}
+header{background:transparent;color:var(--ink);padding:44px 44px 0}
+header .wrap{border-bottom:1px solid var(--ink);padding-bottom:18px}
+.kick{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--acc);margin:0 0 6px;text-transform:uppercase;letter-spacing:.08em}
+h1{display:block;font-family:var(--display);font-weight:500;font-size:clamp(30px,4vw,44px);line-height:1.05;letter-spacing:-.02em}
+.sub{color:var(--muted);opacity:1;font-size:14.5px;margin-top:6px}
+.top{align-items:flex-end}
+.btn-h{background:#fff;border:1px solid var(--line);color:var(--brand2);border-radius:4px;padding:10px 14px;font-weight:500;font-size:13.5px}
+.btn-h:hover{background:#fff;border-color:var(--ink)}
+.btn-h i{color:var(--acc)}
+main{margin:18px auto 40px;padding:0 44px;max-width:1188px}
+.kpi{border-radius:6px;padding:14px 16px}
+.kpi b{font-family:var(--display);font-weight:500;font-size:1.9rem;letter-spacing:-.01em}
+.kpi span{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+.panel{border-radius:6px;padding:12px}
+.search input,.sel select{border:1px solid var(--line);border-radius:4px;background:#fff}
+.search input:focus,.sel select:focus{border-color:var(--ink);outline:1px solid var(--ink)}
+.search i{color:var(--acc)}
+.chip{border:1px solid var(--line);color:var(--muted);font-weight:500}
+.chip.on{background:var(--brand2);border-color:var(--brand2);color:#fff}
+.legend{font-family:var(--mono);font-size:.72rem}
+.stu{border-radius:6px;box-shadow:none}
+.name{font-weight:600}
+.sid{font-family:var(--mono);font-size:.75rem}
+.meta i{color:var(--acc)}
+.m{border-radius:4px}
+.badge{font-family:var(--mono);font-size:.7rem;font-weight:500}
+.rem{border-radius:4px;background:#fff}
+.rem:hover{border-color:var(--ink);color:var(--brand2)}
+.rem i{color:var(--acc)}
+.thead{border-radius:6px;background:#fff;border-left:4px solid var(--acc)}
+.tn{font-family:var(--display);font-size:1.15rem;font-weight:600}
+.tn .fa-chalkboard-user{color:var(--acc)}
+.tn small{font-family:var(--mono);font-size:.72rem}
+.mbox,.sr{border-radius:4px}
+.state button{border-radius:4px}
+.stamp{font-family:var(--mono)}
+#toast{border-radius:4px;background:var(--brand)}
+@media(max-width:900px){header{padding:26px 16px 0}main{padding:0 16px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="kick"><i class="fa-solid fa-chart-pie"></i>Fees · All teachers</div>
+    <div class="top">
+      <div>
+        <h1>Fee status</h1>
+        <div class="sub" id="sub">Progressive Physics</div>
+      </div>
+      <div class="acts">
+        <button class="btn-h" id="export" aria-label="Export dues as CSV"><i class="fa-solid fa-file-arrow-down"></i><span>Export dues</span></button>
+        <button class="btn-h" id="refresh" aria-label="Refresh data"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="kpis" id="kpis"></div>
+  <div class="sticky">
+    <div class="panel">
+      <div class="bar">
+        <div class="search">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input id="q" type="search" placeholder="Search student ID, name or teacher…" aria-label="Search students" autocomplete="off">
+        </div>
+        <div class="sel" id="tchWrap">
+          <select id="tch" aria-label="Teacher"><option value="">All teachers</option></select>
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </div>
+        <div class="sel">
+          <select id="grp" aria-label="Group by"><option value="teacher">By teacher</option><option value="student">By student</option></select>
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </div>
+        <div class="sel">
+          <select id="month" aria-label="Month"></select>
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </div>
+      </div>
+      <div class="chips" id="chips" role="group" aria-label="Filter by status"></div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--red)"></i> Pending</span>
+    <span><i class="dot" style="background:var(--orange)"></i> Due this month</span>
+    <span><i class="dot" style="background:var(--yellow)"></i> Upcoming</span>
+    <span><i class="dot" style="background:var(--green)"></i> Paid</span>
+    <span><i class="dot" style="background:var(--grey)"></i> N/A</span>
+  </div>
+
+  <div id="list" class="grid"></div>
+  <div class="stamp" id="stamp" aria-live="polite"></div>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ====== CONFIG ====== */
+const API_URL = 'https://script.google.com/macros/s/AKfycby2WRxAyBFGsd8crTfG9kLgWzPVmAaaGWwZwS_b5k57vAszA9yvm2-t-QAh6MBZXlXl/exec';   // Apps Script /exec URL
+const ADMIN = !!window.FEE_ADMIN, ME = window.TEACHER || {};   // admin sees all; teacher sees only own subjects/students
+const CACHE_KEY = 'fee_status_cache_v4' + (ADMIN ? '_admin' : '_' + (ME.id || 'x'));
+const nz = v => String(v == null ? '' : v).toLowerCase().replace(/\s+/g, '');
+const isMe = t => { const n = nz(t), i = nz(ME.id), m = nz(ME.name); return !!n && ((i && n.includes(i)) || (m && n.includes(m))); };
+window.setView = function(){};
+/* ==================== */
+
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const LBL = {pending:'Pending', due:'Due', upcoming:'Soon', paid:'Paid', na:'N/A'};
+const FILTERS = [
+  {k:'all', t:'All'},
+  {k:'pending', t:'Pending'},
+  {k:'due', t:'Due now'},
+  {k:'upcoming', t:'Upcoming'},
+  {k:'paid', t:'Paid'}
+];
+
+let students = [], filter = 'all', query = '', month = -1, groupBy = 'teacher', tsel = '', baseSub = '', tchSig = '';
+let loading = true, shown = [], closed = new Set();
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr = n => '₹' + Number(n).toLocaleString('en-IN');
+
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function matches(s, f){
+  if (month >= 0){
+    const st = s.months[month];
+    return f === 'all' ? st !== 'na' : st === f;
+  }
+  if (f === 'all') return true;
+  return s[f] > 0;
+}
+
+/* unpaid amount in pending/due months (or only the chosen month) */
+function owed(s){
+  let amt = 0;
+  const idx = month >= 0 ? [month] : s.months.map((_, i) => i);
+  idx.forEach(i => {
+    const st = s.months[i];
+    if (st !== 'pending' && st !== 'due') return;
+    ((s.detail && s.detail[i]) || []).forEach(x => { if (!x.paid) amt += Number(x.fee) || 0; });
+  });
+  return amt;
+}
+
+function initMonth(){
+  const sel = $('month');
+  sel.innerHTML = '<option value="-1">All months</option>' + FULL.map((m,i) => `<option value="${i}">${m}</option>`).join('');
+  sel.onchange = () => { month = Number(sel.value); sel.classList.toggle('on', month >= 0); render(); };
+}
+
+function renderChips(all){
+  $('chips').innerHTML = FILTERS.map(f => {
+    const n = all.filter(s => matches(s, f.k)).length;
+    return `<button class="chip ${filter===f.k?'on':''}" data-k="${f.k}" aria-pressed="${filter===f.k}">${f.t}<span class="n">${n}</span></button>`;
+  }).join('');
+  $('chips').querySelectorAll('.chip').forEach(b => b.onclick = () => { filter = b.dataset.k; render(); });
+}
+
+function renderKpis(all){
+  const ids = new Set(), owing = new Set(); let amt = 0;
+  all.forEach(s => {
+    ids.add(s.id);
+    const o = owed(s);
+    if (o > 0){ amt += o; owing.add(s.id); }
+  });
+  const k = (v, l, c) => `<div class="kpi ${c||''}"><b>${v}</b><span>${l}</span></div>`;
+  $('kpis').innerHTML = k(ids.size, 'Students')
+    + k(owing.size, 'With dues', owing.size ? 'bad' : '')
+    + k(inr(amt), month >= 0 ? 'Outstanding in ' + MN[month] : 'Outstanding', amt ? 'bad' : '')
+    + k(ids.size - owing.size, 'No dues', 'good');
+}
+
+/* teacher view: one row per (student, teacher), only that teacher's subjects */
+function derive(s, t, names){
+  const set = new Set(names);
+  const sub = s.subList.filter(x => set.has(x.n));
+  const detail = s.detail.map(d => d.filter(x => set.has(x.n)));
+  const months = s.months.map((st,i) => {
+    const d = detail[i];
+    if (!d.length) return 'na';
+    if (d.every(x => x.paid)) return 'paid';
+    return st === 'paid' ? 'pending' : st;
+  });
+  const c = k => months.filter(x => x === k).length;
+  return Object.assign({}, s, {
+    teacher: t, detail, months,
+    subjects: names.join(', '),
+    totalFees: sub.map(x => x.fee).filter(Boolean).join(', '),
+    pending: c('pending'), due: c('due'), upcoming: c('upcoming'), paid: c('paid')
+  });
+}
+
+/* ---- teacher dropdown: names come from the Teachers sheet (parent), plus any teacher found in fee data ---- */
+const tchList = () => { try { return (window.parent.getTeachers_ && window.parent.getTeachers_()) || []; } catch(e){ return []; } };
+const reEsc = x => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const hasTok = (raw, tok) => !!tok && new RegExp('(^|[^a-z0-9])' + reEsc(String(tok).toLowerCase().trim()) + '($|[^a-z0-9])').test(String(raw || '').toLowerCase());
+const tchMatch = (raw, t) => nz(raw) === nz(t.Teacher_ID) || (t.Name && nz(raw) === nz(t.Name)) || hasTok(raw, t.Teacher_ID) || (t.Name && hasTok(raw, t.Name));
+function tLabel(k){
+  const t = tchList().find(x => tchMatch(k, x));
+  if (!t) return k;
+  const nm = String(t.Name || '').trim(), id = String(t.Teacher_ID || '').trim();
+  return nm && id ? id + ' · ' + nm : (nm || id || k);
+}
+let tchOpts = [];
+function renderTeacherSel(rowsAll){
+  if (!ADMIN) return;
+  const T = tchList(), used = {};
+  const opts = T.map(t => ({ v: 'id:' + t.Teacher_ID, label: tLabel(t.Teacher_ID), name: String(t.Name || '').toLowerCase(), test: raw => tchMatch(raw, t) }));
+  rowsAll.forEach(r => { used[r.teacher] = 1; });
+  Object.keys(used).forEach(k => {
+    if (!opts.some(o => o.test(k))) opts.push({ v: 'raw:' + k, label: k, name: k.toLowerCase(), test: raw => raw === k });
+  });
+  opts.sort((a,b) => (a.v.startsWith('raw:Unassigned') ? 1 : b.v.startsWith('raw:Unassigned') ? -1 : a.name.localeCompare(b.name) || a.label.localeCompare(b.label)));
+  tchOpts = opts;
+  const sig = opts.map(o => o.v + '|' + o.label).join('~');
+  const sel = $('tch');
+  if (sig !== tchSig){
+    tchSig = sig;
+    sel.innerHTML = '<option value="">All teachers</option>' + opts.map(o => `<option value="${esc(o.v)}">${esc(o.label)}</option>`).join('');
+  }
+  if (tsel && !opts.some(o => o.v === tsel)) tsel = '';
+  sel.value = tsel; sel.classList.toggle('on', !!tsel);
+}
+function tselMatch(raw){ const o = tchOpts.find(x => x.v === tsel); return o ? o.test(raw) : true; }
+function updSub(){
+  if (!baseSub) return;
+  const o = tsel && tchOpts.find(x => x.v === tsel);
+  $('sub').textContent = baseSub + (ADMIN ? (o ? ' · ' + o.label : ' · all teachers') : ' · ' + (ME.name || ME.id || ''));
+}
+
+function derivedRows(){
+  const out = [];
+  students.forEach(s => {
+    if (!s.subList || !s.subList.length){ out.push(Object.assign({}, s, {teacher:'Unassigned'})); return; }
+    const by = {};
+    s.subList.forEach(x => { const k = x.t || 'Unassigned'; (by[k] = by[k] || []).push(x.n); });
+    Object.keys(by).forEach(t => out.push(derive(s, t, by[t])));
+  });
+  return ADMIN ? out : out.filter(r => isMe(r.teacher));
+}
+
+function buildRows(){
+  if (ADMIN && groupBy !== 'teacher' && !tsel) return students.map(s => Object.assign({}, s, {teacher:''}));
+  const r = derivedRows();
+  return (ADMIN && tsel) ? r.filter(x => tselMatch(x.teacher)) : r;
+}
+
+function card(s){
+  let cls = s.pending ? 'has-pending' : s.due ? 'has-due' : (s.paid && !s.upcoming) ? 'all-paid' : '';
+  let badge = s.pending ? `<span class="badge b-pending">${s.pending} pending</span>`
+              : s.due     ? `<span class="badge b-due">Due now</span>`
+              : s.paid && !s.upcoming ? `<span class="badge b-paid">All clear</span>`
+              : `<span class="badge b-none">No dues</span>`;
+  let subs = '';
+  if (month >= 0){
+    const st = s.months[month];
+    badge = `<span class="badge ${st==='pending'?'b-pending':st==='due'?'b-due':st==='paid'?'b-paid':st==='upcoming'?'b-up':'b-none'}">${MN[month]}: ${LBL[st]}</span>`;
+    const det = (s.detail && s.detail[month]) || [];
+    if (det.length){
+      const pn = det.filter(x => x.paid).length;
+      const full = pn === det.length;
+      const lvl = full ? 'paid' : pn ? 'part' : st==='upcoming' ? 'upcoming' : 'none';
+      const bc = {paid:'b-paid', part:'b-due', upcoming:'b-up', none:'b-pending'}[lvl];
+      cls = {paid:'all-paid', part:'has-due', upcoming:'', none:'has-pending'}[lvl];
+      badge = `<span class="badge ${bc}">${MN[month]}: ${full ? 'Full paid' : pn ? pn+'/'+det.length+' paid' : st==='upcoming' ? 'Upcoming' : 'Not paid'}</span>`;
+      const due = det.filter(x => !x.paid).reduce((a,x) => a + (Number(x.fee)||0), 0);
+      const nc = st==='upcoming' ? 'soon' : 'no';
+      subs = `<div class="mbox ${lvl}"><div class="mhead"><span>${FULL[month]}</span><small>${pn} of ${det.length} paid</small></div>` + det.map(x => x.paid
+        ? `<div class="sr ok"><span class="l"><i class="fa-solid fa-circle-check"></i>${esc(x.n)}</span><span class="r">${esc(x.rc) || 'paid'}${x.fee ? ', ₹'+esc(x.fee) : ''}</span></div>`
+        : `<div class="sr ${nc}"><span class="l"><i class="fa-solid fa-circle-xmark"></i>${esc(x.n)}</span><span class="r">${st==='upcoming'?'upcoming':'not paid'}${x.fee ? ', ₹'+esc(x.fee) : ''}</span></div>`).join('')
+        + (due ? `<div class="sr tot"><span>Due amount</span><span>${inr(due)}</span></div>` : '') + `</div>`;
+    }
+  }
+  const months = s.months.map((st,i) =>
+    `<div class="m ${st}${i===month?' sel-m':''}">${MN[i]}<small>${LBL[st]}</small></div>`).join('');
+  const rem = owed(s) > 0 ? `<button class="rem" data-i="${s._i}"><i class="fa-regular fa-copy"></i>Copy reminder message</button>` : '';
+  return `<article class="stu ${cls}">
+    <div class="row1">
+      <div><div class="name">${esc(s.name) || '—'}</div><div class="sid">${esc(s.id)}</div></div>
+      ${badge}
+    </div>
+    <div class="meta">
+      <span><i class="fa-solid fa-book"></i>${esc(s.subjects) || '—'}</span>
+      <span><i class="fa-regular fa-calendar"></i>${esc(s.date) || '—'}</span>
+      ${s.totalFees ? `<span><i class="fa-solid fa-indian-rupee-sign"></i>${esc(s.totalFees)}</span>` : ''}
+    </div>
+    ${subs || `<div class="months">${months}</div>`}
+    ${rem}
+  </article>`;
+}
+
+const empty = `<div class="state"><i class="fa-regular fa-folder-open"></i><p>No students match these filters.</p><button data-act="clear">Clear filters</button></div>`;
+
+function render(){
+  if (loading && !students.length){
+    $('list').className = 'grid';
+    $('list').innerHTML = '<div class="stu sk"></div>'.repeat(6);
+    return;
+  }
+  if (ADMIN){ renderTeacherSel(derivedRows()); updSub(); }
+  const all = buildRows();
+  renderChips(all);
+  renderKpis(all);
+  const q = query.trim().toLowerCase().replace(/\s+/g,'');
+  const norm = v => String(v || '').toLowerCase().replace(/\s+/g,'');
+  const rows = all
+    .filter(s => matches(s, filter))
+    .filter(s => !q || norm(s.id).includes(q) || norm(s.name).includes(q) || norm(s.teacher).includes(q))
+    .sort((a,b) => month >= 0 ? a.id.localeCompare(b.id) : (b.pending - a.pending) || (b.due - a.due) || a.id.localeCompare(b.id));
+  rows.forEach((r,i) => r._i = i);
+  shown = rows;
+  if (groupBy !== 'teacher'){
+    $('list').className = 'grid';
+    $('list').innerHTML = rows.length ? rows.map(card).join('') : empty;
+    return;
+  }
+  $('list').className = '';
+  if (!rows.length){ $('list').innerHTML = `<div class="grid">${empty}</div>`; return; }
+  const groups = {};
+  rows.forEach(r => (groups[r.teacher] = groups[r.teacher] || []).push(r));
+  const keys = Object.keys(groups).sort((a,b) => a==='Unassigned' ? 1 : b==='Unassigned' ? -1 : a.localeCompare(b));
+  $('list').innerHTML = keys.map(k => {
+    const g = groups[k];
+    let sum = '';
+    if (month >= 0){
+      let f=0,p=0,n=0;
+      g.forEach(r => { const d = r.detail[month] || []; if(!d.length) return; const pn = d.filter(x=>x.paid).length; pn===d.length ? f++ : pn ? p++ : n++; });
+      sum = `<span class="tsum">${f?`<span class="g">${f} full paid</span>`:''}${p?`<span class="o">${p} partial</span>`:''}${n?`<span class="r">${n} not paid</span>`:''}</span>`;
+    } else {
+      const pc = g.filter(r => r.pending > 0).length;
+      sum = pc ? `<span class="tsum"><span class="r">${pc} with pending</span></span>` : '';
+    }
+    const isClosed = closed.has(k);
+    return `<section class="tsec${isClosed?' closed':''}"><button class="thead" data-t="${esc(k)}" aria-expanded="${!isClosed}"><span class="tn"><i class="fa-solid fa-chevron-down chev"></i><i class="fa-solid fa-chalkboard-user"></i>${esc(tLabel(k))}<small>${g.length} student${g.length>1?'s':''}</small></span>${sum}</button><div class="grid tgrid">${g.map(card).join('')}</div></section>`;
+  }).join('');
+}
+
+function copyText(text, ok){
+  const done = () => toast(ok);
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, () => toast('Copy failed'));
+  } else {
+    const a = document.createElement('textarea'); a.value = text; document.body.appendChild(a); a.select();
+    try{ document.execCommand('copy'); done(); }catch(e){ toast('Copy failed'); }
+    a.remove();
+  }
+}
+
+function reminder(s){
+  return `Hello, this is Progressive Physics. A fee of ${inr(owed(s))} for ${s.subjects || 'tuition'} is pending for ${s.name} (${s.id}). Please pay at your earliest convenience. Thank you.`;
+}
+
+function exportCsv(){
+  const q = v => '"' + String(v ?? '').replace(/"/g,'""') + '"';
+  const rows = shown.filter(s => owed(s) > 0);
+  if (!rows.length){ toast('No dues to export'); return; }
+  const csv = [['Student ID','Name','Teacher','Subjects','Outstanding (INR)'].map(q).join(',')]
+    .concat(rows.map(s => [s.id, s.name, s.teacher, s.subjects, owed(s)].map(q).join(','))).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], {type:'text/csv'}));
+  a.download = 'fee-dues.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function setBusy(b){ $('refresh').classList.toggle('spin', b); }
+
+async function load(){
+  setBusy(true);
+  try{
+    const res = await fetch(API_URL);
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || 'API error');
+    students = d.students;
+    const mi = d.now.month;
+    baseSub = `Progressive Physics – ${MN[mi]} ${d.now.year}`; updSub();
+    $('stamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(d)); }catch(e){}
+    loading = false; render();
+  }catch(err){
+    loading = false;
+    if (!students.length){
+      $('list').className = 'grid';
+      $('list').innerHTML = `<div class="state err"><i class="fa-solid fa-triangle-exclamation"></i><p>Could not load fee data: ${esc(err.message)}. Check your connection and try again.</p><button data-act="retry">Try again</button></div>`;
+    } else {
+      $('stamp').textContent = 'Offline: showing saved data from your last visit';
+      render();
+    }
+  }finally{ setBusy(false); }
+}
+
+/* instant paint from cache, then refresh */
+try{
+  const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+  if (c && c.students){ students = c.students; }
+}catch(e){}
+
+initMonth();
+if (!ADMIN){ $('grp').parentElement.hidden = true; $('tchWrap').hidden = true; }
+$('tch').onchange = e => { tsel = e.target.value; render(); };
+if (ADMIN && !tchList().length){ try{ window.parent.loadTeachers(true); }catch(e){} setTimeout(render, 1500); setTimeout(render, 4000); }
+$('grp').onchange = e => { groupBy = e.target.value; render(); };
+let dt;
+$('q').addEventListener('input', e => { query = e.target.value; clearTimeout(dt); dt = setTimeout(render, 150); });
+$('refresh').onclick = load;
+$('export').onclick = exportCsv;
+$('list').addEventListener('click', e => {
+  const r = e.target.closest('[data-i]');
+  if (r){ copyText(reminder(shown[r.dataset.i]), 'Reminder copied'); return; }
+  const h = e.target.closest('[data-t]');
+  if (h){ const k = h.dataset.t; closed.has(k) ? closed.delete(k) : closed.add(k); render(); return; }
+  const a = e.target.closest('[data-act]');
+  if (a && a.dataset.act === 'retry'){ loading = true; render(); load(); }
+  if (a && a.dataset.act === 'clear'){
+    filter = 'all'; query = ''; month = -1; tsel = ''; $('q').value = ''; $('month').value = '-1'; $('month').classList.remove('on'); render();
+  }
+});
+render();
+load();
+<\/script>
+<\/body>
+<\/html></script>
 <script type="text/plain" id="doc-fee"><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1612,7 +2176,7 @@ footer i{color:var(--muted);margin-right:6px}
   const COLLECTOR_URL = "https://script.google.com/macros/s/AKfycbwD1aqFLzL3xA_5LUsu4t81uRGA0ik8JRwCVlmh4Fc63aS2tuBjk9mOWtPhCVZx_hQC/exec";
 
   // Student Details Web App URL — looks up name/phone/subjects from student_details sheet
-  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec";
+  const STUDENT_URL = "https://script.google.com/macros/s/AKfycbzfpaTQWIPX1mDRj0G8KwtN6CUj73BK-eVqSMOxBQCnMzMUNDYkRL2XNAHP6JNKHMaD/exec";
 
   const form = document.getElementById('feeForm');
   const statusEl = document.getElementById('status');
@@ -2563,8 +3127,21 @@ footer i{color:var(--muted);margin-right:6px}
     }
   });
 <\/script>
-</body>
-</html></script>
+<\/body>
+<\/html></script>
+
+<script>
+/* LOGIN GUARD: a form must never reload the page, and a broken script must say why */
+document.addEventListener('submit', function (e) { e.preventDefault(); }, true);
+window.addEventListener('error', function (ev) {
+  var m = document.getElementById('msg');
+  if (m && !m.textContent) m.textContent = 'Script error: ' + (ev.message || 'unknown') + (ev.lineno ? ' (line ' + ev.lineno + ')' : '') + '. Press F12 > Console.';
+});
+window.addEventListener('load', function () {
+  var m = document.getElementById('msg');
+  if (!window.__apOK && m && !m.textContent) m.textContent = 'Page script did not start. Press F12 > Console and check the red error.';
+});
+</script>
 
 <script>
 /* ═════════ AUTH + SHELL (same Auth.gs web app as the teacher panel) ═════════ */
@@ -2573,7 +3150,7 @@ const SESSION_KEY = 'ap';           // separate from the teacher panel's 'tp'
 const $ = id => document.getElementById(id);
 const $$ = s => document.querySelectorAll(s);
 let S = null, frames = {};
-const DOCS = { fee: 'doc-fee' };
+const DOCS = { fee: 'doc-fee', stat: 'doc-stat' };
 
 const isAdmin = r => /^admin$/i.test(String((r && r.role) || '').trim());
 const post = async body => {
@@ -2642,8 +3219,8 @@ function enter(s) {
 }
 function frame(key) {
   if (frames[key]) return frames[key];
-  const raw = $(DOCS[key]).textContent.replace(/<\\\/script/gi, '<' + '/script').replace(/<\\!--/g, '<' + '!--');
-  const inj = '<scr' + 'ipt>window.TEACHER=' + JSON.stringify(window.TEACHER).replace(/</g, '\\u003c') + ';</scr' + 'ipt>';
+  const raw = $(DOCS[key]).textContent.replace(/<\\\/(body|html)>/gi, '</$1>').replace(/<\\\/script/gi, '<' + '/script').replace(/<\\!--/g, '<' + '!--');
+  const inj = '<scr' + 'ipt>window.TEACHER=' + JSON.stringify(window.TEACHER).replace(/</g, '\\u003c') + ';window.FEE_ADMIN=true;</scr' + 'ipt>';
   const f = document.createElement('iframe');
   f.title = key; f.srcdoc = raw.replace('<head>', '<head>' + inj);
   $('stage').appendChild(f);
@@ -2692,7 +3269,7 @@ function go(v, fromPop) {
     el.hidden = k !== v;
     if (k === v) el.scrollTop = 0;
   });
-  const need = { receipt: 'fee', history: 'fee' }[v];
+  const need = { receipt: 'fee', history: 'fee', status: 'stat' }[v];
   Object.entries(frames).forEach(([k, f]) => f.hidden = k !== need);
   if (need && S) {
     const f = frame(need); f.hidden = false;
@@ -2848,7 +3425,7 @@ $('lf').addEventListener('submit', async e => {
       if (isAdmin(r)) { enter(r); toast('Signed in successfully'); $('lpw').value = ''; }
       else m.textContent = 'Access denied. This console is for administrators only.';
     } else m.textContent = r.message || 'Sign-in failed';
-  } catch (err) { m.textContent = 'Cannot reach the server. Check AUTH_URL and your connection.'; }
+  } catch (err) { m.textContent = 'Sign-in error: ' + ((err && err.message) || 'cannot reach the server') + '. Check AUTH_URL and that the login script is deployed for Anyone.'; console.error('login failed', err); }
   b.disabled = false; b.innerHTML = LABEL.lgo;
 });
 
@@ -2870,7 +3447,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 
 /* ═════════ ADMIN LOGIC (students + teachers) ═════════ */
 
-  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec';
+  const STUDENT_API_URL = 'https://script.google.com/macros/s/AKfycbzfpaTQWIPX1mDRj0G8KwtN6CUj73BK-eVqSMOxBQCnMzMUNDYkRL2XNAHP6JNKHMaD/exec';
   const TEACHER_API_URL = 'https://script.google.com/macros/s/AKfycbxIe7QVlhDVkufRs_aND-J8Y_eZvDACZTm4ObN2HXsc9B_tVujVhYltuxSfOt-dybbb/exec';
  
 
@@ -2892,7 +3469,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
 
   /* ═════ Register student (dialog; ported from teacher panel admission form) ═════ */
   const SUBJECT_URL = "https://script.google.com/macros/s/AKfycbyiYCckDlSoJDjQAH9Ddl7hNc63RyAucqmJn-YdEuG49BRf5cQJWjJzaad82l5gAMgyIA/exec";
-  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbwB0lLUDSYi-VjcFKhZur-bVLZEQxPqSFM7W3Z2qjfQa4G3uvdKrd9PbAsoBXLOsUzJ/exec";
+  const STUDENT_DETAILS_URL = "https://script.google.com/macros/s/AKfycbzfpaTQWIPX1mDRj0G8KwtN6CUj73BK-eVqSMOxBQCnMzMUNDYkRL2XNAHP6JNKHMaD/exec";
   const NO_BOARD_ = ['JEE','NEET'];
   const DEFAULT_SUBJECTS_ = ['Physics','Chemistry','Biology - Botany','Biology - Zoology','Mathematics','English'];
   const SUBJ_CACHE_KEY_ = 'pp_subjects_cache_v1', SUBJ_TTL_ = 24*60*60*1000;
@@ -3038,7 +3615,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
     const tch = [...new Set((m.teachers||[]).filter(Boolean))].join(', ');
     $('dupBody').innerHTML = '<b>' + rgEsc_(m.name) + '</b> (' + rgEsc_(m.id) + ') is already registered. Do you want to add another subject?';
     $('dupInfo').innerHTML = row('Class', m.class) + row('Current subjects', (m.subjects||[]).join(', ')) +
-      row('Monthly fee', '₹' + (m.total || 0)) + (tch ? row('Teacher', tch) : '');
+      row('Status', m.active === false ? 'Ex-student' + (m.deactiveDate ? ' (since ' + String(m.deactiveDate).slice(0,10) + ')' : '') : 'Active') + row('Monthly fee', '₹' + (m.total || 0)) + (tch ? row('Teacher', tch) : '');
     $('dupModal').showModal();
   }
   function rgEnterAdd_(m){
@@ -3048,7 +3625,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
     rgSync_(); rgBuild_(rg.last);
     const bar = $('rgAddBar');
     bar.innerHTML = '<i class="fa-solid fa-circle-plus lead"></i><div class="tx"><b>Adding a subject to ' + rgEsc_(m.name) + '</b> · ' + rgEsc_(m.id) +
-      '<small>Already has: ' + rgEsc_((m.subjects||[]).join(', ') || '—') + '. Pick the new subject and set its fee.</small></div>' +
+      '<small>Already has: ' + rgEsc_((m.subjects||[]).join(', ') || '—') + '. Pick the new subject and set its fee.</small>' + (m.active === false ? '<small style="color:#b4423a;font-weight:600">⚠ This is an EX-STUDENT. Re-activate them from the student list if they are rejoining.</small>' : '') + '</div>' +
       '<button type="button" id="rgAddExit">Change student</button>';
     bar.hidden = false;
     $('rgAddExit').addEventListener('click', ()=>rgExitAdd_(true));
@@ -3110,7 +3687,8 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
     list.forEach(s=>{
       const it = document.createElement('div'); it.className = 'it';
       const meta = [s.class, (s.subjects||[]).join(', ')].filter(Boolean).join(' · ');
-      it.innerHTML = '<b>' + rgEsc_(s.id) + ' — ' + rgEsc_(s.name) + '</b><small>' + rgEsc_(meta || '—') + '</small>';
+      if(s.active === false) it.style.background = '#e9e7e3';
+      it.innerHTML = '<b>' + rgEsc_(s.id) + ' — ' + rgEsc_(s.name) + (s.active === false ? ' <span style="color:#b4423a;font-size:11px;font-weight:600">· EX-STUDENT</span>' : ' <span style="color:#1f7a4d;font-size:11px;font-weight:600">· ACTIVE</span>') + '</b><small>' + rgEsc_(meta || '—') + '</small>';
       it.addEventListener('mousedown', ev=>{ ev.preventDefault(); rgPick_(s); });
       box.appendChild(it);
     });
@@ -3153,7 +3731,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
       if(j && j.status === 'ok') d = Object.assign({}, s, j);
     }catch(e){ /* fall back to the search row */ }
     st.textContent = '';
-    rgEnterAdd_({id: d.id || s.id, name: d.name || s.name, subjects: d.subjects || s.subjects || []});
+    rgEnterAdd_({id: d.id || s.id, name: d.name || s.name, subjects: d.subjects || s.subjects || [], active: (d.active !== undefined ? d.active : s.active)});
     rgPrefill_(d);
   }
 
@@ -3553,7 +4131,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
     const fee = s['Monthly Fee'] !== '' && s['Monthly Fee'] != null ? esc_(s['Monthly Fee']) : '\u2014';
     const f = (ic, k, v) => `<div class="sd"><span><i class="fa-solid ${ic}"></i>${k}</span><b>${v ? esc_(v) : '\u2014'}</b></div>`;
     return `
-    <article class="sc${open}" data-id="${esc_(id)}">
+    <article class="sc${open}${isActive_(s) ? '' : ' exs'}" data-id="${esc_(id)}">
       <button class="sc-main" type="button" data-act="toggle" aria-expanded="${open ? 'true' : 'false'}">
         <span class="sc-av">${esc_(initials_(s['Student Name']))}</span>
         <span class="sc-t">
@@ -3578,6 +4156,7 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
           ${f('fa-chalkboard-user', 'Teacher ID', s['Teacher ID'])}
           ${f('fa-coins', 'Fee split', feeSplit_(s))}
           ${f('fa-user-check', 'Status', isActive_(s) ? 'Active' : 'Ex-student')}
+          ${isActive_(s) ? '' : f('fa-calendar-xmark', 'Deactivated', String(s['Deactive Date'] || '').slice(0, 10))}
         </div>
         ${normSubjects_(s['Subjects']) ? `<div class="sd-subj"><span><i class="fa-solid fa-book"></i>Subjects</span><div>${subjChips_(s['Subjects'])}</div></div>` : ''}
         <div class="sc-act">
@@ -3813,8 +4392,8 @@ setInterval(() => { if (S && Date.now() > S.exp) leave('Session expired. Sign in
     const i = studentIdx_(id);
     if(i < 0) return;
     const before = STUDENTS[i], nm = before['Student Name'] || id;
-    if(!val && !confirm(`Mark ${nm} as ex-student? They will leave the active list (nothing is deleted).`)) return;
-    STUDENTS[i] = {...before, 'Active Status': val};
+    if(!confirm(val ? `Mark ${nm} as ACTIVE again?` : `Mark ${nm} as EX-STUDENT? Today's date is saved as the deactivated date (nothing is deleted).`)) return;
+    STUDENTS[i] = {...before, 'Active Status': val, 'Deactive Date': val ? '' : (()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()};
     cacheSave_('cache_students', STUDENTS);
     filterStudents();
     runWrite_('student', {
@@ -4443,6 +5022,7 @@ try {
   const s = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
   if (s && s.exp > Date.now() && isAdmin(s)) enter(s); else wipeCache_();
 } catch (e) { wipeCache_(); }
+window.__apOK = true;
 </script>
 </body>
 </html>
