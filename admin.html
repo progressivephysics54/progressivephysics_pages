@@ -1971,6 +1971,10 @@ button:disabled{opacity:.55}
 .sb-fill{border-radius:0;background:var(--teal)}
 .hist{padding:24px 0 34px}
 .hist-list{border-top:1px solid var(--ink);display:block;margin-top:14px}
+.hist-list.loading{opacity:.5;pointer-events:none;transition:opacity .15s}
+#histRefresh.busy{pointer-events:none;opacity:.85}
+#histRefresh.busy i,.hspin{animation:spin .7s linear infinite}
+.hspin{display:inline-block;margin-right:6px}
 .h-row{border:0;border-bottom:1px solid var(--rule);border-radius:0;padding:14px 4px;background:transparent;transition:background .12s}
 .h-row:hover{background:var(--card,#ffffff);border-color:var(--rule);transform:none;box-shadow:none}
 .h-id{font-family:var(--mono);font-weight:500;font-size:14px;color:var(--ink)}
@@ -2669,7 +2673,7 @@ footer i{color:var(--muted);margin-right:6px}
     const jobs = [];
     if (TCH.authUrl) jobs.push(fetchT(TCH.authUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'myFees', token: TCH.token, limit: 300 }) }).then(r => r.json()));
-    jobs.push(fetchT(COLLECTOR_URL + '?action=history&teacherId=' + encodeURIComponent(TCH.id) + '&limit=300&_=' + Date.now()).then(r => r.json()));
+    jobs.push(fetchT(COLLECTOR_URL + '?action=history&limit=500&_=' + Date.now()).then(r => r.json()));
     const out = await Promise.allSettled(jobs);
     const by = new Map();
     let ok = false;
@@ -2706,7 +2710,7 @@ footer i{color:var(--muted);margin-right:6px}
       const who = histWho();
       if (who !== 'ALL') rows = rows.filter(r => sameId_(r.teacherId || (sameId_(who, TCH.id) ? who : ''), who));
       if (q) rows = rows.filter(r => [r.receiptId, r.stuId, r.name, r.phone, r.feesMonth, r.teacherId, r.subjects, r.amount].join(' ').toLowerCase().includes(q));
-      list.innerHTML = rows.length ? '' : '<div class="suggest-empty">' + (serverHistBusy ? 'Loading receipts…' : 'No receipts found') + '</div>';
+      list.innerHTML = rows.length ? '' : '<div class="suggest-empty">' + (serverHistBusy ? '<i class="fa-solid fa-circle-notch hspin"></i> Loading receipts…' : 'No receipts found') + '</div>';
       rows.slice(0, 100).forEach(r => {
         const tag = r.sent === true ? '<span class="tag sent"><i class="fa-solid fa-check"></i>SENT</span>' : (r.sent === false ? '<span class="tag unsent"><i class="fa-solid fa-clock"></i>NOT SENT</span>' : '');
         const div = document.createElement('div');
@@ -2720,8 +2724,10 @@ footer i{color:var(--muted);margin-right:6px}
       if (serverHistBusy) note = 'Loading receipts…';
       else if (serverHistOk === false) note = 'Could not load history from the server' + (serverHistErr ? ' (' + serverHistErr + ')' : '') + ' — showing receipts made on this device. Tap Refresh to retry.';
       else if (rows.length > 100) note = 'Showing latest 100 · use search';
-      noteEl.textContent = note;
+      if (serverHistBusy) noteEl.innerHTML = '<i class="fa-solid fa-circle-notch hspin"></i> Loading receipts…'; else noteEl.textContent = note;
+      $('histRefresh').classList.toggle('busy', !!serverHistBusy); list.classList.toggle('loading', !!serverHistBusy && rows.length > 0);
     } catch (e) {
+      $('histRefresh').classList.remove('busy'); list.classList.remove('loading');
       list.innerHTML = '<div class="suggest-empty">Could not show history — tap Refresh</div>';
       noteEl.textContent = String(e && e.message || e);
     }
